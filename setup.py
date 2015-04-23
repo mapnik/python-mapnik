@@ -4,10 +4,10 @@ import subprocess
 
 if os.environ.get("CXX", False):
     os.environ["CC"] = os.environ["CXX"]
-os.environ['CLANG_CXX_LIBRARY'] = 'libc++'
-os.environ['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++11'
 
-print os.environ
+linkflags = subprocess.check_output(['mapnik-config', '--libs']).rstrip('\n').split(' ')
+linkflags.extend(subprocess.check_output(['mapnik-config', '--ldflags']).rstrip('\n').split(' '))
+linkflags.extend(['-Wl','-bind_at_load'])
 
 setup(
     name = "mapnik",
@@ -51,24 +51,14 @@ setup(
                 'src/mapnik_view_transform.cpp',
                 'src/python_grid_utils.cpp',
             ],
-            include_dirs = [
-                '/usr/include',
-            ],
             libraries = [
                 'mapnik', 
                 'mapnik-wkt',
                 'mapnik-json', 
                 'protobuf-lite'
             ],
-            extra_compile_args = [
-                subprocess.check_output(['mapnik-config', '--cflags']).rstrip('\n'),
-            ],
-            extra_link_args = [
-                subprocess.check_output(['mapnik-config', '--libs']).rstrip('\n'),
-                subprocess.check_output(['mapnik-config', '--ldflags']).rstrip('\n'), 
-                '-Wl', 
-                '-bind_at_load', 
-            ],
+            extra_compile_args = subprocess.check_output(['mapnik-config', '--cflags']).rstrip('\n').split(' '),
+            extra_link_args = linkflags,
         )
     ]
 )
