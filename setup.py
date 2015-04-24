@@ -79,7 +79,7 @@ setup(
         ('mapnik/proj', proj_files),
     ],
     ext_modules = [
-        Extension('_mapnik', [
+        Extension('mapnik._mapnik', [
                 'src/mapnik_color.cpp',
                 'src/mapnik_coord.cpp',
                 'src/mapnik_datasource.cpp',
