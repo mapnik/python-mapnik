@@ -123,7 +123,7 @@ setup(
                 'protobuf-lite',
                 'boost_thread',
                 'boost_system',
-                'boost_python-2.7',
+                'boost_python',
             ],
             extra_compile_args = subprocess.check_output(['mapnik-config', '--cflags']).rstrip('\n').split(' '),
             extra_link_args = linkflags,
