@@ -57,7 +57,7 @@ if not os.environ.get("PROJ_LIB", False):
 
 proj_path = os.environ["PROJ_LIB"]
 proj_files = os.listdir(proj_path)
-proj_files = [os.path.join(proj_path,f) for f in gdal_files]
+proj_files = [os.path.join(proj_path,f) for f in proj_files]
 
 
 
@@ -72,7 +72,7 @@ setup(
     keywords = "mapnik mapbox mapping carteography",
     url = "http://mapnik.org/", 
     data_files = [
-        ('mapnik/plugins', input_plugin_files),
+        ('mapnik/input', input_plugin_files),
         ('mapnik/fonts', font_files),
         ('mapnik/icu', icu_files),
         ('mapnik/gdal', gdal_files),
