@@ -43,7 +43,7 @@ if not os.environ.get("ICU_DATA", False):
 
 icu_path = os.environ["ICU_DATA"]
 icu_files = os.listdir(icu_path)
-icu_files = [os.path.join(icu_path,f) for f in icu_files]
+icu_files = [os.path.join(icu_path,f) for f in icu_files if os.path.isfile(f) and '.dat' in f]
 
 if not os.environ.get("GDAL_DATA", False):
     raise Exception("GDAL_DATA environment variable is required");
