@@ -30,6 +30,8 @@ linkflags = subprocess.check_output(['mapnik-config', '--libs']).rstrip('\n').sp
 linkflags.extend(subprocess.check_output(['mapnik-config', '--ldflags']).rstrip('\n').split(' '))
 linkflags.extend(['-Wl','-bind_at_load'])
 
+# TODO: font, plugin, and ICU, GDAL, PROJ data bundling
+# should only be done for packaged installs
 input_plugin_path = subprocess.check_output(['mapnik-config', '--input-plugins']).rstrip('\n')
 input_plugin_files = os.listdir(input_plugin_path)
 input_plugin_files = [os.path.join(input_plugin_path,f) for f in input_plugin_files]
@@ -38,28 +40,23 @@ font_path = subprocess.check_output(['mapnik-config', '--fonts']).rstrip('\n')
 font_files = os.listdir(font_path)
 font_files = [os.path.join(font_path,f) for f in font_files]
 
-if not os.environ.get("ICU_DATA", False):
-    raise Exception("ICU_DATA environment variable is required");
+icu_files = []
+if os.environ.get("ICU_DATA", False):
+    icu_path = os.environ["ICU_DATA"]
+    icu_files = os.listdir(icu_path)
+    icu_files = [os.path.join(icu_path,f) for f in icu_files if '.dat' in f]
 
-icu_path = os.environ["ICU_DATA"]
-icu_files = os.listdir(icu_path)
-icu_files = [os.path.join(icu_path,f) for f in icu_files if os.path.isfile(f) and '.dat' in f]
+gdal_files = []
+if os.environ.get("GDAL_DATA", False):
+    gdal_path = os.environ["GDAL_DATA"]
+    gdal_files = os.listdir(gdal_path)
+    gdal_files = [os.path.join(gdal_path,f) for f in gdal_files]
 
-if not os.environ.get("GDAL_DATA", False):
-    raise Exception("GDAL_DATA environment variable is required");
-
-gdal_path = os.environ["GDAL_DATA"]
-gdal_files = os.listdir(gdal_path)
-gdal_files = [os.path.join(gdal_path,f) for f in gdal_files]
-
-if not os.environ.get("PROJ_LIB", False):
-    raise Exception("PROJ_LIB environment variable is required");
-
-proj_path = os.environ["PROJ_LIB"]
-proj_files = os.listdir(proj_path)
-proj_files = [os.path.join(proj_path,f) for f in proj_files]
-
-
+proj_files = []
+if os.environ.get("PROJ_LIB", False):
+    proj_path = os.environ["PROJ_LIB"]
+    proj_files = os.listdir(proj_path)
+    proj_files = [os.path.join(proj_path,f) for f in proj_files]
 
 setup(
     name = "mapnik",
