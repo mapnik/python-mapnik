@@ -60,7 +60,6 @@ else:
     else:
         icu_files = []
 
-
 if os.environ.get("GDAL_DATA", False):
     gdal_path = os.environ["GDAL_DATA"]
     gdal_files = os.listdir(gdal_path)
@@ -72,7 +71,6 @@ else:
         gdal_files = [os.path.join(gdal_path,f) for f in gdal_files]
     else:
         gdal_files = []
-
 
 if os.environ.get("PROJ_LIB", False):
     proj_path = os.environ["PROJ_LIB"]
@@ -86,13 +84,11 @@ else:
     else:
         proj_files = []
 
-
 extra_comp_args = subprocess.check_output([mapnik_config, '--cflags']).rstrip('\n').split(' ')
 
 if sys.platform == 'darwin':
     extra_comp_args.append('-mmacosx-version-min=10.8')
     linkflags.append('-mmacosx-version-min=10.8')
-
 
 setup(
     name = "mapnik",
@@ -106,7 +102,7 @@ setup(
     url = "http://mapnik.org/", 
     data_files = [
         ('mapnik', lib_files),
-        ('mapnik/plugins', input_plugin_files),
+        ('mapnik/input', input_plugin_files),
         ('mapnik/fonts', font_files),
         ('mapnik/icu', icu_files),
         ('mapnik/gdal', gdal_files),
