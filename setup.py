@@ -22,43 +22,76 @@ distutils.ccompiler.CCompiler.compile=parallelCCompile
 from setuptools import setup, Extension
 import os
 import subprocess
+import sys
 
-if os.environ.get("CXX", False):
-    os.environ["CC"] = os.environ["CXX"]
+# run bootstrap.sh to get 
 
-linkflags = subprocess.check_output(['mapnik-config', '--libs']).rstrip('\n').split(' ')
-linkflags.extend(subprocess.check_output(['mapnik-config', '--ldflags']).rstrip('\n').split(' '))
+if os.environ.get("MAPNIK_LOCAL", "false") == "false":
+    subprocess.call(['./bootstrap.sh'])
+    mapnik_config = 'mason_packages/.link/bin/mapnik-config'
+else:
+    mapnik_config = 'mapnik-config'
+
+linkflags = subprocess.check_output([mapnik_config, '--libs']).rstrip('\n').split(' ')
+lib_path = linkflags[0][2:]
+linkflags.extend(subprocess.check_output([mapnik_config, '--ldflags']).rstrip('\n').split(' '))
 linkflags.extend(['-Wl','-bind_at_load'])
 
-input_plugin_path = subprocess.check_output(['mapnik-config', '--input-plugins']).rstrip('\n')
+lib_files = os.listdir(lib_path)
+lib_files = [os.path.join(lib_path, f) for f in lib_files if f.startswith('libmapnik.')]
+
+input_plugin_path = subprocess.check_output([mapnik_config, '--input-plugins']).rstrip('\n')
 input_plugin_files = os.listdir(input_plugin_path)
 input_plugin_files = [os.path.join(input_plugin_path,f) for f in input_plugin_files]
 
-font_path = subprocess.check_output(['mapnik-config', '--fonts']).rstrip('\n')
+font_path = subprocess.check_output([mapnik_config, '--fonts']).rstrip('\n')
 font_files = os.listdir(font_path)
 font_files = [os.path.join(font_path,f) for f in font_files]
 
-if not os.environ.get("ICU_DATA", False):
-    raise Exception("ICU_DATA environment variable is required");
+if os.environ.get("ICU_DATA", False):
+    icu_path = os.environ["ICU_DATA"]
+    icu_files = os.listdir(icu_path)
+    icu_files = [os.path.join(icu_path,f) for f in icu_files]
+else:
+    icu_path = subprocess.check_output([mapnik_config, '--icu-data']).rstrip('\n')
+    if icu_path:
+        icu_files = os.listdir(icu_path)
+        icu_files = [os.path.join(icu_path,f) for f in icu_files]
+    else:
+        icu_files = []
 
-icu_path = os.environ["ICU_DATA"]
-icu_files = os.listdir(icu_path)
-icu_files = [os.path.join(icu_path,f) for f in icu_files]
 
-if not os.environ.get("GDAL_DATA", False):
-    raise Exception("GDAL_DATA environment variable is required");
+if os.environ.get("GDAL_DATA", False):
+    gdal_path = os.environ["GDAL_DATA"]
+    gdal_files = os.listdir(gdal_path)
+    gdal_files = [os.path.join(gdal_path,f) for f in gdal_files]
+else:
+    gdal_path = subprocess.check_output([mapnik_config, '--gdal-data']).rstrip('\n')
+    if gdal_path:
+        gdal_files = os.listdir(gdal_path)
+        gdal_files = [os.path.join(gdal_path,f) for f in gdal_files]
+    else:
+        gdal_files = []
 
-gdal_path = os.environ["GDAL_DATA"]
-gdal_files = os.listdir(gdal_path)
-gdal_files = [os.path.join(gdal_path,f) for f in gdal_files]
 
-if not os.environ.get("PROJ_LIB", False):
-    raise Exception("PROJ_LIB environment variable is required");
+if os.environ.get("PROJ_LIB", False):
+    proj_path = os.environ["PROJ_LIB"]
+    proj_files = os.listdir(proj_path)
+    proj_files = [os.path.join(proj_path,f) for f in gdal_files]
+else:
+    proj_path = subprocess.check_output([mapnik_config, '--proj-lib']).rstrip('\n')
+    if proj_path:
+        proj_files = os.listdir(proj_path)
+        proj_files = [os.path.join(proj_path,f) for f in proj_files]
+    else:
+        proj_files = []
 
-proj_path = os.environ["PROJ_LIB"]
-proj_files = os.listdir(proj_path)
-proj_files = [os.path.join(proj_path,f) for f in gdal_files]
 
+extra_comp_args = subprocess.check_output([mapnik_config, '--cflags']).rstrip('\n').split(' ')
+
+if sys.platform == 'darwin':
+    extra_comp_args.append('-mmacosx-version-min=10.8')
+    linkflags.append('-mmacosx-version-min=10.8')
 
 
 setup(
@@ -72,6 +105,7 @@ setup(
     keywords = "mapnik mapbox mapping carteography",
     url = "http://mapnik.org/", 
     data_files = [
+        ('mapnik', lib_files),
         ('mapnik/plugins', input_plugin_files),
         ('mapnik/fonts', font_files),
         ('mapnik/icu', icu_files),
@@ -123,9 +157,9 @@ setup(
                 'protobuf-lite',
                 'boost_thread',
                 'boost_system',
-                'boost_python-2.7',
+                'boost_python',
             ],
-            extra_compile_args = subprocess.check_output(['mapnik-config', '--cflags']).rstrip('\n').split(' '),
+            extra_compile_args = extra_comp_args,
             extra_link_args = linkflags,
         )
     ]
