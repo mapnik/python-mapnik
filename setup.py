@@ -98,6 +98,11 @@ try:
         proj_files = [os.path.join(proj_path,f) for f in gdal_files]
     else:
         proj_path = subprocess.check_output([mapnik_config, '--proj-lib']).rstrip('\n')
+        if not proj_path:
+            if os.path.isdir('/usr/local/share/proj')
+                proj_path = '/usr/local/share/proj'
+            elif os.path.isdir('/usr/share/proj')
+                proj_path = '/usr/share/proj'
         if proj_path:
             proj_files = os.listdir(proj_path)
             proj_files = [os.path.join(proj_path,f) for f in proj_files]
