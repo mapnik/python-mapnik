@@ -26,69 +26,94 @@ import sys
 
 # run bootstrap.sh to get 
 
-if os.environ.get("MAPNIK_LOCAL", "false") == "false":
+if os.environ.get("MASON_BUILD", "false") == "true":
     subprocess.call(['./bootstrap.sh'])
     mapnik_config = 'mason_packages/.link/bin/mapnik-config'
 else:
     mapnik_config = 'mapnik-config'
 
-linkflags = subprocess.check_output([mapnik_config, '--libs']).rstrip('\n').split(' ')
-lib_path = linkflags[0][2:]
-linkflags.extend(subprocess.check_output([mapnik_config, '--ldflags']).rstrip('\n').split(' '))
-linkflags.extend(['-Wl','-bind_at_load'])
+boost_python_lib = os.environ.get("BOOST_PYTHON_LIB", 'boost_python')
 
-lib_files = os.listdir(lib_path)
-lib_files = [os.path.join(lib_path, f) for f in lib_files if f.startswith('libmapnik.')]
+try:
+    linkflags = subprocess.check_output([mapnik_config, '--libs']).rstrip('\n').split(' ')
+    lib_path = linkflags[0][2:]
+    linkflags.extend(subprocess.check_output([mapnik_config, '--ldflags']).rstrip('\n').split(' '))
+    linkflags.extend(['-Wl','-bind_at_load'])
+except:
+    linkflags = []
 
-input_plugin_path = subprocess.check_output([mapnik_config, '--input-plugins']).rstrip('\n')
-input_plugin_files = os.listdir(input_plugin_path)
-input_plugin_files = [os.path.join(input_plugin_path,f) for f in input_plugin_files]
+try:
+    lib_files = os.listdir(lib_path)
+    lib_files = [os.path.join(lib_path, f) for f in lib_files if f.startswith('libmapnik.')]
+except:
+    lib_files = []
 
-font_path = subprocess.check_output([mapnik_config, '--fonts']).rstrip('\n')
-font_files = os.listdir(font_path)
-font_files = [os.path.join(font_path,f) for f in font_files]
+try:
+    input_plugin_path = subprocess.check_output([mapnik_config, '--input-plugins']).rstrip('\n')
+    input_plugin_files = os.listdir(input_plugin_path)
+    input_plugin_files = [os.path.join(input_plugin_path,f) for f in input_plugin_files]
+except:
+    input_plugin_files = []
+try:
+    font_path = subprocess.check_output([mapnik_config, '--fonts']).rstrip('\n')
+    font_files = os.listdir(font_path)
+    font_files = [os.path.join(font_path,f) for f in font_files]
+except:
+    font_files = []
 
-if os.environ.get("ICU_DATA", False):
-    icu_path = os.environ["ICU_DATA"]
-    icu_files = os.listdir(icu_path)
-    icu_files = [os.path.join(icu_path,f) for f in icu_files]
-else:
-    icu_path = subprocess.check_output([mapnik_config, '--icu-data']).rstrip('\n')
-    if icu_path:
+try:
+    if os.environ.get("ICU_DATA", False):
+        icu_path = os.environ["ICU_DATA"]
         icu_files = os.listdir(icu_path)
         icu_files = [os.path.join(icu_path,f) for f in icu_files]
     else:
-        icu_files = []
+        icu_path = subprocess.check_output([mapnik_config, '--icu-data']).rstrip('\n')
+        if icu_path:
+            icu_files = os.listdir(icu_path)
+            icu_files = [os.path.join(icu_path,f) for f in icu_files]
+        else:
+            icu_files = []
+except:
+    icu_files = []
 
-if os.environ.get("GDAL_DATA", False):
-    gdal_path = os.environ["GDAL_DATA"]
-    gdal_files = os.listdir(gdal_path)
-    gdal_files = [os.path.join(gdal_path,f) for f in gdal_files]
-else:
-    gdal_path = subprocess.check_output([mapnik_config, '--gdal-data']).rstrip('\n')
-    if gdal_path:
+try:
+    if os.environ.get("GDAL_DATA", False):
+        gdal_path = os.environ["GDAL_DATA"]
         gdal_files = os.listdir(gdal_path)
         gdal_files = [os.path.join(gdal_path,f) for f in gdal_files]
     else:
-        gdal_files = []
+        gdal_path = subprocess.check_output([mapnik_config, '--gdal-data']).rstrip('\n')
+        if gdal_path:
+            gdal_files = os.listdir(gdal_path)
+            gdal_files = [os.path.join(gdal_path,f) for f in gdal_files]
+        else:
+            gdal_files = []
+except:
+    gdal_files = []
 
-if os.environ.get("PROJ_LIB", False):
-    proj_path = os.environ["PROJ_LIB"]
-    proj_files = os.listdir(proj_path)
-    proj_files = [os.path.join(proj_path,f) for f in gdal_files]
-else:
-    proj_path = subprocess.check_output([mapnik_config, '--proj-lib']).rstrip('\n')
-    if proj_path:
+try:
+    if os.environ.get("PROJ_LIB", False):
+        proj_path = os.environ["PROJ_LIB"]
         proj_files = os.listdir(proj_path)
-        proj_files = [os.path.join(proj_path,f) for f in proj_files]
+        proj_files = [os.path.join(proj_path,f) for f in gdal_files]
     else:
-        proj_files = []
+        proj_path = subprocess.check_output([mapnik_config, '--proj-lib']).rstrip('\n')
+        if proj_path:
+            proj_files = os.listdir(proj_path)
+            proj_files = [os.path.join(proj_path,f) for f in proj_files]
+        else:
+            proj_files = []
+except:
+    proj_files = []
 
-extra_comp_args = subprocess.check_output([mapnik_config, '--cflags']).rstrip('\n').split(' ')
+try:
+    extra_comp_args = subprocess.check_output([mapnik_config, '--cflags']).rstrip('\n').split(' ')
 
-if sys.platform == 'darwin':
-    extra_comp_args.append('-mmacosx-version-min=10.8')
-    linkflags.append('-mmacosx-version-min=10.8')
+    if sys.platform == 'darwin':
+        extra_comp_args.append('-mmacosx-version-min=10.8')
+        linkflags.append('-mmacosx-version-min=10.8')
+except:
+    extra_comp_args = []
 
 setup(
     name = "mapnik",
@@ -108,6 +133,10 @@ setup(
         ('mapnik/gdal', gdal_files),
         ('mapnik/proj', proj_files),
     ],
+    tests_require = [
+        'nose',
+    ],
+    test_suite = 'nose.collector',
     ext_modules = [
         Extension('mapnik._mapnik', [
                 'src/mapnik_color.cpp',
@@ -153,7 +182,7 @@ setup(
                 'protobuf-lite',
                 'boost_thread',
                 'boost_system',
-                'boost_python',
+                boost_python_lib,
             ],
             extra_compile_args = extra_comp_args,
             extra_link_args = linkflags,
