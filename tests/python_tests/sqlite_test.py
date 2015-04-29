@@ -24,6 +24,8 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         feature = fs.next()
         eq_(feature['pkuid'],1)
 
+    test_attachdb_with_relative_file.requires_data = True
+
     def test_attachdb_with_multiple_files():
         ds = mapnik.SQLite(file='../data/sqlite/world.sqlite',
             table='attachedtest',
@@ -42,6 +44,8 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
             pass
         # the above should not throw but will result in no features
         eq_(feature,None)
+    
+    test_attachdb_with_multiple_files.requires_data = True
 
     def test_attachdb_with_absolute_file():
         # The point table and index is in the qgis_spatiallite.sqlite
@@ -53,6 +57,8 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         fs = ds.featureset()
         feature = fs.next()
         eq_(feature['pkuid'],1)
+
+    test_attachdb_with_absolute_file.requires_data = True
 
     def test_attachdb_with_index():
         ds = mapnik.SQLite(file='../data/sqlite/world.sqlite',
@@ -72,6 +78,8 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         except StopIteration:
             pass
         eq_(feature,None)
+    
+    test_attachdb_with_index.requires_data = True
 
     def test_attachdb_with_explicit_index():
         ds = mapnik.SQLite(file='../data/sqlite/world.sqlite',
@@ -91,6 +99,8 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         except StopIteration:
             pass
         eq_(feature,None)
+    
+    test_attachdb_with_explicit_index.requires_data = True
 
     def test_attachdb_with_sql_join():
         ds = mapnik.SQLite(file='../data/sqlite/world.sqlite',
@@ -142,6 +152,8 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
             except:
                 #import pdb;pdb.set_trace()
                 print 'invalid key/v %s/%s for: %s' % (k,v,feature)
+    
+    test_attachdb_with_sql_join.requires_data = True
 
     def test_attachdb_with_sql_join_count():
         ds = mapnik.SQLite(file='../data/sqlite/world.sqlite',
@@ -152,6 +164,8 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         eq_(ds.fields(),['OGC_FID', 'fips', 'iso2', 'iso3', 'un', 'name', 'area', 'pop2005', 'region', 'subregion', 'lon', 'lat', 'ISO3:1', '1995', '1996', '1997', '1998', '1999', '2000', '2001', '2002', '2003', '2004', '2005', '2006', '2007', '2008', '2009', '2010'])
         eq_(ds.field_types(),['int', 'str', 'str', 'str', 'int', 'str', 'int', 'int', 'int', 'int', 'float', 'float', 'str', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int'])
         eq_(len(ds.all_features()),100)
+    
+    test_attachdb_with_sql_join_count.requires_data = True
 
     def test_attachdb_with_sql_join_count2():
         '''
@@ -167,6 +181,8 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         eq_(ds.fields(),['OGC_FID', 'fips', 'iso2', 'iso3', 'un', 'name', 'area', 'pop2005', 'region', 'subregion', 'lon', 'lat', 'ISO3:1', '1995', '1996', '1997', '1998', '1999', '2000', '2001', '2002', '2003', '2004', '2005', '2006', '2007', '2008', '2009', '2010'])
         eq_(ds.field_types(),['int', 'str', 'str', 'str', 'int', 'str', 'int', 'int', 'int', 'int', 'float', 'float', 'str', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int'])
         eq_(len(ds.all_features()),192)
+    
+    test_attachdb_with_sql_join_count2.requires_data = True
 
     def test_attachdb_with_sql_join_count3():
         '''
@@ -180,6 +196,8 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         eq_(ds.fields(),['OGC_FID', 'fips', 'iso2', 'iso3', 'un', 'name', 'area', 'pop2005', 'region', 'subregion', 'lon', 'lat', 'ISO3:1', '1995', '1996', '1997', '1998', '1999', '2000', '2001', '2002', '2003', '2004', '2005', '2006', '2007', '2008', '2009', '2010'])
         eq_(ds.field_types(),['int', 'str', 'str', 'str', 'int', 'str', 'int', 'int', 'int', 'int', 'float', 'float', 'str', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int'])
         eq_(len(ds.all_features()),192)
+    
+    test_attachdb_with_sql_join_count3.requires_data = True
 
     def test_attachdb_with_sql_join_count4():
         '''
@@ -193,6 +211,8 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         eq_(ds.fields(),['OGC_FID', 'fips', 'iso2', 'iso3', 'un', 'name', 'area', 'pop2005', 'region', 'subregion', 'lon', 'lat', 'ISO3:1', '1995', '1996', '1997', '1998', '1999', '2000', '2001', '2002', '2003', '2004', '2005', '2006', '2007', '2008', '2009', '2010'])
         eq_(ds.field_types(),['int', 'str', 'str', 'str', 'int', 'str', 'int', 'int', 'int', 'int', 'float', 'float', 'str', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int'])
         eq_(len(ds.all_features()),1)
+    
+    test_attachdb_with_sql_join_count4.requires_data = True
 
     def test_attachdb_with_sql_join_count5():
         '''
@@ -207,6 +227,8 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         eq_(ds.fields(),['OGC_FID', 'fips', 'iso2', 'iso3', 'un', 'name', 'area', 'pop2005', 'region', 'subregion', 'lon', 'lat'])
         eq_(ds.field_types(),['int', 'str', 'str', 'str', 'int', 'str', 'int', 'int', 'int', 'int', 'float', 'float'])
         eq_(len(ds.all_features()),0)
+    
+    test_attachdb_with_sql_join_count5.requires_data = True
 
     def test_subqueries():
         ds = mapnik.SQLite(file='../data/sqlite/world.sqlite',
@@ -279,6 +301,8 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         feature = fs.next()
         eq_(feature['rowid'],1)
         eq_(feature['fips'],u'AC')
+    
+    test_subqueries.requires_data = True
 
     def test_empty_db():
         ds = mapnik.SQLite(file='../data/sqlite/empty.db',
@@ -291,6 +315,8 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         except StopIteration:
             pass
         eq_(feature,None)
+
+    test_empty_db.requires_data = True
 
     @raises(RuntimeError)
     def test_that_nonexistant_query_field_throws(**kwargs):
@@ -306,6 +332,8 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         # also add an invalid one, triggering throw
         query.add_property_name('bogus')
         ds.features(query)
+    
+    test_that_nonexistant_query_field_throws.requires_data = True
 
     def test_intersects_token1():
         ds = mapnik.SQLite(file='../data/sqlite/empty.db',
@@ -318,6 +346,8 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         except StopIteration:
             pass
         eq_(feature,None)
+    
+    test_intersects_token1.requires_data = True
 
     def test_intersects_token2():
         ds = mapnik.SQLite(file='../data/sqlite/empty.db',
@@ -330,6 +360,8 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         except StopIteration:
             pass
         eq_(feature,None)
+    
+    test_intersects_token2.requires_data = True
 
     def test_intersects_token3():
         ds = mapnik.SQLite(file='../data/sqlite/empty.db',
@@ -342,6 +374,8 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         except StopIteration:
             pass
         eq_(feature,None)
+    
+    test_intersects_token3.requires_data = True
 
     # https://github.com/mapnik/mapnik/issues/1537
     # this works because key_field is manually set
@@ -425,6 +459,7 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         eq_(feat['OGC_FID'],2)
         eq_(feat['bigint'],922337203685477580)
 
+    test_that_64bit_int_fields_work.requires_data = True
 
     def test_null_id_field():
         # silence null key warning: https://github.com/mapnik/mapnik/issues/1889

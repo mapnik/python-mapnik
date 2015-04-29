@@ -77,6 +77,8 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
 
         eq_(os.path.exists(index),True)
         os.unlink(index)
+    
+    test_rtree_creation.requires_data = True
 
     def test_geometry_round_trip():
         test_db = '/tmp/mapnik-sqlite-point.db'
