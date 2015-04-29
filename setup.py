@@ -34,82 +34,67 @@ else:
 
 boost_python_lib = os.environ.get("BOOST_PYTHON_LIB", 'boost_python')
 
+data_files = []
+
 try:
     linkflags = subprocess.check_output([mapnik_config, '--libs']).rstrip('\n').split(' ')
     lib_path = linkflags[0][2:]
     linkflags.extend(subprocess.check_output([mapnik_config, '--ldflags']).rstrip('\n').split(' '))
     linkflags.extend(['-Wl','-bind_at_load'])
 except:
-    linkflags = []
+    raise Exception("Failed to find proper linking flags from mapnik config");
 
-try:
+## Dynamically make the mapnik/paths.py file if it doesn't exist.
+if os.path.isfile('mapnik/paths.py'):
+    create_paths = False
+else:
+    create_paths = True
+    f_paths = open('mapnik/paths.py', 'w')
+    f_paths.write('import os\n')
+    f_paths.write('\n')
+
+if os.environ.get("MAPNIK_RELEASE_BUILD", False):
     lib_files = os.listdir(lib_path)
     lib_files = [os.path.join(lib_path, f) for f in lib_files if f.startswith('libmapnik.')]
-except:
-    lib_files = []
-
-try:
+    data_files.append(('mapnik',lib_files))
     input_plugin_path = subprocess.check_output([mapnik_config, '--input-plugins']).rstrip('\n')
     input_plugin_files = os.listdir(input_plugin_path)
     input_plugin_files = [os.path.join(input_plugin_path,f) for f in input_plugin_files]
-except:
-    input_plugin_files = []
-try:
+    data_files.append(('mapnik/input',input_plugin_files))
     font_path = subprocess.check_output([mapnik_config, '--fonts']).rstrip('\n')
     font_files = os.listdir(font_path)
     font_files = [os.path.join(font_path,f) for f in font_files]
-except:
-    font_files = []
+    data_files.append(('mapnik/fonts',font_files))
+    if create_paths:
+        f_paths.write('mapniklibpath = os.path.dirname(os.path.realpath(__file__))\n')
+elif create_paths:
+    f_paths.write("mapniklibpath = '"+lib_path+"/mapnik'\n")
+    f_paths.write('mapniklibpath = os.path.normpath(mapniklibpath)\n')
 
-try:
-    if os.environ.get("ICU_DATA", False):
-        icu_path = os.environ["ICU_DATA"]
-        icu_files = os.listdir(icu_path)
-        icu_files = [os.path.join(icu_path,f) for f in icu_files]
-    else:
-        icu_path = subprocess.check_output([mapnik_config, '--icu-data']).rstrip('\n')
-        if icu_path:
-            icu_files = os.listdir(icu_path)
-            icu_files = [os.path.join(icu_path,f) for f in icu_files]
-        else:
-            icu_files = []
-except:
-    icu_files = []
+if create_paths:
+    f_paths.write("inputpluginspath = os.path.join(mapniklibpath,'input')\n")
+    f_paths.write("fontscollectionpath = os.path.join(mapniklibpath,'fonts')\n")
+    f_paths.write("__all__ = [mapniklibpath,inputpluginspath,fontscollectionpath]\n")
+    f_paths.close()
 
-try:
-    if os.environ.get("GDAL_DATA", False):
-        gdal_path = os.environ["GDAL_DATA"]
-        gdal_files = os.listdir(gdal_path)
-        gdal_files = [os.path.join(gdal_path,f) for f in gdal_files]
-    else:
-        gdal_path = subprocess.check_output([mapnik_config, '--gdal-data']).rstrip('\n')
-        if gdal_path:
-            gdal_files = os.listdir(gdal_path)
-            gdal_files = [os.path.join(gdal_path,f) for f in gdal_files]
-        else:
-            gdal_files = []
-except:
-    gdal_files = []
 
-try:
-    if os.environ.get("PROJ_LIB", False):
-        proj_path = os.environ["PROJ_LIB"]
-        proj_files = os.listdir(proj_path)
-        proj_files = [os.path.join(proj_path,f) for f in gdal_files]
-    else:
-        proj_path = subprocess.check_output([mapnik_config, '--proj-lib']).rstrip('\n')
-        if not proj_path:
-            if os.path.isdir('/usr/local/share/proj'):
-                proj_path = '/usr/local/share/proj'
-            elif os.path.isdir('/usr/share/proj'):
-                proj_path = '/usr/share/proj'
-        if proj_path:
-            proj_files = os.listdir(proj_path)
-            proj_files = [os.path.join(proj_path,f) for f in proj_files]
-        else:
-            proj_files = []
-except:
-    proj_files = []
+icu_path = subprocess.check_output([mapnik_config, '--icu-data']).rstrip('\n')
+if icu_path:
+    icu_files = os.listdir(icu_path)
+    icu_files = [os.path.join(icu_path,f) for f in icu_files]
+    data_files.append(('mapnik/icu', icu_files))
+
+gdal_path = subprocess.check_output([mapnik_config, '--gdal-data']).rstrip('\n')
+if gdal_path:
+    gdal_files = os.listdir(gdal_path)
+    gdal_files = [os.path.join(gdal_path,f) for f in gdal_files]
+    data_files.append(('mapnik/gdal', gdal_files))
+
+proj_path = subprocess.check_output([mapnik_config, '--proj-lib']).rstrip('\n')
+if proj_path:
+    proj_files = os.listdir(proj_path)
+    proj_files = [os.path.join(proj_path,f) for f in proj_files]
+    data_files.append(('mapnik/proj', proj_files))
 
 try:
     extra_comp_args = subprocess.check_output([mapnik_config, '--cflags']).rstrip('\n').split(' ')
@@ -130,14 +115,7 @@ setup(
     license = "GNU LESSER GENERAL PUBLIC LICENSE",
     keywords = "mapnik mapbox mapping carteography",
     url = "http://mapnik.org/", 
-    data_files = [
-        ('mapnik', lib_files),
-        ('mapnik/input', input_plugin_files),
-        ('mapnik/fonts', font_files),
-        ('mapnik/icu', icu_files),
-        ('mapnik/gdal', gdal_files),
-        ('mapnik/proj', proj_files),
-    ],
+    data_files = data_files,
     tests_require = [
         'nose',
     ],

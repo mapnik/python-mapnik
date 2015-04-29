@@ -14,4 +14,7 @@ tests/python_tests/raster_colorizer_test.png
 tests/python_tests/raster_colorizer_test_save.xml
 build/
 dist/
+mapnik/paths.py
 *.egg-info/
+.eggs/
+.mason/
