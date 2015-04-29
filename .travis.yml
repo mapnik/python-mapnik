@@ -15,6 +15,7 @@ env:
    - MAPNIK_GIT: v3.0.0-rc1-693-g01a9b4c
 
 before_install:
+ - export MASON_BUILD=true
  - export CXX="clang++-3.5"
  - export CC="clang-3.5"
  - python --version
