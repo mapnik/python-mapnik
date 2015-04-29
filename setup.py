@@ -178,8 +178,7 @@ setup(
             libraries = [
                 'mapnik', 
                 'mapnik-wkt',
-                'mapnik-json', 
-                'protobuf-lite',
+                'mapnik-json',
                 'boost_thread',
                 'boost_system',
                 boost_python_lib,
