@@ -14,7 +14,13 @@ def parallelCCompile(self, sources, output_dir=None, macros=None, include_dirs=N
         except KeyError: return
         self._compile(obj, src, ext, cc_args, extra_postargs, pp_opts)
     # convert to list, imap is evaluated on-demand
-    list(multiprocessing.pool.ThreadPool(N).imap(_single_compile,objects))
+    try:
+        pool = multiprocessing.pool.ThreadPool(N)
+        list(pool.imap(_single_compile,objects))
+    except KeyboardInterrupt:
+        print "Caught KeyboardInterrupt, terminating workers"
+        pool.terminate()
+        pool.join()
     return objects
 import distutils.ccompiler
 distutils.ccompiler.CCompiler.compile=parallelCCompile
