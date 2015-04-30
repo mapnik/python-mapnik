@@ -24,7 +24,7 @@ install:
  - time python setup.py build
 
 before_script:
- - true
+ - python test/run_tests.py -q
 
 script:
- - python setup.py test
+ - python test/visual.py -q
