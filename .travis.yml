@@ -1,5 +1,9 @@
 language: cpp
 
+git:
+  submodules: false
+  depth: 2
+
 sudo: false
 
 addons:
@@ -9,10 +13,6 @@ addons:
      - llvm-toolchain-precise-3.5
     packages:
      - clang-3.5
-
-env:
-  global:
-   - MAPNIK_GIT: v3.0.0-rc1-693-g01a9b4c
 
 before_install:
  - export MASON_BUILD=true
@@ -27,4 +27,4 @@ before_script:
  - true
 
 script:
- - true
+ - python setup.py test
