@@ -11,6 +11,11 @@ def setup():
     # from another directory we need to chdir()
     os.chdir(execution_path('.'))
 
+def teardown():
+    index = '../data/sqlite/world.sqlite.index'
+    if os.path.exists(index):
+        os.unlink(index)
+
 if 'sqlite' in mapnik.DatasourceCache.plugin_names():
 
     def test_attachdb_with_relative_file():
@@ -491,4 +496,6 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
 
 if __name__ == "__main__":
     setup()
-    exit(run_all(eval(x) for x in dir() if x.startswith("test_")))
+    result = run_all(eval(x) for x in dir() if x.startswith("test_"))
+    teardown()
+    exit(result)

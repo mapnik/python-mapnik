@@ -44,9 +44,9 @@ If you wish to just install the package
 Once you have installed you can test the package by running:
 
 ```
+git submodule update --init
 python setup.py test
 ```
 
-This might throw many errors if you have not included the [test data](https://github.com/mapnik/test-data) into your `tests/data` folder. If you want to do tests with out the extra data simply add `attr=!require_data` to the setup.cfg's `[nosetests]` section.
-
+The test data in `./test/data` and `./test/data-visual` are standalone modules. If you need to update them see https://github.com/mapnik/mapnik/blob/master/docs/contributing.markdown#testing
 
