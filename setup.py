@@ -29,12 +29,12 @@ import sys
 if os.environ.get("MASON_BUILD", "false") == "true":
     subprocess.call(['./bootstrap.sh'])
     mapnik_config = 'mason_packages/.link/bin/mapnik-config'
+    mason_build = True
 else:
     mapnik_config = 'mapnik-config'
+    mason_build = False
 
 boost_python_lib = os.environ.get("BOOST_PYTHON_LIB", 'boost_python')
-
-data_files = []
 
 try:
     linkflags = subprocess.check_output([mapnik_config, '--libs']).rstrip('\n').split(' ')
@@ -53,18 +53,18 @@ else:
     f_paths.write('import os\n')
     f_paths.write('\n')
 
-if os.environ.get("MAPNIK_RELEASE_BUILD", False):
+if mason_build:
     lib_files = os.listdir(lib_path)
     lib_files = [os.path.join(lib_path, f) for f in lib_files if f.startswith('libmapnik.')]
-    data_files.append(('mapnik',lib_files))
+    for f in lib_files:
+        if not os.path.exists(os.path.join('mapink', os.path.basename(f))):
+            os.symlink(f, os.path.join('mapnik', os.path.basename(f)))
     input_plugin_path = subprocess.check_output([mapnik_config, '--input-plugins']).rstrip('\n')
-    input_plugin_files = os.listdir(input_plugin_path)
-    input_plugin_files = [os.path.join(input_plugin_path,f) for f in input_plugin_files]
-    data_files.append(('mapnik/input',input_plugin_files))
+    if not os.path.exists(os.path.join('mapnik', 'input')):
+        os.symlink(input_plugin_path, os.path.join('mapnik', 'input'))
     font_path = subprocess.check_output([mapnik_config, '--fonts']).rstrip('\n')
-    font_files = os.listdir(font_path)
-    font_files = [os.path.join(font_path,f) for f in font_files]
-    data_files.append(('mapnik/fonts',font_files))
+    if not os.path.exists(os.path.join('mapnik', 'fonts')):
+        os.symlink(input_plugin_path, os.path.join('mapnik', 'fonts'))
     if create_paths:
         f_paths.write('mapniklibpath = os.path.dirname(os.path.realpath(__file__))\n')
 elif create_paths:
@@ -78,23 +78,26 @@ if create_paths:
     f_paths.close()
 
 
-icu_path = subprocess.check_output([mapnik_config, '--icu-data']).rstrip('\n')
-if icu_path:
-    icu_files = os.listdir(icu_path)
-    icu_files = [os.path.join(icu_path,f) for f in icu_files]
-    data_files.append(('mapnik/icu', icu_files))
+if not mason_build:
+    icu_path = subprocess.check_output([mapnik_config, '--icu-data']).rstrip('\n')
+else:
+    icu_path = 'mason_packages/.link/share/icu/'
+if icu_path and not os.path.exists(os.path.join('mapnik', 'icu')):
+        os.symlink(icu_path, os.path.join('mapnik', 'icu'))
 
-gdal_path = subprocess.check_output([mapnik_config, '--gdal-data']).rstrip('\n')
-if gdal_path:
-    gdal_files = os.listdir(gdal_path)
-    gdal_files = [os.path.join(gdal_path,f) for f in gdal_files]
-    data_files.append(('mapnik/gdal', gdal_files))
+if not mason_build:
+    gdal_path = subprocess.check_output([mapnik_config, '--gdal-data']).rstrip('\n')
+else:
+    gdal_path = 'mason_packages/.link/share/gdal/'
+if gdal_path and not os.path.exists(os.path.join('mapnik', 'gdal')):
+        os.symlink(gdal_path, os.path.join('mapnik', 'gdal'))
 
-proj_path = subprocess.check_output([mapnik_config, '--proj-lib']).rstrip('\n')
-if proj_path:
-    proj_files = os.listdir(proj_path)
-    proj_files = [os.path.join(proj_path,f) for f in proj_files]
-    data_files.append(('mapnik/proj', proj_files))
+if not mason_build:
+    proj_path = subprocess.check_output([mapnik_config, '--proj-lib']).rstrip('\n')
+else:
+    proj_path = 'mason_packages/.link/share/proj/'
+if proj_path and not os.path.exists(os.path.join('mapnik', 'proj')):
+        os.symlink(proj_path, os.path.join('mapnik', 'proj'))
 
 try:
     extra_comp_args = subprocess.check_output([mapnik_config, '--cflags']).rstrip('\n').split(' ')
@@ -115,7 +118,6 @@ setup(
     license = "GNU LESSER GENERAL PUBLIC LICENSE",
     keywords = "mapnik mapbox mapping carteography",
     url = "http://mapnik.org/", 
-    data_files = data_files,
     tests_require = [
         'nose',
     ],
