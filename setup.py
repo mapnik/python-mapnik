@@ -23,13 +23,16 @@ from setuptools import setup, Extension
 import os
 import subprocess
 import sys
+import re
 
 cflags = sysconfig.get_config_var('CFLAGS')
-sysconfig._config_vars['CFLAGS'] = cflags.replace(' -g ', ' ').replace(' -Os ', ' ')
+sysconfig._config_vars['CFLAGS'] = re.sub(' +', ' ', cflags.replace('-g', '').replace('-Os', ''))
 opt = sysconfig.get_config_var('OPT')
-sysconfig._config_vars['OPT'] = opt.replace(' -g ', ' ').replace(' -Os ', ' ')
+sysconfig._config_vars['OPT'] = re.sub(' +', ' ', opt.replace('-g', '').replace('-Os', ''))
 ldshared = sysconfig.get_config_var('LDSHARED')
-sysconfig._config_vars['LDSHARED'] = ldshared.replace(' -g ', ' ').replace(' -Os ', ' ')
+sysconfig._config_vars['LDSHARED'] = re.sub(' +', ' ', ldshared.replace('-g', '').replace('-Os', '').replace('-arch i386', ''))
+ldflags = sysconfig.get_config_var('LDFLAGS')
+sysconfig._config_vars['LDFLAGS'] = re.sub(' +', ' ', ldflags.replace('-g', '').replace('-Os', '').replace('-arch i386', ''))
 
 if os.environ.get("MASON_BUILD", "false") == "true":
     # run bootstrap.sh to get mason builds
