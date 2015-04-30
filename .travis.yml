@@ -23,7 +23,6 @@ before_install:
  - export MASON_BUILD=true
  - if [[ $(uname -s) == 'Linux' ]]; then
      export CXX="ccache clang++-3.5 -Qunused-arguments";
-     # intentionally pass c++ compiler for CC since that is what setup.py uses
      export CC="ccache clang++-3.5 -Qunused-arguments";
      export PYTHONPATH=$(pwd)/mason_packages/.link/lib/python2.7/site-packages;
    else
