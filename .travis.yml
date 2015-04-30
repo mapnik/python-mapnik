@@ -2,7 +2,7 @@ language: cpp
 
 git:
   submodules: true
-  depth: 2
+  depth: 10
 
 sudo: false
 
