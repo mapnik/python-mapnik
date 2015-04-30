@@ -55,7 +55,7 @@ try:
     linkflags = subprocess.check_output([mapnik_config, '--libs']).rstrip('\n').split(' ')
     lib_path = linkflags[0][2:]
     linkflags.extend(subprocess.check_output([mapnik_config, '--ldflags']).rstrip('\n').split(' '))
-    linkflags.extend(['-Wl','-bind_at_load'])
+    linkflags.extend(['-Wl,-bind_at_load'])
 except:
     raise Exception("Failed to find proper linking flags from mapnik config");
 
