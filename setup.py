@@ -17,10 +17,10 @@ def parallelCCompile(self, sources, output_dir=None, macros=None, include_dirs=N
     try:
         pool = multiprocessing.pool.ThreadPool(N)
         list(pool.imap(_single_compile,objects))
-    except KeyboardInterrupt:
+    except KeyboardInterrupt as e:
         print "Caught KeyboardInterrupt, terminating workers"
         pool.terminate()
-        pool.join()
+        raise e
     return objects
 import distutils.ccompiler
 distutils.ccompiler.CCompiler.compile=parallelCCompile
@@ -72,14 +72,20 @@ if mason_build:
     lib_files = os.listdir(lib_path)
     lib_files = [os.path.join(lib_path, f) for f in lib_files if f.startswith('libmapnik.')]
     for f in lib_files:
-        if not os.path.exists(os.path.join('mapink', os.path.basename(f))):
+        try:
             os.symlink(f, os.path.join('mapnik', os.path.basename(f)))
+        except OSError:
+            pass
     input_plugin_path = subprocess.check_output([mapnik_config, '--input-plugins']).rstrip('\n')
-    if not os.path.exists(os.path.join('mapnik', 'input')):
+    try:
         os.symlink(input_plugin_path, os.path.join('mapnik', 'input'))
+    except OSError:
+        pass
     font_path = subprocess.check_output([mapnik_config, '--fonts']).rstrip('\n')
-    if not os.path.exists(os.path.join('mapnik', 'fonts')):
+    try:
         os.symlink(input_plugin_path, os.path.join('mapnik', 'fonts'))
+    except OSError:
+        pass
     if create_paths:
         f_paths.write('mapniklibpath = os.path.dirname(os.path.realpath(__file__))\n')
 elif create_paths:
@@ -97,31 +103,37 @@ if not mason_build:
     icu_path = subprocess.check_output([mapnik_config, '--icu-data']).rstrip('\n')
 else:
     icu_path = 'mason_packages/.link/share/icu/'
-if icu_path and not os.path.exists(os.path.join('mapnik', 'icu')):
+if icu_path:
+    try:
         os.symlink(icu_path, os.path.join('mapnik', 'icu'))
+    except OSError:
+        pass
 
 if not mason_build:
     gdal_path = subprocess.check_output([mapnik_config, '--gdal-data']).rstrip('\n')
 else:
     gdal_path = 'mason_packages/.link/share/gdal/'
-if gdal_path and not os.path.exists(os.path.join('mapnik', 'gdal')):
+if gdal_path:
+    try:
         os.symlink(gdal_path, os.path.join('mapnik', 'gdal'))
+    except OSError:
+        pass
 
 if not mason_build:
     proj_path = subprocess.check_output([mapnik_config, '--proj-lib']).rstrip('\n')
 else:
     proj_path = 'mason_packages/.link/share/proj/'
-if proj_path and not os.path.exists(os.path.join('mapnik', 'proj')):
+if proj_path:
+    try:
         os.symlink(proj_path, os.path.join('mapnik', 'proj'))
+    except OSError:
+        pass
 
-try:
-    extra_comp_args = subprocess.check_output([mapnik_config, '--cflags']).rstrip('\n').split(' ')
+extra_comp_args = subprocess.check_output([mapnik_config, '--cflags']).rstrip('\n').split(' ')
 
-    if sys.platform == 'darwin':
-        extra_comp_args.append('-mmacosx-version-min=10.8')
-        linkflags.append('-mmacosx-version-min=10.8')
-except:
-    extra_comp_args = []
+if sys.platform == 'darwin':
+    extra_comp_args.append('-mmacosx-version-min=10.8')
+    linkflags.append('-mmacosx-version-min=10.8')
 
 if not mason_build:
     os.environ["CC"] = subprocess.check_output([mapnik_config, '--cxx']).rstrip('\n')
