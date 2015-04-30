@@ -24,9 +24,10 @@ import os
 import subprocess
 import sys
 
-# run bootstrap.sh to get 
+os.environ["OPT"] = ""
 
 if os.environ.get("MASON_BUILD", "false") == "true":
+    # run bootstrap.sh to get mason builds
     subprocess.call(['./bootstrap.sh'])
     mapnik_config = 'mason_packages/.link/bin/mapnik-config'
     mason_build = True
@@ -107,6 +108,9 @@ try:
         linkflags.append('-mmacosx-version-min=10.8')
 except:
     extra_comp_args = []
+
+if not mason_build:
+    os.environ["CC"] = subprocess.check_output([mapnik_config, '--cxx']).rstrip('\n')
 
 setup(
     name = "mapnik",
