@@ -18,13 +18,18 @@ def parallelCCompile(self, sources, output_dir=None, macros=None, include_dirs=N
     return objects
 import distutils.ccompiler
 distutils.ccompiler.CCompiler.compile=parallelCCompile
-
+from distutils import sysconfig
 from setuptools import setup, Extension
 import os
 import subprocess
 import sys
 
-os.environ["OPT"] = ""
+cflags = sysconfig.get_config_var('CFLAGS')
+sysconfig._config_vars['CFLAGS'] = cflags.replace(' -g ', ' ').replace(' -Os ', ' ')
+opt = sysconfig.get_config_var('OPT')
+sysconfig._config_vars['OPT'] = opt.replace(' -g ', ' ').replace(' -Os ', ' ')
+ldshared = sysconfig.get_config_var('LDSHARED')
+sysconfig._config_vars['LDSHARED'] = ldshared.replace(' -g ', ' ').replace(' -Os ', ' ')
 
 if os.environ.get("MASON_BUILD", "false") == "true":
     # run bootstrap.sh to get mason builds
@@ -164,6 +169,7 @@ setup(
                 'src/mapnik_view_transform.cpp',
                 'src/python_grid_utils.cpp',
             ],
+            language='c++',
             libraries = [
                 'mapnik', 
                 'mapnik-wkt',
