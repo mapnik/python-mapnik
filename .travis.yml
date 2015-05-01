@@ -9,7 +9,7 @@ sudo: false
 cache:
   directories:
   - mason_packages
-  - $HOME/.ccache
+  #- $HOME/.ccache
 
 addons:
   apt:
@@ -22,8 +22,10 @@ addons:
 before_install:
  - export MASON_BUILD=true
  - if [[ $(uname -s) == 'Linux' ]]; then
-     export CXX="ccache clang++-3.5 -Qunused-arguments";
-     export CC="ccache clang++-3.5 -Qunused-arguments";
+     #export CXX="ccache clang++-3.5 -Qunused-arguments";
+     #export CC="ccache clang++-3.5 -Qunused-arguments";
+     export CXX="clang++-3.5";
+     export CC="clang++-3.5";
      export PYTHONPATH=$(pwd)/mason_packages/.link/lib/python2.7/site-packages;
    else
      export PYTHONPATH=$(pwd)/mason_packages/.link/lib/python/site-packages;
