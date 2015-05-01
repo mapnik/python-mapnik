@@ -18,3 +18,4 @@ mapnik/paths.py
 *.egg-info/
 .eggs/
 .mason/
+mason_packages/

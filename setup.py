@@ -5,6 +5,7 @@ from setuptools import setup, Extension
 import os
 import subprocess
 import sys
+import shutil
 import re
 
 cflags = sysconfig.get_config_var('CFLAGS')
@@ -52,23 +53,33 @@ if mason_build:
     lib_files = [os.path.join(lib_path, f) for f in lib_files if f.startswith('libmapnik.')]
     for f in lib_files:
         try:
-            os.symlink(f, os.path.join('mapnik', os.path.basename(f)))
-        except OSError:
+            shutil.copyfile(f, os.path.join('mapnik', os.path.basename(f)))
+        except shutil.Error:
             pass
     input_plugin_path = subprocess.check_output([mapnik_config, '--input-plugins']).rstrip('\n')
-    try:
-        os.symlink(input_plugin_path, os.path.join('mapnik', 'input'))
-    except OSError:
-        pass
+    input_plugin_files = os.listdir(input_plugin_path)
+    input_plugin_files = [os.path.join(input_plugin_path, f) for f in input_plugin_files]
+    if not os.path.exists(os.path.join('mapnik','plugins','input')):
+        os.makedirs(os.path.join('mapnik','plugins', 'input'))
+    for f in input_plugin_files:
+        try:
+            shutil.copyfile(f, os.path.join('mapnik', 'plugins', 'input', os.path.basename(f)))
+        except shutil.Error:
+            pass
     font_path = subprocess.check_output([mapnik_config, '--fonts']).rstrip('\n')
-    try:
-        os.symlink(input_plugin_path, os.path.join('mapnik', 'fonts'))
-    except OSError:
-        pass
+    font_files = os.listdir(font_path)
+    font_files = [os.path.join(font_path, f) for f in font_files]
+    if not os.path.exists(os.path.join('mapnik','plugins','fonts')):
+        os.makedirs(os.path.join('mapnik','plugins','fonts'))
+    for f in font_files:
+        try:
+            shutil.copyfile(f, os.path.join('mapnik','plugins','fonts', os.path.basename(f)))
+        except shutil.Error:
+            pass
     if create_paths:
         f_paths.write('mapniklibpath = os.path.dirname(os.path.realpath(__file__))\n')
 elif create_paths:
-    f_paths.write("mapniklibpath = '"+lib_path+"/mapnik'\n")
+    f_paths.write("mapniklibpath = '"+lib_path+"/mapnik/plugins'\n")
     f_paths.write('mapniklibpath = os.path.normpath(mapniklibpath)\n')
 
 if create_paths:
@@ -83,30 +94,45 @@ if not mason_build:
 else:
     icu_path = 'mason_packages/.link/share/icu/'
 if icu_path:
-    try:
-        os.symlink(icu_path, os.path.join('mapnik', 'icu'))
-    except OSError:
-        pass
+    icu_files = os.listdir(icu_path)
+    icu_files = [os.path.join(icu_path, f) for f in icu_files]
+    if not os.path.exists(os.path.join('mapnik','plugins','icu')):
+        os.makedirs(os.path.join('mapnik','plugins','icu'))
+    for f in icu_files:
+        try:
+            shutil.copyfile(f, os.path.join('mapnik','plugins','icu', os.path.basename(f)))
+        except shutil.Error:
+            pass
 
 if not mason_build:
     gdal_path = subprocess.check_output([mapnik_config, '--gdal-data']).rstrip('\n')
 else:
     gdal_path = 'mason_packages/.link/share/gdal/'
 if gdal_path:
-    try:
-        os.symlink(gdal_path, os.path.join('mapnik', 'gdal'))
-    except OSError:
-        pass
+    gdal_files = os.listdir(gdal_path)
+    gdal_files = [os.path.join(gdal_path, f) for f in gdal_files]
+    if not os.path.exists(os.path.join('mapnik','plugins','gdal')):
+        os.makedirs(os.path.join('mapnik','plugins','gdal'))
+    for f in gdal_files:
+        try:
+            shutil.copyfile(f, os.path.join('mapnik','plugins','gdal', os.path.basename(f)))
+        except shutil.Error:
+            pass
 
 if not mason_build:
     proj_path = subprocess.check_output([mapnik_config, '--proj-lib']).rstrip('\n')
 else:
     proj_path = 'mason_packages/.link/share/proj/'
 if proj_path:
-    try:
-        os.symlink(proj_path, os.path.join('mapnik', 'proj'))
-    except OSError:
-        pass
+    proj_files = os.listdir(proj_path)
+    proj_files = [os.path.join(proj_path, f) for f in proj_files]
+    if not os.path.exists(os.path.join('mapnik','plugins','proj')):
+        os.makedirs(os.path.join('mapnik','plugins','proj'))
+    for f in proj_files:
+        try:
+            shutil.copyfile(f, os.path.join('mapnik','plugins','proj', os.path.basename(f)))
+        except shutil.Error:
+            pass
 
 extra_comp_args = subprocess.check_output([mapnik_config, '--cflags']).rstrip('\n').split(' ')
 
