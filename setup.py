@@ -115,8 +115,10 @@ if sys.platform == 'darwin':
     extra_comp_args.append('-mmacosx-version-min=10.8')
     linkflags.append('-mmacosx-version-min=10.8')
 
-if not mason_build:
+if os.environ.get("CC",False) == False:
     os.environ["CC"] = subprocess.check_output([mapnik_config, '--cxx']).rstrip('\n')
+if os.environ.get("CXX",False) == False:
+    os.environ["CXX"] = subprocess.check_output([mapnik_config, '--cxx']).rstrip('\n')
 
 setup(
     name = "mapnik",
