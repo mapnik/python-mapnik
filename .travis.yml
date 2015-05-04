@@ -4,16 +4,9 @@ git:
   submodules: true
   depth: 10
 
-sudo: false
-
 os:
   - linux
   - osx
-
-cache:
-  directories:
-  - mason_packages
-  #- $HOME/.ccache
 
 env:
     - secure: "CqhZDPctJcpXGPpmIPK5usD/O+2HYawW3434oDufVS9uG/+C7aHzKzi8cuZ7n/REHqJMzy7gJfp6DiyF2QowpnN1L2W0FSJ9VOgj4JQF2Wsupo6gJkq6/CW2Fa35PhQHsv29bfyqtIq+R5SBVAieBe/Lh2P144RwRliGRopGQ68="
