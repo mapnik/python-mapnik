@@ -158,6 +158,9 @@ setup(
     tests_require = [
         'nose',
     ],
+    package_data = {
+        'mapnik': ['libmapnik.*', 'plugins/*/*'],
+    },
     test_suite = 'nose.collector',
     ext_modules = [
         Extension('mapnik._mapnik', [

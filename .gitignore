@@ -19,3 +19,4 @@ mapnik/paths.py
 .eggs/
 .mason/
 mason_packages/
+mapnik/plugins
