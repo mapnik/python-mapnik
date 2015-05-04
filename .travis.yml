@@ -37,11 +37,12 @@ before_install:
      export PYTHONPATH=$(pwd)/mason_packages/.link/lib/python/site-packages;
    fi;
  - PYTHONUSERBASE=$(pwd)/mason_packages/.link pip install --user nose
+ - PYTHONUSERBASE=$(pwd)/mason_packages/.link pip install --user wheel
+ - PYTHONUSERBASE=$(pwd)/mason_packages/.link pip install --user twine
  - python --version
- - pip install twine
 
 install:
- - time python setup.py build
+ - python setup.py build
 
 before_script:
  - python test/run_tests.py -q
