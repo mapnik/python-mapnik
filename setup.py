@@ -125,6 +125,8 @@ if not mason_build:
     proj_path = subprocess.check_output([mapnik_config, '--proj-lib']).rstrip('\n')
 else:
     proj_path = 'mason_packages/.link/share/proj/'
+    if os.path.exists('mason_packages/.link/share/proj/proj/'):
+        gdal_path = 'mason_packages/.link/share/proj/proj/'
 if proj_path:
     proj_files = os.listdir(proj_path)
     proj_files = [os.path.join(proj_path, f) for f in proj_files]
