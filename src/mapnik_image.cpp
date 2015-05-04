@@ -68,7 +68,7 @@ PyObject* tostring1( image_any const& im)
 #else
         ::PyString_FromStringAndSize
 #endif
-        ((const char*)im.getBytes(),im.getSize());
+        ((const char*)im.bytes(),im.size());
 }
 
 // encode (png,jpeg)
@@ -156,14 +156,14 @@ struct get_pixel_visitor
     {
         throw std::runtime_error("Can not return a null image from a pixel (shouldn't have reached here)");
     }
-    
+
     template <typename T>
     object operator() (T const& im)
     {
         using pixel_type = typename T::pixel_type;
         return object(mapnik::get_pixel<pixel_type>(im, x_, y_));
     }
-    
+
   private:
     unsigned x_;
     unsigned y_;
@@ -173,7 +173,7 @@ object get_pixel(mapnik::image_any const& im, unsigned x, unsigned y, bool get_c
 {
     if (x < static_cast<unsigned>(im.width()) && y < static_cast<unsigned>(im.height()))
     {
-        if (get_color) 
+        if (get_color)
         {
             return object(
                 mapnik::get_pixel<mapnik::color>(im, x, y)
@@ -312,7 +312,7 @@ void composite(image_any & dst, image_any & src, mapnik::composite_mode_e mode, 
     bool demultiply_dst = mapnik::premultiply_alpha(dst);
     bool demultiply_src = mapnik::premultiply_alpha(src);
     mapnik::composite(dst,src,mode,opacity,dx,dy);
-    if (demultiply_dst) 
+    if (demultiply_dst)
     {
         mapnik::demultiply_alpha(dst);
     }
