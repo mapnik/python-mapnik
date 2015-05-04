@@ -108,6 +108,8 @@ if not mason_build:
     gdal_path = subprocess.check_output([mapnik_config, '--gdal-data']).rstrip('\n')
 else:
     gdal_path = 'mason_packages/.link/share/gdal/'
+    if os.path.exists('mason_packages/.link/share/gdal/gdal/'):
+        gdal_path = 'mason_packages/.link/share/gdal/gdal/'
 if gdal_path:
     gdal_files = os.listdir(gdal_path)
     gdal_files = [os.path.join(gdal_path, f) for f in gdal_files]
