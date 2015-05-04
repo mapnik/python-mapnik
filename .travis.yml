@@ -4,9 +4,12 @@ git:
   submodules: true
   depth: 10
 
-os:
-  - linux
-  - osx
+matrix:
+  include:
+     - os: linux
+       compiler: clang
+     - os: osx
+       compiler: clang
 
 env:
   global:
@@ -45,5 +48,6 @@ script:
  - python test/visual.py -q
  - if [[ ${COMMIT_MESSAGE} =~ "[publish]" ]]; then
     python setup.py bdist_wheel;
-    twine -u $PYPI_USER -p $PYPI_PASSWORD dist/* ;
+    export DISTS='dist/*';
+    twine -u $PYPI_USER -p $PYPI_PASSWORD $DISTS ;
    fi;
