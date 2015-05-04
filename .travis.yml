@@ -1,5 +1,7 @@
 language: cpp
 
+sudo: false
+
 git:
   submodules: true
   depth: 10
@@ -25,7 +27,6 @@ addons:
      - clang-3.5
 
 before_install:
- - pip install twine
  - export COMMIT_MESSAGE=$(git show -s --format=%B $TRAVIS_COMMIT | tr -d '\n')
  - export MASON_BUILD=true
  - if [[ $(uname -s) == 'Linux' ]]; then
@@ -37,6 +38,7 @@ before_install:
    fi;
  - PYTHONUSERBASE=$(pwd)/mason_packages/.link pip install --user nose
  - python --version
+ - pip install twine
 
 install:
  - time python setup.py build
