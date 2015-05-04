@@ -52,5 +52,5 @@ script:
  - if [[ ${COMMIT_MESSAGE} =~ "[publish]" ]]; then
     python setup.py bdist_wheel;
     export DISTS='dist/*';
-    twine -u $PYPI_USER -p $PYPI_PASSWORD $DISTS ;
+    twine upload -u $PYPI_USER -p $PYPI_PASSWORD $DISTS ;
    fi;
