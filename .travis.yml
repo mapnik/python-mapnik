@@ -42,7 +42,7 @@ before_install:
  - python --version
 
 install:
- - python setup.py build
+ - python setup.py install --prefix $(pwd)/mason_packages/.link
 
 before_script:
  - python test/run_tests.py -q
