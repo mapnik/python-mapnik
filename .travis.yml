@@ -52,6 +52,10 @@ before_script:
 
 script:
  - python test/visual.py -q
+ - if [[ $(uname -s) == 'Linux' ]]; then
+    echo "[bdist_wheel]" >> setup.cfg;
+    echo "universal = 1" >> setup.cfg;
+   fi;
  - if [[ ${COMMIT_MESSAGE} =~ "[publish]" ]]; then
     python setup.py bdist_wheel;
     export DISTS='dist/*';
