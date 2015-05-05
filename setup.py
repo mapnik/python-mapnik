@@ -143,6 +143,9 @@ extra_comp_args = subprocess.check_output([mapnik_config, '--cflags']).rstrip('\
 if sys.platform == 'darwin':
     extra_comp_args.append('-mmacosx-version-min=10.8')
     linkflags.append('-mmacosx-version-min=10.8')
+else:
+    linkflags.append('-Wl,-z,origin') 
+    linkflags.append('-Wl,-rpath=$ORIGIN')
 
 if os.environ.get("CC",False) == False:
     os.environ["CC"] = subprocess.check_output([mapnik_config, '--cxx']).rstrip('\n')
