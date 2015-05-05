@@ -14,7 +14,7 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
 
     # Shapefile initialization
     def test_shapefile_init():
-        s = mapnik.Shapefile(file='../../demo/data/boundaries')
+        s = mapnik.Shapefile(file='../data/shp/boundaries')
 
         e = s.envelope()
 
@@ -25,7 +25,7 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
 
     # Shapefile properties
     def test_shapefile_properties():
-        s = mapnik.Shapefile(file='../../demo/data/boundaries', encoding='latin1')
+        s = mapnik.Shapefile(file='../data/shp/boundaries', encoding='latin1')
         f = s.features_at_point(s.envelope().center()).features[0]
 
         eq_(f['CGNS_FID'], u'6f733341ba2011d892e2080020a0f4c9')

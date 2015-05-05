@@ -43,9 +43,6 @@ before_install:
 
 install:
  - python setup.py install --prefix $(pwd)/mason_packages/.link
- - if [[ $(uname -s) == 'Linux' ]]; then
-    readelf -d $(pwd)/mason_packages/.link/lib/libmapnik.so;
-   fi;
 
 before_script:
  - python test/run_tests.py -q

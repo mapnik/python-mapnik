@@ -19,7 +19,7 @@ if 'ogr' in mapnik.DatasourceCache.plugin_names():
 
     # Shapefile initialization
     def test_shapefile_init():
-        ds = mapnik.Ogr(file='../../demo/data/boundaries.shp',layer_by_index=0)
+        ds = mapnik.Ogr(file='../data/shp/boundaries.shp',layer_by_index=0)
         e = ds.envelope()
         assert_almost_equal(e.minx, -11121.6896651, places=7)
         assert_almost_equal(e.miny, -724724.216526, places=6)
@@ -31,7 +31,7 @@ if 'ogr' in mapnik.DatasourceCache.plugin_names():
 
     # Shapefile properties
     def test_shapefile_properties():
-        ds = mapnik.Ogr(file='../../demo/data/boundaries.shp',layer_by_index=0)
+        ds = mapnik.Ogr(file='../data/shp/boundaries.shp',layer_by_index=0)
         f = ds.features_at_point(ds.envelope().center(), 0.001).features[0]
         eq_(ds.geometry_type(),mapnik.DataGeometryType.Polygon)
 
@@ -114,7 +114,7 @@ if 'ogr' in mapnik.DatasourceCache.plugin_names():
     #    eq_(len(fs),1)
 
     def test_geometry_type():
-        ds = mapnik.Ogr(file='../data/csv/wkt.vrt',layer_by_index=0)
+        ds = mapnik.Ogr(file='../data/csv/wkt.csv',layer_by_index=0)
         e = ds.envelope()
         assert_almost_equal(e.minx, 1.0, places=1)
         assert_almost_equal(e.miny, 1.0, places=1)
@@ -122,7 +122,7 @@ if 'ogr' in mapnik.DatasourceCache.plugin_names():
         assert_almost_equal(e.maxy, 45.0, places=1)
         meta = ds.describe()
         eq_(meta['geometry_type'],mapnik.DataGeometryType.Point)
-        eq_('+proj=longlat' in meta['proj4'],True)
+        #eq_('+proj=longlat' in meta['proj4'],True)
         fs = ds.featureset()
         feat = fs.next()
         actual = json.loads(feat.to_geojson())
