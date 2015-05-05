@@ -55,5 +55,5 @@ script:
  - if [[ ${COMMIT_MESSAGE} =~ "[publish]" ]]; then
     python setup.py bdist_wheel;
     export DISTS='dist/*';
-    twine upload -u $PYPI_USER -p $PYPI_PASSWORD $DISTS ;
+    $(pwd)/mason_packages/.link/bin/twine upload -u $PYPI_USER -p $PYPI_PASSWORD $DISTS ;
    fi;
