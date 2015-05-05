@@ -146,6 +146,7 @@ if sys.platform == 'darwin':
     extra_comp_args.append('-mmacosx-version-min=10.8')
     linkflags.append('-mmacosx-version-min=10.8')
 else:
+    linkflags.append('-lrt') 
     linkflags.append('-Wl,-z,origin') 
     linkflags.append('-Wl,-rpath=$ORIGIN')
 
