@@ -79,7 +79,7 @@ if mason_build:
         except shutil.Error:
             pass
     if create_paths:
-        f_paths.write('mapniklibpath = os.path.dirname(os.path.realpath(__file__))\n')
+        f_paths.write('mapniklibpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "plugins")\n')
 elif create_paths:
     f_paths.write("mapniklibpath = '"+lib_path+"/mapnik/plugins'\n")
     f_paths.write('mapniklibpath = os.path.normpath(mapniklibpath)\n')
