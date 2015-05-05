@@ -19,6 +19,7 @@ env:
     - secure: "idk4fdU49i546Zs6Fxha14H05eRJ1G/D6NPRaie8M8o+xySnEqf+TyA9/HU8QH7cFvroSLuHJ1U7TmwnR+sXy4XBlIfHLi4u2MN+l/q014GG7T2E2xYcTauqjB4ldToRsDQwe5Dq0gZCMsHLPspWPjL9twfp+Ds7qgcFhTsct0s="
 
 addons:
+  postgresql: "9.4"
   apt:
     sources:
      - ubuntu-toolchain-r-test
@@ -30,6 +31,8 @@ before_install:
  - export COMMIT_MESSAGE=$(git show -s --format=%B $TRAVIS_COMMIT | tr -d '\n')
  - export MASON_BUILD=true
  - if [[ $(uname -s) == 'Linux' ]]; then
+     psql -U postgres -c 'create database template_postgis;' -U postgres;
+     psql -U postgres -c 'create extension postgis;' -d template_postgis -U postgres;
      export CXX="clang++-3.5";
      export CC="clang++-3.5";
      export PYTHONPATH=$(pwd)/mason_packages/.link/lib/python2.7/site-packages;
