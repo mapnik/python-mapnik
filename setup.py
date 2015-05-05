@@ -49,13 +49,15 @@ else:
     f_paths.write('\n')
 
 if mason_build:
-    lib_files = os.listdir(lib_path)
-    lib_files = [os.path.join(lib_path, f) for f in lib_files if f.startswith('libmapnik.')]
-    for f in lib_files:
-        try:
-            shutil.copyfile(f, os.path.join('mapnik', os.path.basename(f)))
-        except shutil.Error:
-            pass
+    try:
+        if sys.platform == 'darwin':
+            base_f = 'libmapnik.dylib'
+        else:
+            base_f = 'libmapnik.so.3.0'   
+        f = os.path.join(lib_path, base_f) 
+        shutil.copyfile(f, os.path.join('mapnik', base_f))
+    except shutil.Error:
+        pass
     input_plugin_path = subprocess.check_output([mapnik_config, '--input-plugins']).rstrip('\n')
     input_plugin_files = os.listdir(input_plugin_path)
     input_plugin_files = [os.path.join(input_plugin_path, f) for f in input_plugin_files]
@@ -145,7 +147,7 @@ if sys.platform == 'darwin':
     linkflags.append('-mmacosx-version-min=10.8')
 else:
     linkflags.append('-Wl,-z,origin') 
-    linkflags.append('-Wl,-rpath=\$$ORIGIN')
+    linkflags.append('-Wl,-rpath=$ORIGIN')
 
 if os.environ.get("CC",False) == False:
     os.environ["CC"] = subprocess.check_output([mapnik_config, '--cxx']).rstrip('\n')
