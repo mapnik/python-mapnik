@@ -49,6 +49,26 @@ def test_image_premultiply_values():
     eq_(c.b,255)
     eq_(c.a,128)
 
+def test_set_alpha():
+    im = mapnik.Image(4,4)
+    im.fill(mapnik.Color(128,128,128,128))
+    im.set_alpha(0.75);
+    c = im.get_pixel(0,0,True)
+    eq_(c.r,128)
+    eq_(c.g,128)
+    eq_(c.b,128)
+    eq_(c.a,191)
+
+def test_multiply_alpha():
+    im = mapnik.Image(4,4)
+    im.fill(mapnik.Color(128,128,128,128))
+    im.multiply_alpha(0.75);
+    c = im.get_pixel(0,0,True)
+    eq_(c.r,128)
+    eq_(c.g,128)
+    eq_(c.b,128)
+    eq_(c.a,96)
+
 def test_background():
     im = mapnik.Image(256,256)
     eq_(im.premultiplied(), False)
