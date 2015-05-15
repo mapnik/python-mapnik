@@ -85,27 +85,6 @@ COMPUTE_THRESHOLD = 16
 if platform.uname()[0] == 'Darwin':
     COMPUTE_THRESHOLD = 2
 
-# returns true if pixels are not identical
-def compare_pixels(pixel1, pixel2, alpha=True):
-    if pixel1 == pixel2:
-        return False
-    r_diff = abs((pixel1 & 0xff) - (pixel2 & 0xff))
-    g_diff = abs(((pixel1 >> 8) & 0xff) - ((pixel2 >> 8) & 0xff))
-    b_diff = abs(((pixel1 >> 16) & 0xff)- ((pixel2 >> 16) & 0xff))
-    if alpha:
-        a_diff = abs(((pixel1 >> 24) & 0xff) - ((pixel2 >> 24) & 0xff))
-        if(r_diff > COMPUTE_THRESHOLD or
-           g_diff > COMPUTE_THRESHOLD or
-           b_diff > COMPUTE_THRESHOLD or
-           a_diff > COMPUTE_THRESHOLD):
-            return True
-    else:
-        if(r_diff > COMPUTE_THRESHOLD or
-           g_diff > COMPUTE_THRESHOLD or
-           b_diff > COMPUTE_THRESHOLD):
-            return True
-    return False
-
 # compare two images and return number of different pixels
 def compare(actual, expected, alpha=True):
     im1 = mapnik.Image.open(actual)
