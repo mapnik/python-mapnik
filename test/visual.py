@@ -43,7 +43,7 @@ def render_cairo(m, output, scale_factor):
     mapnik.render_to_file(m, output, 'ARGB32', scale_factor)
     # open and re-save as png8 to save space
     new_im = mapnik.Image.open(output)
-    new_im.save(output, 'png8:m=h')
+    new_im.save(output, 'png32')
 
 def render_grid(m, output, scale_factor):
     grid = mapnik.Grid(m.width, m.height)
@@ -52,7 +52,7 @@ def render_grid(m, output, scale_factor):
     open(output,'wb').write(json.dumps(utf1, indent=1))
 
 def render_agg(m, output, scale_factor):
-    mapnik.render_to_file(m, output, 'png8:m=h', scale_factor),
+    mapnik.render_to_file(m, output, 'png32', scale_factor),
 
 renderers = [
     { 'name': 'agg',
@@ -110,16 +110,7 @@ def compare_pixels(pixel1, pixel2, alpha=True):
 def compare(actual, expected, alpha=True):
     im1 = mapnik.Image.open(actual)
     im2 = mapnik.Image.open(expected)
-    diff = 0
-    pixels = im1.width() * im1.height()
-    delta_pixels = (im2.width() * im2.height()) - pixels
-    if delta_pixels != 0:
-        return delta_pixels
-    for x in range(0,im1.width(),2):
-        for y in range(0,im1.height(),2):
-            if compare_pixels(im1.get_pixel(x,y),im2.get_pixel(x,y),alpha=alpha):
-                diff += 1
-    return diff
+    return im1.compare(im2,COMPUTE_THRESHOLD, alpha)
 
 def compare_grids(actual, expected, threshold=0, alpha=True):
     global errors

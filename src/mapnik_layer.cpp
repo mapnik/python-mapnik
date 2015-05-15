@@ -60,7 +60,7 @@ struct layer_pickle_suite : boost::python::pickle_suite
         {
             s.append(style_names[i]);
         }
-        return boost::python::make_tuple(l.clear_label_cache(),l.min_zoom(),l.max_zoom(),l.queryable(),l.datasource()->params(),l.cache_features(),s);
+        return boost::python::make_tuple(l.clear_label_cache(),l.minimum_scale_denominator(),l.maximum_scale_denominator(),l.queryable(),l.datasource()->params(),l.cache_features(),s);
     }
 
     static void
@@ -78,9 +78,9 @@ struct layer_pickle_suite : boost::python::pickle_suite
 
         l.set_clear_label_cache(extract<bool>(state[0]));
 
-        l.set_min_zoom(extract<double>(state[1]));
+        l.set_minimum_scale_denominator(extract<double>(state[1]));
 
-        l.set_max_zoom(extract<double>(state[2]));
+        l.set_maximum_scale_denominator(extract<double>(state[2]));
 
         l.set_queryable(extract<bool>(state[3]));
 
@@ -176,14 +176,14 @@ void export_layer()
             )
 
         .def("visible", &layer::visible,
-             "Return True if this layer's data is active and visible at a given scale.\n"
+             "Return True if this layer's data is active and visible at a given scale_denom.\n"
              "\n"
              "Otherwise returns False.\n"
              "Accepts a scale value as an integer or float input.\n"
              "Will return False if:\n"
-             "\tscale >= minzoom - 1e-6\n"
+             "\tscale_denom >= minimum_scale_denominator - 1e-6\n"
              "\tor:\n"
-             "\tscale < maxzoom + 1e-6\n"
+             "\tscale_denom < maximum_scale_denominator + 1e-6\n"
              "\n"
              "Usage:\n"
              ">>> from mapnik import Layer\n"
@@ -282,33 +282,33 @@ void export_layer()
                       ">>> m.maximum_extent = Box2d(-180,-90,180,90)\n"
             )
 
-        .add_property("maxzoom",
-                      &layer::max_zoom,
-                      &layer::set_max_zoom,
-                      "Get/Set the maximum zoom lever of the layer.\n"
+        .add_property("maximum_scale_denominator",
+                      &layer::maximum_scale_denominator,
+                      &layer::set_maximum_scale_denominator,
+                      "Get/Set the maximum scale denominator of the layer.\n"
                       "\n"
                       "Usage:\n"
                       ">>> from mapnik import Layer\n"
                       ">>> lyr = Layer('My Layer','+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs')\n"
-                      ">>> lyr.maxzoom\n"
+                      ">>> lyr.maximum_scale_denominator\n"
                       "1.7976931348623157e+308 # default is the numerical maximum\n"
-                      ">>> lyr.maxzoom = 1.0/1000000\n"
-                      ">>> lyr.maxzoom\n"
+                      ">>> lyr.maximum_scale_denominator = 1.0/1000000\n"
+                      ">>> lyr.maximum_scale_denominator\n"
                       "9.9999999999999995e-07\n"
             )
 
-        .add_property("minzoom",
-                      &layer::min_zoom,
-                      &layer::set_min_zoom,
-                      "Get/Set the minimum zoom lever of the layer.\n"
+        .add_property("minimum_scale_denominator",
+                      &layer::minimum_scale_denominator,
+                      &layer::set_minimum_scale_denominator,
+                      "Get/Set the minimum scale demoninator of the layer.\n"
                       "\n"
                       "Usage:\n"
                       ">>> from mapnik import Layer\n"
                       ">>> lyr = Layer('My Layer','+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs')\n"
-                      ">>> lyr.minzoom # default is 0\n"
+                      ">>> lyr.minimum_scale_denominator # default is 0\n"
                       "0.0\n"
-                      ">>> lyr.minzoom = 1.0/1000000\n"
-                      ">>> lyr.minzoom\n"
+                      ">>> lyr.minimum_scale_denominator = 1.0/1000000\n"
+                      ">>> lyr.minimum_scale_denominator\n"
                       "9.9999999999999995e-07\n"
             )
 

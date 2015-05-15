@@ -57,6 +57,11 @@ if mapnik.has_webp():
     def test_quality_threshold_invalid2():
         im = mapnik.Image(256,256)
         im.tostring('webp:quality=-1')
+    
+    @raises(RuntimeError)
+    def test_quality_threshold_invalid3():
+        im = mapnik.Image(256,256)
+        im.tostring('webp:quality=101.1')
 
     generate = os.environ.get('UPDATE')
 
