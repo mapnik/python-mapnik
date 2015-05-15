@@ -476,14 +476,14 @@ void render_to_file1(mapnik::Map const& map,
         std::ofstream file (filename.c_str(), std::ios::out|std::ios::trunc|std::ios::binary);
         if (!file)
         {
-            throw mapnik::ImageWriterException("could not open file for writing: " + filename);
+            throw mapnik::image_writer_exception("could not open file for writing: " + filename);
         }
         using iter_type = std::ostream_iterator<char>;
         iter_type output_stream_iterator(file);
         mapnik::svg_renderer<iter_type> ren(map,output_stream_iterator);
         ren.apply();
 #else
-        throw mapnik::ImageWriterException("SVG backend not available, cannot write to format: " + format);
+        throw mapnik::image_writer_exception("SVG backend not available, cannot write to format: " + format);
 #endif
     }
     else if (format == "pdf" || format == "svg" || format =="ps" || format == "ARGB32" || format == "RGB24")
@@ -491,7 +491,7 @@ void render_to_file1(mapnik::Map const& map,
 #if defined(HAVE_CAIRO)
         mapnik::save_to_cairo_file(map,filename,format,1.0);
 #else
-        throw mapnik::ImageWriterException("Cairo backend not available, cannot write to format: " + format);
+        throw mapnik::image_writer_exception("Cairo backend not available, cannot write to format: " + format);
 #endif
     }
     else
@@ -510,7 +510,7 @@ void render_to_file2(mapnik::Map const& map,std::string const& filename)
 #if defined(HAVE_CAIRO)
         mapnik::save_to_cairo_file(map,filename,format,1.0);
 #else
-        throw mapnik::ImageWriterException("Cairo backend not available, cannot write to format: " + format);
+        throw mapnik::image_writer_exception("Cairo backend not available, cannot write to format: " + format);
 #endif
     }
     else
@@ -533,14 +533,14 @@ void render_to_file3(mapnik::Map const& map,
         std::ofstream file (filename.c_str(), std::ios::out|std::ios::trunc|std::ios::binary);
         if (!file)
         {
-            throw mapnik::ImageWriterException("could not open file for writing: " + filename);
+            throw mapnik::image_writer_exception("could not open file for writing: " + filename);
         }
         using iter_type = std::ostream_iterator<char>;
         iter_type output_stream_iterator(file);
         mapnik::svg_renderer<iter_type> ren(map,output_stream_iterator,scale_factor);
         ren.apply();
 #else
-        throw mapnik::ImageWriterException("SVG backend not available, cannot write to format: " + format);
+        throw mapnik::image_writer_exception("SVG backend not available, cannot write to format: " + format);
 #endif
     }
     else if (format == "pdf" || format == "svg" || format =="ps" || format == "ARGB32" || format == "RGB24")
@@ -548,7 +548,7 @@ void render_to_file3(mapnik::Map const& map,
 #if defined(HAVE_CAIRO)
         mapnik::save_to_cairo_file(map,filename,format,scale_factor);
 #else
-        throw mapnik::ImageWriterException("Cairo backend not available, cannot write to format: " + format);
+        throw mapnik::image_writer_exception("Cairo backend not available, cannot write to format: " + format);
 #endif
     }
     else
