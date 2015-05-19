@@ -49,7 +49,7 @@ using mapnik::save_to_file;
 PyObject* view_tostring1(image_view_any const& view)
 {
     std::ostringstream ss(std::ios::out|std::ios::binary);
-    mapnik::view_to_string(view, ss);
+    mapnik::view_to_stream(view, ss);
     return
 #if PY_VERSION_HEX >= 0x03000000
         ::PyBytes_FromStringAndSize
