@@ -208,7 +208,7 @@ def test_rounding_and_color_expectations():
     # should have no effect
     im_file.premultiply()
     eq_(get_unique_colors(im_file),['rgba(0,0,0,0)', 'rgba(74,74,74,255)'])
-    im_file.multiply_alpha(.5)
+    im_file.apply_opacity(.5)
     # should have effect now that image has transparency
     im_file.premultiply()
     eq_(get_unique_colors(im_file),['rgba(0,0,0,0)', 'rgba(37,37,37,127)'])

@@ -282,14 +282,9 @@ void set_color_to_alpha(image_any & im, mapnik::color const& c)
     mapnik::set_color_to_alpha(im, c);
 }
 
-void set_alpha(image_any & im, float opacity)
+void apply_opacity(image_any & im, float opacity)
 {
-    mapnik::set_alpha(im, opacity);
-}
-
-void multiply_alpha(image_any & im, float opacity)
-{
-    mapnik::multiply_alpha(im, opacity);
+    mapnik::apply_opacity(im, opacity);
 }
 
 bool premultiplied(image_any &im)
@@ -410,8 +405,7 @@ void export_image()
         .def("set_grayscale_to_alpha",&set_grayscale_to_alpha, "Set the grayscale values to the alpha channel of the Image")
         .def("set_grayscale_to_alpha",&set_grayscale_to_alpha_c, "Set the grayscale values to the alpha channel of the Image")
         .def("set_color_to_alpha",&set_color_to_alpha, "Set a given color to the alpha channel of the Image")
-        .def("set_alpha",&set_alpha, "Set the overall alpha channel of the Image")
-        .def("multiply_alpha",&multiply_alpha, "Multiply the alpha channel of the Image")
+        .def("apply_opacity",&apply_opacity, "Set the opacity of the Image relative to the current alpha of each pixel.")
         .def("composite",&composite,
          ( arg("self"),
            arg("image"),

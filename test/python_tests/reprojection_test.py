@@ -46,7 +46,7 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
         expected = 'images/support/mapnik-wgs842merc-reprojection-render.png'
         im.save(actual,'png32')
         expected_im = mapnik.Image.open(expected)
-        eq_(im.tostring('png32'),expected_im.tostring('png32'), 'failed comparing actual (%s) and expected (%s)' % (actual,'tests/python_tests/'+ expected))
+        eq_(im.tostring('png32'),expected_im.tostring('png32'), 'failed comparing actual (%s) and expected (%s)' % (actual,'test/python_tests/'+ expected))
 
     def test_visual_zoom_all_rendering2():
         m = mapnik.Map(512,512)
@@ -58,7 +58,7 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
         expected = 'images/support/mapnik-merc2wgs84-reprojection-render.png'
         im.save(actual,'png32')
         expected_im = mapnik.Image.open(expected)
-        eq_(im.tostring('png32'),expected_im.tostring('png32'), 'failed comparing actual (%s) and expected (%s)' % (actual,'tests/python_tests/'+ expected))
+        eq_(im.tostring('png32'),expected_im.tostring('png32'), 'failed comparing actual (%s) and expected (%s)' % (actual,'test/python_tests/'+ expected))
 
     # maximum-extent read from map.xml
     def test_visual_zoom_all_rendering3():
@@ -71,7 +71,7 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
         expected = 'images/support/mapnik-merc2merc-reprojection-render1.png'
         im.save(actual,'png32')
         expected_im = mapnik.Image.open(expected)
-        eq_(im.tostring('png32'),expected_im.tostring('png32'), 'failed comparing actual (%s) and expected (%s)' % (actual,'tests/python_tests/'+ expected))
+        eq_(im.tostring('png32'),expected_im.tostring('png32'), 'failed comparing actual (%s) and expected (%s)' % (actual,'test/python_tests/'+ expected))
 
     # no maximum-extent
     def test_visual_zoom_all_rendering4():
@@ -85,7 +85,7 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
         expected = 'images/support/mapnik-merc2merc-reprojection-render2.png'
         im.save(actual,'png32')
         expected_im = mapnik.Image.open(expected)
-        eq_(im.tostring('png32'),expected_im.tostring('png32'), 'failed comparing actual (%s) and expected (%s)' % (actual,'tests/python_tests/'+ expected))
+        eq_(im.tostring('png32'),expected_im.tostring('png32'), 'failed comparing actual (%s) and expected (%s)' % (actual,'test/python_tests/'+ expected))
 
 if __name__ == "__main__":
     setup()

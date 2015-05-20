@@ -67,7 +67,7 @@ def test_setting_alpha():
     im2 = mapnik.Image(w,h)
     c2 = mapnik.Color('rgba(255,255,255,1)')
     im2.fill(c2)
-    im2.multiply_alpha(c1.a/255.0)
+    im2.apply_opacity(c1.a/255.0)
     eq_(im2.painted(),False)
     eq_(im2.is_solid(),True)
     eq_(len(im1.tostring('png32')), len(im2.tostring('png32')))
