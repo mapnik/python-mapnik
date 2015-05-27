@@ -23,7 +23,7 @@ function install() {
 }
 
 function install_mason_deps() {
-    install mapnik 3.0.0-rc2
+    install mapnik 3.0.0-rc3
     install protobuf 2.6.1
     install freetype 2.5.4
     install harfbuzz 2cd5323
