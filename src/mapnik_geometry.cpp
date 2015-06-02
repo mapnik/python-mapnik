@@ -67,7 +67,7 @@ std::shared_ptr<mapnik::geometry::geometry<double> > from_wkb_impl(std::string c
     std::shared_ptr<mapnik::geometry::geometry<double> > geom = std::make_shared<mapnik::geometry::geometry<double> >();
     try
     {
-        *geom = std::move(mapnik::geometry_utils::from_wkb(wkb.c_str(), wkb.size()));
+        *geom = mapnik::geometry_utils::from_wkb(wkb.c_str(), wkb.size());
     }
     catch (...)
     {

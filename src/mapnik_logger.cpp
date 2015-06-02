@@ -34,7 +34,7 @@
 #pragma GCC diagnostic pop
 
 #include <mapnik/debug.hpp>
-#include <mapnik/utils.hpp>
+#include <mapnik/util/singleton.hpp>
 #include "mapnik_enumeration.hpp"
 
 void export_logger()

@@ -34,7 +34,7 @@
 #pragma GCC diagnostic pop
 
 #include <mapnik/font_engine_freetype.hpp>
-#include <mapnik/utils.hpp>
+#include <mapnik/util/singleton.hpp>
 
 void export_font_engine()
 {

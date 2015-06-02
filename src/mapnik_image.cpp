@@ -139,7 +139,7 @@ void fill_double(mapnik::image_any & im, double val)
 
 std::shared_ptr<image_any> copy(mapnik::image_any const& im, mapnik::image_dtype type, double offset, double scaling)
 {
-    return std::make_shared<image_any>(std::move(mapnik::image_copy(im, type, offset, scaling)));
+    return std::make_shared<image_any>(mapnik::image_copy(im, type, offset, scaling));
 }
 
 unsigned compare(mapnik::image_any const& im1, mapnik::image_any const& im2, double threshold, bool alpha)
@@ -235,7 +235,7 @@ std::shared_ptr<image_any> open_from_file(std::string const& filename)
         std::unique_ptr<image_reader> reader(get_image_reader(filename,*type));
         if (reader.get())
         {
-            return std::make_shared<image_any>(std::move(reader->read(0,0,reader->width(),reader->height())));
+            return std::make_shared<image_any>(reader->read(0,0,reader->width(),reader->height()));
         }
         throw mapnik::image_reader_exception("Failed to load: " + filename);
     }
@@ -247,7 +247,7 @@ std::shared_ptr<image_any> fromstring(std::string const& str)
     std::unique_ptr<image_reader> reader(get_image_reader(str.c_str(),str.size()));
     if (reader.get())
     {
-        return std::make_shared<image_any>(std::move(reader->read(0,0,reader->width(), reader->height())));
+        return std::make_shared<image_any>(reader->read(0,0,reader->width(), reader->height()));
     }
     throw mapnik::image_reader_exception("Failed to load image from buffer" );
 }
