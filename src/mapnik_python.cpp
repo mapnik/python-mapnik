@@ -190,7 +190,7 @@ using mapnik::python_unblock_auto_block;
 #ifdef MAPNIK_DEBUG
 bool python_thread::thread_support = true;
 #endif
-boost::thread_specific_ptr<PyThreadState> python_thread::state;
+thread_local std::unique_ptr<PyThreadState> python_thread::state;
 
 struct agg_renderer_visitor_1
 {

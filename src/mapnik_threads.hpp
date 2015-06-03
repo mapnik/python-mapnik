@@ -22,7 +22,7 @@
 #ifndef MAPNIK_THREADS_HPP
 #define MAPNIK_THREADS_HPP
 
-#include <boost/thread/tss.hpp>         // for thread_specific_ptr
+#include <thread>
 #include <Python.h>
 
 namespace mapnik {
@@ -70,7 +70,7 @@ public:
     }
 
 private:
-    static boost::thread_specific_ptr<PyThreadState> state;
+    static thread_local std::unique_ptr<PyThreadState> state;
 #ifdef MAPNIK_DEBUG
     static bool thread_support;
 #endif
