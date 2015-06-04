@@ -142,6 +142,25 @@ if proj_path:
 
 extra_comp_args = subprocess.check_output([mapnik_config, '--cflags']).rstrip('\n').split(' ')
 
+# Test to build with pycairo (has been moved out of mapnik proper)
+include_pycairo = False
+if "-DHAVE_CAIRO" in extra_comp_args:
+    # Mapnik was built with Cairo
+    try:
+        from cairo import CAPI
+        include_pycairo = True
+    except ImportError:
+        pass
+
+if include_pycairo:
+    # Get compiler flags for pycairo (PKG_CONFIG_PATH must be correct)
+    extra_comp_args.append('-DHAVE_PYCAIRO')
+    lib = "pycairo"
+    if sys.version_info[0] > 3:
+        lib = "py3cairo"
+    args = subprocess.check_output(["pkg-config","--cflags",lib]).rstrip('\n').split(' ')
+    extra_comp_args += args
+
 if sys.platform == 'darwin':
     extra_comp_args.append('-mmacosx-version-min=10.8')
     linkflags.append('-mmacosx-version-min=10.8')
@@ -215,7 +234,7 @@ setup(
                 'mapnik', 
                 'mapnik-wkt',
                 'mapnik-json',
-                'boost_thread',
+                'boost_thread-mt',
                 'boost_system',
                 boost_python_lib,
             ],
