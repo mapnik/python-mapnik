@@ -234,7 +234,7 @@ setup(
                 'mapnik', 
                 'mapnik-wkt',
                 'mapnik-json',
-                'boost_thread-mt',
+                'boost_thread',
                 'boost_system',
                 boost_python_lib,
             ],
