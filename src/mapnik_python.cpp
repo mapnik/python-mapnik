@@ -29,6 +29,7 @@
 #pragma GCC diagnostic ignored "-Wunused-local-typedef"
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #include "python_to_value.hpp"
+#include <boost/thread/tss.hpp>
 #include <boost/python/args.hpp>        // for keywords, arg, etc
 #include <boost/python/converter/from_python.hpp>
 #include <boost/python/def.hpp>         // for def
