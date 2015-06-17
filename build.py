@@ -38,6 +38,7 @@ if env['RUNTIME_LINK'] == 'static' and env['PLATFORM'] == 'Linux':
     py_env.AppendUnique(LIBS='rt')
 
 # TODO - do solaris/fedora need direct linking too?
+python_link_flag = ''
 if env['PLATFORM'] == 'Darwin':
     python_link_flag = '-undefined dynamic_lookup'
 
