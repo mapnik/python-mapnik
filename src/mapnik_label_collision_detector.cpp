@@ -68,7 +68,7 @@ make_label_boxes(std::shared_ptr<label_collision_detector4> det)
     for (label_collision_detector4::query_iterator jtr = det->begin();
          jtr != det->end(); ++jtr)
     {
-        boxes.append<box2d<double> >(jtr->box);
+        boxes.append<box2d<double> >(jtr->get().box);
     }
 
     return boxes;
