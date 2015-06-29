@@ -33,6 +33,14 @@ python setup.py develop
 
 If you wish to are currently developing on mapnik-python and wish to change the code in place and immediately have python changes reflected in your environment.
 
+
+```
+python setup.py develop --uninstall
+```
+
+Will de-activate the development install by removing the `python-mapnik` entry from `site-packages/easy-install.pth`.
+
+
 ```
 python setup.py install
 ```
