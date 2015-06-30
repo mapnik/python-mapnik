@@ -30,6 +30,7 @@
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wunused-local-typedef"
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#pragma GCC diagnostic ignored "-Wshadow"
 
 #include <boost/python.hpp>
 #include <boost/python/module.hpp>

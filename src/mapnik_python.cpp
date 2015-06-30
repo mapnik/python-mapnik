@@ -28,6 +28,7 @@
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wunused-local-typedef"
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#pragma GCC diagnostic ignored "-Wshadow"
 #include "python_to_value.hpp"
 #include <boost/python/args.hpp>        // for keywords, arg, etc
 #include <boost/python/converter/from_python.hpp>
