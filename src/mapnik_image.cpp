@@ -191,7 +191,7 @@ object get_pixel(mapnik::image_any const& im, unsigned x, unsigned y, bool get_c
 
 void set_pixel_color(mapnik::image_any & im, unsigned x, unsigned y, mapnik::color const& c)
 {
-    if (x >= static_cast<int>(im.width()) && y >= static_cast<int>(im.height()))
+    if (x >= static_cast<unsigned>(im.width()) && y >= static_cast<unsigned>(im.height()))
     {
         PyErr_SetString(PyExc_IndexError, "invalid x,y for image dimensions");
         boost::python::throw_error_already_set();
@@ -202,7 +202,7 @@ void set_pixel_color(mapnik::image_any & im, unsigned x, unsigned y, mapnik::col
 
 void set_pixel_double(mapnik::image_any & im, unsigned x, unsigned y, double val)
 {
-    if (x >= static_cast<int>(im.width()) && y >= static_cast<int>(im.height()))
+    if (x >= static_cast<unsigned>(im.width()) && y >= static_cast<unsigned>(im.height()))
     {
         PyErr_SetString(PyExc_IndexError, "invalid x,y for image dimensions");
         boost::python::throw_error_already_set();
@@ -213,7 +213,7 @@ void set_pixel_double(mapnik::image_any & im, unsigned x, unsigned y, double val
 
 void set_pixel_int(mapnik::image_any & im, unsigned x, unsigned y, int val)
 {
-    if (x >= static_cast<int>(im.width()) && y >= static_cast<int>(im.height()))
+    if (x >= static_cast<unsigned>(im.width()) && y >= static_cast<unsigned>(im.height()))
     {
         PyErr_SetString(PyExc_IndexError, "invalid x,y for image dimensions");
         boost::python::throw_error_already_set();
