@@ -30,7 +30,9 @@ else:
     mapnik_config = 'mapnik-config'
     mason_build = False
 
-boost_python_lib = os.environ.get("BOOST_PYTHON_LIB", 'boost_python')
+boost_python_lib = os.environ.get("BOOST_PYTHON_LIB", 'boost_python-mt')
+boost_system_lib = os.environ.get("BOOST_SYSTEM_LIB", 'boost_system-mt')
+boost_thread_lib = os.environ.get("BOOST_THREAD_LIB", 'boost_thread-mt')
 
 try:
     linkflags = subprocess.check_output([mapnik_config, '--libs']).rstrip('\n').split(' ')
@@ -215,9 +217,9 @@ setup(
                 'mapnik', 
                 'mapnik-wkt',
                 'mapnik-json',
-                'boost_thread',
-                'boost_system',
                 boost_python_lib,
+                boost_thread_lib,
+                boost_system_lib
             ],
             extra_compile_args = extra_comp_args,
             extra_link_args = linkflags,
