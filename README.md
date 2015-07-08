@@ -58,3 +58,20 @@ python setup.py test
 
 The test data in `./test/data` and `./test/data-visual` are standalone modules. If you need to update them see https://github.com/mapnik/mapnik/blob/master/docs/contributing.markdown#testing
 
+
+### Troubleshooting
+
+If you hit an error like:
+
+```
+Fatal Python error: PyThreadState_Get: no current thread
+Abort trap: 6
+```
+
+That means you likely have built python-mapnik is linked against a differ python version than what you are running. To solve this try running:
+
+```
+/usr/bin/python <your script.py>
+```
+
+If you still hit a problem create an issue and we'll try to help.
