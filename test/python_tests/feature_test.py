@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from nose.tools import eq_,raises
-from utilities import run_all
+from .utilities import run_all
 
 import mapnik
 from binascii import unhexlify
@@ -71,10 +71,10 @@ def test_feature_expression_evaluation_missing_attr():
     f['name'] = u'a'
     eq_(f['name'],u'a')
     expr = mapnik.Expression("[fielddoesnotexist]='a'")
-    eq_(f.has_key('fielddoesnotexist'),False)
+    eq_('fielddoesnotexist' in f,False)
     try:
         expr.evaluate(f)
-    except Exception, e:
+    except Exception as e:
         eq_("Key does not exist" in str(e),True)
     num_attributes = len(f)
     eq_(num_attributes,1)

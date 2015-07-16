@@ -3,7 +3,7 @@
 from nose.tools import eq_,assert_almost_equal
 import atexit
 import time
-from utilities import execution_path, run_all, side_by_side_image
+from .utilities import execution_path, run_all, side_by_side_image
 from subprocess import Popen, PIPE
 import os, mapnik
 import sys
@@ -16,7 +16,7 @@ DEBUG_OUTPUT=False
 
 def log(msg):
     if DEBUG_OUTPUT:
-      print msg
+      print(msg)
 
 def setup():
     # All of the paths used are relative, if we run the tests
@@ -46,7 +46,7 @@ def psql_can_connect():
         call('psql %s -c "select postgis_version()"' % POSTGIS_TEMPLATE_DBNAME)
         return True
     except RuntimeError:
-        print 'Notice: skipping pgraster tests (connection)'
+        print('Notice: skipping pgraster tests (connection)')
         return False
 
 def psql_run(cmd):
@@ -64,7 +64,7 @@ def raster2pgsql_on_path():
         call('raster2pgsql')
         return True
     except RuntimeError:
-        print 'Notice: skipping pgraster tests (raster2pgsql)'
+        print('Notice: skipping pgraster tests (raster2pgsql)')
         return False
 
 def createdb_and_dropdb_on_path():
@@ -77,7 +77,7 @@ def createdb_and_dropdb_on_path():
         call('dropdb --help')
         return True
     except RuntimeError:
-        print 'Notice: skipping pgraster tests (createdb/dropdb)'
+        print('Notice: skipping pgraster tests (createdb/dropdb)')
         return False
 
 def postgis_setup():
@@ -112,7 +112,7 @@ def drop_imported(tabname, overview):
 def compare_images(expected,im):
   expected = os.path.join(os.path.dirname(expected),os.path.basename(expected).replace(':','_'))
   if not os.path.exists(expected) or os.environ.get('UPDATE'):
-    print 'generating expected image %s' % expected
+    print('generating expected image %s' % expected)
     im.save(expected,'png32')
   expected_im = mapnik.Image.open(expected)
   diff = expected.replace('.png','-diff.png')
@@ -754,7 +754,7 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
 def enabled(tname):
   enabled = len(sys.argv) < 2 or tname in sys.argv
   if not enabled:
-    print "Skipping " + tname + " as not explicitly enabled"
+    print("Skipping " + tname + " as not explicitly enabled")
   return enabled
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from nose.tools import eq_,assert_almost_equal
-from utilities import execution_path, run_all
+from .utilities import execution_path, run_all
 
 import os, mapnik
 

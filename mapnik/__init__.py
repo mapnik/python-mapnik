@@ -61,7 +61,7 @@ def bootstrap_env():
         env = {'ICU_DATA':'/usr/local/share/icu/'}
     """
     if os.path.exists(os.path.join(os.path.dirname(__file__),'mapnik_settings.py')):
-        from mapnik_settings import env
+        from .mapnik_settings import env
         process_keys = os.environ.keys()
         for key, value in env.items():
             if key not in process_keys:
@@ -69,9 +69,9 @@ def bootstrap_env():
 
 bootstrap_env()
 
-from _mapnik import *
+from ._mapnik import *
 
-import printing
+from . import printing
 printing.renderer = render
 
 # The base Boost.Python class
@@ -1048,20 +1048,20 @@ def mapnik_version_from_string(version_string):
 def register_plugins(path=None):
     """Register plugins located by specified path"""
     if not path:
-        if os.environ.has_key('MAPNIK_INPUT_PLUGINS_DIRECTORY'):
+        if 'MAPNIK_INPUT_PLUGINS_DIRECTORY' in os.environ:
             path = os.environ.get('MAPNIK_INPUT_PLUGINS_DIRECTORY')
         else:
-            from paths import inputpluginspath
+            from .paths import inputpluginspath
             path = inputpluginspath
     DatasourceCache.register_datasources(path)
 
 def register_fonts(path=None,valid_extensions=['.ttf','.otf','.ttc','.pfa','.pfb','.ttc','.dfont','.woff']):
     """Recursively register fonts using path argument as base directory"""
     if not path:
-       if os.environ.has_key('MAPNIK_FONT_DIRECTORY'):
+       if 'MAPNIK_FONT_DIRECTORY' in os.environ:
            path = os.environ.get('MAPNIK_FONT_DIRECTORY')
        else:
-           from paths import fontscollectionpath
+           from .paths import fontscollectionpath
            path = fontscollectionpath
     for dirpath, _, filenames in os.walk(path):
         for filename in filenames:

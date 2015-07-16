@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from nose.tools import eq_
-from utilities import execution_path, run_all, get_unique_colors
+from .utilities import execution_path, run_all, get_unique_colors
 
 import os, mapnik
 
@@ -104,7 +104,7 @@ def test_load_save_map():
         assert 'RasterSymbolizer' in out_map
         assert 'RasterColorizer' in out_map
         assert 'stop' in out_map
-    except RuntimeError, e:
+    except RuntimeError as e:
         # only test datasources that we have installed
         if not 'Could not create datasource' in str(e):
             raise RuntimeError(str(e))

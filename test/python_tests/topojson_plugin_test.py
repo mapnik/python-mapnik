@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import, print_function
 
 from nose.tools import eq_,assert_almost_equal
-from utilities import execution_path, run_all
+from .utilities import execution_path, run_all
 import os, mapnik
 
 def setup():

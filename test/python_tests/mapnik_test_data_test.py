@@ -1,14 +1,16 @@
 ﻿#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from utilities import execution_path, run_all
+from __future__ import print_function
+
+from .utilities import execution_path, run_all
 import os, mapnik
 from glob import glob
 
 default_logging_severity = mapnik.logger.get_severity()
 
 def setup():
-    mapnik.logger.set_severity(mapnik.severity_type.None)
+    mapnik.logger.set_severity(getattr(mapnik.severity_type, "None"))
     # All of the paths used are relative, if we run the tests
     # from another directory we need to chdir()
     os.chdir(execution_path('.'))
@@ -41,8 +43,8 @@ def test_opening_data():
                     kwargs['layer_by_index'] = 0
                     try:
                         mapnik.Datasource(**kwargs)
-                    except Exception, e:
-                        print 'could not open, %s: %s' % (kwargs,e)
+                    except Exception as e:
+                        print('could not open, %s: %s' % (kwargs,e))
                 else:
                    for plugin in plugin_mapping[ext]:
                       kwargs = {'type': plugin,'file': filepath}
@@ -50,8 +52,8 @@ def test_opening_data():
                           kwargs['layer_by_index'] = 0
                       try:
                           mapnik.Datasource(**kwargs)
-                      except Exception, e:
-                          print 'could not open, %s: %s' % (kwargs,e)
+                      except Exception as e:
+                          print('could not open, %s: %s' % (kwargs,e))
             #else:
             #    print 'skipping opening %s' % filepath
 

@@ -5,7 +5,7 @@ import sys
 import os, mapnik
 from timeit import Timer, time
 from nose.tools import *
-from utilities import execution_path, run_all, get_unique_colors
+from .utilities import execution_path, run_all, get_unique_colors
 
 def setup():
     # All of the paths used are relative, if we run the tests

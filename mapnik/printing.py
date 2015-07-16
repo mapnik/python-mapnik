@@ -15,7 +15,7 @@ page.render_map(m,"my_output_file.pdf")
 see the documentation of mapnik.printing.PDFPrinter() for options
 
 """
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 from . import render, Map, Box2d, Layer, Feature, Projection, Coord, Style, Geometry
 import math
@@ -393,7 +393,7 @@ class PDFPrinter:
             o=pyPdf.PdfFileWriter()
 
             # preserve OCProperties at document root if we have one
-            if i.trailer['/Root'].has_key(pyPdf.generic.NameObject('/OCProperties')):
+            if pyPdf.generic.NameObject('/OCProperties') in i.trailer['/Root']:
                 o._root.getObject()[pyPdf.generic.NameObject('/OCProperties')] = i.trailer['/Root'].getObject()[pyPdf.generic.NameObject('/OCProperties')]
 
             for p in i.pages:
@@ -911,7 +911,7 @@ class PDFPrinter:
                                         else:
                                             rule_text += str(r.filter)
                         active_rules = tuple(active_rules)
-                        if added_styles.has_key(active_rules):
+                        if active_rules in added_styles:
                             continue
 
                         added_styles[active_rules] = (f,rule_text)
@@ -1014,7 +1014,7 @@ class PDFPrinter:
                             e=self.write_text(ctx, rule_text, m2pt(cwidth-legend_item_box_size[0]-0.005), 6)
                             legend_text_size += e[3]
                             ctx.rel_move_to(0,e[3])
-                        if attribution.has_key(layer_title):
+                        if layer_title in attribution:
                             e=self.write_text(ctx, attribution[layer_title], m2pt(cwidth-legend_item_box_size[0]-0.005), 6, fill_color=(0.5,0.5,0.5))
                             legend_text_size += e[3]
 

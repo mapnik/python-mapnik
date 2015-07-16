@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from nose.tools import eq_, raises
-from utilities import execution_path, run_all
+from .utilities import execution_path, run_all
 import os
 import mapnik
 
@@ -156,7 +156,7 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
                 eq_(feature[str(k)],v)
             except:
                 #import pdb;pdb.set_trace()
-                print 'invalid key/v %s/%s for: %s' % (k,v,feature)
+                print('invalid key/v %s/%s for: %s' % (k,v,feature))
     
     test_attachdb_with_sql_join.requires_data = True
 
@@ -469,7 +469,7 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
     def test_null_id_field():
         # silence null key warning: https://github.com/mapnik/mapnik/issues/1889
         default_logging_severity = mapnik.logger.get_severity()
-        mapnik.logger.set_severity(mapnik.severity_type.None)
+        mapnik.logger.set_severity(getattr(mapnik.severity_type, "None"))
         # form up an in-memory test db
         wkb = '010100000000000000000000000000000000000000'
         # note: the osm_id should be declared INTEGER PRIMARY KEY

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from nose.tools import eq_,raises
-from utilities import execution_path, run_all
+from .utilities import execution_path, run_all
 import os, mapnik
 
 try:
@@ -18,9 +18,11 @@ def setup():
 if mapnik.has_grid_renderer():
     def show_grids(name,g1,g2):
         g1_file = '/tmp/mapnik-%s-actual.json' % name
-        open(g1_file,'w').write(json.dumps(g1,sort_keys=True))
+        with open(g1_file, 'w') as f:
+            f.write(json.dumps(g1, sort_keys=True))
         g2_file = '/tmp/mapnik-%s-expected.json' % name
-        open(g2_file,'w').write(json.dumps(g2,sort_keys=True))
+        with open(g2_file, 'w') as f:
+            f.write(json.dumps(g2, sort_keys=True))
         val = 'JSON does not match  ->\n'
         if g1['grid'] != g2['grid']:
            val += ' X grid does not match\n'
@@ -41,10 +43,12 @@ if mapnik.has_grid_renderer():
         g2_expected = '../data/grids/mapnik-%s-actual.json' % name
         if not os.path.exists(g2_expected):
             # create test fixture based on actual results
-            open(g2_expected,'a+').write(json.dumps(g1,sort_keys=True))
+            with open(g2_expected, 'a+') as f:
+                f.write(json.dumps(g1, sort_keys=True))
             return
         g1_file = '/tmp/mapnik-%s-actual.json' % name
-        open(g1_file,'w').write(json.dumps(g1,sort_keys=True))
+        with open(g1_file, 'w') as f:
+            f.write(json.dumps(g1, sort_keys=True))
         val = 'JSON does not match  ->\n'
         if g1['grid'] != g2['grid']:
            val += ' X grid does not match\n'

@@ -3,7 +3,7 @@
 import os
 import mapnik
 from nose.tools import assert_raises
-from utilities import execution_path, run_all
+from .utilities import execution_path, run_all
 
 datadir = '../data/pngsuite'
 

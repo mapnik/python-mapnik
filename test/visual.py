@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+
 import os
 import sys
 import mapnik
@@ -49,7 +51,7 @@ def render_grid(m, output, scale_factor):
     grid = mapnik.Grid(m.width, m.height)
     mapnik.render_layer(m, grid, layer=0, scale_factor=scale_factor)
     utf1 = grid.encode('utf', resolution=4)
-    open(output,'wb').write(json.dumps(utf1, indent=1))
+    open(output, 'wb').write(json.dumps(utf1, indent=1).encode())
 
 def render_agg(m, output, scale_factor):
     mapnik.render_to_file(m, output, 'png32', scale_factor),
@@ -145,7 +147,7 @@ class Reporting:
             else:
                 sys.stderr.write('\x1b[31m.\x1b[0m')
         else:
-            print '\x1b[31m✘\x1b[0m (\x1b[34m%u different pixels\x1b[0m)' % diff
+            print('\x1b[31m✘\x1b[0m (\x1b[34m%u different pixels\x1b[0m)' % diff)
 
         if self.overwrite_failures:
             self.errors.append((self.REPLACE, actual, expected, diff, None))
@@ -163,9 +165,9 @@ class Reporting:
                 sys.stderr.write('\x1b[32m.\x1b[0m')
         else:
             if platform.uname()[0] == 'Windows':
-                print '\x1b[32m✓\x1b[0m'
+                print('\x1b[32m✓\x1b[0m')
             else:
-                print '✓'
+                print('✓')
 
     def not_found(self, actual, expected):
         self.failed += 1
@@ -173,7 +175,7 @@ class Reporting:
         if self.quiet:
             sys.stderr.write('\x1b[33m.\x1b[0m')
         else:
-            print '\x1b[33m?\x1b[0m (\x1b[34mReference file not found, creating\x1b[0m)'
+            print('\x1b[33m?\x1b[0m (\x1b[34mReference file not found, creating\x1b[0m)')
         contents = open(actual, 'r').read()
         open(expected, 'wb').write(contents)
 
@@ -183,7 +185,7 @@ class Reporting:
         if self.quiet:
             sys.stderr.write('\x1b[31m.\x1b[0m')
         else:
-            print '\x1b[31m✘\x1b[0m (\x1b[34m%s\x1b[0m)' % message
+            print('\x1b[31m✘\x1b[0m (\x1b[34m%s\x1b[0m)' % message)
 
     def make_html_item(self,actual,expected,diff):
         item = '''
@@ -205,22 +207,22 @@ class Reporting:
 
     def summary(self):
         if len(self.errors) == 0:
-            print '\nAll %s visual tests passed: \x1b[1;32m✓ \x1b[0m' % self.passed
+            print('\nAll %s visual tests passed: \x1b[1;32m✓ \x1b[0m' % self.passed)
             return 0
         sortable_errors = []
-        print "\nVisual rendering: %s failed / %s passed" % (len(self.errors), self.passed)
+        print("\nVisual rendering: %s failed / %s passed" % (len(self.errors), self.passed))
         for idx, error in enumerate(self.errors):
             if error[0] == self.OTHER:
-                print str(idx+1) + ") \x1b[31mfailure to run test:\x1b[0m %s (\x1b[34m%s\x1b[0m)" % (error[2],error[4])
+                print(str(idx+1) + ") \x1b[31mfailure to run test:\x1b[0m %s (\x1b[34m%s\x1b[0m)" % (error[2],error[4]))
             elif error[0] == self.NOT_FOUND:
-                print str(idx+1) + ") Generating reference image: '%s'" % error[2]
+                print(str(idx+1) + ") Generating reference image: '%s'" % error[2])
                 continue
             elif error[0] == self.DIFF:
-                print str(idx+1) + ") \x1b[34m%s different pixels\x1b[0m:\n\t%s (\x1b[31mactual\x1b[0m)\n\t%s (\x1b[32mexpected\x1b[0m)" % (error[3], error[1], error[2])
+                print(str(idx+1) + ") \x1b[34m%s different pixels\x1b[0m:\n\t%s (\x1b[31mactual\x1b[0m)\n\t%s (\x1b[32mexpected\x1b[0m)" % (error[3], error[1], error[2]))
                 if '.png' in error[1]: # ignore grids
                     sortable_errors.append((error[3],error))
             elif error[0] == self.REPLACE:
-                print str(idx+1) + ") \x1b[31mreplaced reference with new version:\x1b[0m %s" % error[2]
+                print(str(idx+1) + ") \x1b[31mreplaced reference with new version:\x1b[0m %s" % error[2])
         if len(sortable_errors):
             # drop failure results in folder
             vdir = os.path.join(visual_output_dir,'visual-test-results')
@@ -243,7 +245,7 @@ class Reporting:
                 shutil.copy(expected,expected_new)
                 html_body += self.make_html_item(os.path.relpath(actual_new,vdir),os.path.relpath(expected_new,vdir),diff)
             html_out.write(html_template.replace('{{RESULTS}}',html_body))
-            print 'View failures by opening %s' % failures_realpath
+            print('View failures by opening %s' % failures_realpath)
         return 1
 
 def render(filename, config, scale_factor, reporting):
@@ -254,7 +256,7 @@ def render(filename, config, scale_factor, reporting):
 
         if not (m.parameters['status'] if ('status' in m.parameters) else config['status']):
             return
-    except Exception, e:
+    except Exception as e:
         if 'Could not create datasource' in str(e) \
            or 'Bad connection' in str(e):
             return m
@@ -283,7 +285,7 @@ def render(filename, config, scale_factor, reporting):
                 actual = os.path.join(visual_output_dir, '%s-%s.%s' %
                     (postfix, renderer['name'], renderer['filetype']))
                 if not quiet:
-                    print "\"%s\" with %s..." % (postfix, renderer['name']),
+                    print("\"%s\" with %s..." % (postfix, renderer['name']))
                 try:
                     renderer['render'](m, actual, scale_factor)
                     if not os.path.exists(expected):
@@ -294,7 +296,7 @@ def render(filename, config, scale_factor, reporting):
                             reporting.result_fail(actual, expected, diff)
                         else:
                             reporting.result_pass(actual, expected, diff)
-                except Exception, e:
+                except Exception as e:
                     reporting.other_error(expected, repr(e))
     return m
 

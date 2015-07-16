@@ -1,6 +1,6 @@
 #encoding: utf8
 import mapnik
-from utilities import run_all
+from .utilities import run_all
 from nose.tools import eq_
 
 def test_add_feature():
@@ -17,7 +17,7 @@ def test_add_feature():
     featureset = md.features_at_point(mapnik.Coord(2,3))
     retrieved = []
 
-    for feat in featureset:
+    for feat in featureset.features:
         retrieved.append(feat)
 
     eq_(len(retrieved), 1)
@@ -26,7 +26,7 @@ def test_add_feature():
 
     featureset = md.features_at_point(mapnik.Coord(20,30))
     retrieved = []
-    for feat in featureset:
+    for feat in featureset.features:
         retrieved.append(feat)
     eq_(len(retrieved), 0)
 

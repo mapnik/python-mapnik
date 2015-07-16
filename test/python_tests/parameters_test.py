@@ -4,7 +4,7 @@
 import os
 import sys
 from nose.tools import eq_
-from utilities import execution_path, run_all
+from .utilities import execution_path, run_all
 import mapnik
 
 def setup():
@@ -26,14 +26,14 @@ def test_parameter_unicode():
     eq_(p[1],u'value')
 
 def test_parameter_integer():
-    p = mapnik.Parameter('int',sys.maxint)
+    p = mapnik.Parameter('int',sys.maxsize)
     eq_(p[0],'int')
-    eq_(p[1],sys.maxint)
+    eq_(p[1],sys.maxsize)
 
 def test_parameter_double():
-    p = mapnik.Parameter('double',float(sys.maxint))
+    p = mapnik.Parameter('double',float(sys.maxsize))
     eq_(p[0],'double')
-    eq_(p[1],float(sys.maxint))
+    eq_(p[1],float(sys.maxsize))
 
 def test_parameter_boolean():
     p = mapnik.Parameter('boolean',True)

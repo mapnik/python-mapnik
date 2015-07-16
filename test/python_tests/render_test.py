@@ -1,10 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import sys
+
 from nose.tools import eq_,raises
 import tempfile
 import os, mapnik
-from utilities import execution_path, run_all
+from .utilities import execution_path, run_all
+
+PYTHON3 = sys.version_info[0] == 3
 
 def setup():
     # All of the paths used are relative, if we run the tests
@@ -20,7 +24,10 @@ def test_simplest_render():
     eq_(im.painted(),False)
     eq_(im.is_solid(),True)
     s = im.tostring()
-    eq_(s, 256 * 256 * '\x00\x00\x00\x00')
+    if PYTHON3:
+        eq_(s, 256 * 256 * b'\x00\x00\x00\x00')
+    else:
+        eq_(s, 256 * 256 * '\x00\x00\x00\x00')
 
 def test_render_image_to_string():
     im = mapnik.Image(256, 256)
@@ -28,7 +35,10 @@ def test_render_image_to_string():
     eq_(im.painted(),False)
     eq_(im.is_solid(),True)
     s = im.tostring()
-    eq_(s, 256 * 256 * '\x00\x00\x00\xff')
+    if PYTHON3:
+        eq_(s, 256 * 256 * b'\x00\x00\x00\xff')
+    else:
+        eq_(s, 256 * 256 * '\x00\x00\x00\xff')
 
 def test_non_solid_image():
     im = mapnik.Image(256, 256)
@@ -110,7 +120,7 @@ def test_render_from_serialization():
 
         im,im2 = get_paired_images(100,100,'../data/good_maps/polygon_symbolizer.xml')
         eq_(im.tostring('png32'),im2.tostring('png32'))
-    except RuntimeError, e:
+    except RuntimeError as e:
         # only test datasources that we have installed
         if not 'Could not create datasource' in str(e):
             raise RuntimeError(e)
@@ -151,7 +161,7 @@ def test_render_points():
         'merc': '+proj=merc +datum=WGS84 +k=1.0 +units=m +over +no_defs',
         'utm': '+proj=utm +zone=54 +datum=WGS84'
         }
-    for projdescr in projs.iterkeys():
+    for projdescr in projs:
         m = mapnik.Map(1000, 500, projs[projdescr])
         m.append_style('places_labels',s)
         m.layers.append(lyr)
@@ -163,7 +173,8 @@ def test_render_points():
         svg_file = os.path.join(tempfile.gettempdir(), 'mapnik-render-points-%s.svg' % projdescr)
         mapnik.render_to_file(m, svg_file)
         num_points_present = len(ds.all_features())
-        svg = open(svg_file,'r').read()
+        with open(svg_file,'r') as f:
+            svg = f.read()
         num_points_rendered = svg.count('<image ')
         eq_(num_points_present, num_points_rendered, "Not all points were rendered (%d instead of %d) at projection %s" % (num_points_rendered, num_points_present, projdescr))
 

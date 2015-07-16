@@ -4,7 +4,7 @@
 import os, mapnik
 import hashlib
 from nose.tools import eq_, assert_not_equal
-from utilities import execution_path, run_all
+from .utilities import execution_path, run_all, READ_FLAGS
 
 def hashstr(var):
     return hashlib.md5(var).hexdigest()
@@ -21,7 +21,8 @@ def test_tiff_round_trip_scanline():
     org_str = hashstr(im.tostring())
     im.save(filepath,'tiff:method=scanline')
     im2 = mapnik.Image.open(filepath)
-    im3 = mapnik.Image.fromstring(open(filepath,'r').read())
+    with open(filepath, READ_FLAGS) as f:
+        im3 = mapnik.Image.fromstring(f.read())
     eq_(im.width(),im2.width())
     eq_(im.height(),im2.height())
     eq_(im.width(),im3.width())
@@ -45,7 +46,8 @@ def test_tiff_round_trip_stripped():
     im.save(filepath,'tiff:method=stripped')
     im2 = mapnik.Image.open(filepath)
     im2.save('/tmp/mapnik-tiff-io-stripped2.tiff','tiff:method=stripped')
-    im3 = mapnik.Image.fromstring(open(filepath,'r').read())
+    with open(filepath, READ_FLAGS) as f:
+        im3 = mapnik.Image.fromstring(f.read())
     eq_(im.width(),im2.width())
     eq_(im.height(),im2.height())
     eq_(im.width(),im3.width())
@@ -82,7 +84,8 @@ def test_tiff_round_trip_rows_stripped():
     eq_(c2.a, 128)
     eq_(c2.get_premultiplied(), True)
     im2.save(filepath2,'tiff:method=stripped:rows_per_strip=8')
-    im3 = mapnik.Image.fromstring(open(filepath,'r').read())
+    with open(filepath, READ_FLAGS) as f:
+        im3 = mapnik.Image.fromstring(f.read())
     eq_(im.width(),im2.width())
     eq_(im.height(),im2.height())
     eq_(im.width(),im3.width())
@@ -118,7 +121,8 @@ def test_tiff_round_trip_buffered_tiled():
     eq_(c2.b, 64)
     eq_(c2.a, 128)
     eq_(c2.get_premultiplied(), True)
-    im3 = mapnik.Image.fromstring(open(filepath,'r').read())
+    with open(filepath, READ_FLAGS) as f:
+        im3 = mapnik.Image.fromstring(f.read())
     im2.save(filepath2, 'tiff:method=tiled:tile_width=32:tile_height=32')
     im3.save(filepath3, 'tiff:method=tiled:tile_width=32:tile_height=32')
     eq_(im.width(),im2.width())
@@ -143,7 +147,8 @@ def test_tiff_round_trip_tiled():
     im.fill(mapnik.Color('rgba(1,255,128,.5)'))
     im.save(filepath,'tiff:method=tiled')
     im2 = mapnik.Image.open(filepath)
-    im3 = mapnik.Image.fromstring(open(filepath,'r').read())
+    with open(filepath, READ_FLAGS) as f:
+        im3 = mapnik.Image.fromstring(f.read())
     eq_(im.width(),im2.width())
     eq_(im.height(),im2.height())
     eq_(im.width(),im3.width())

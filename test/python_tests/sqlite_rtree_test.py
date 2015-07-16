@@ -1,11 +1,15 @@
 #!/usr/bin/env python
+import sys
 
 from nose.tools import eq_
-from utilities import execution_path, run_all
+from .utilities import execution_path, run_all
 import threading
 
 import os, mapnik
 import sqlite3
+
+PYTHON3 = sys.version_info[0] == 3
+
 
 def setup():
     # All of the paths used are relative, if we run the tests
@@ -157,9 +161,11 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         name = result[2]
         eq_(name,'test point')
         geom_wkb_blob = result[1]
-        eq_(str(geom_wkb_blob),geom.to_wkb(mapnik.wkbByteOrder.NDR))
-        new_geom = mapnik.Geometry.from_wkb(str(geom_wkb_blob))
-        eq_(new_geom.to_wkt(),geom.to_wkt())
+        if not PYTHON3:
+            geom_wkb_blob = str(geom_wkb_blob)
+        eq_(geom_wkb_blob, geom.to_wkb(mapnik.wkbByteOrder.NDR))
+        new_geom = mapnik.Geometry.from_wkb(geom_wkb_blob)
+        eq_(new_geom.to_wkt(), geom.to_wkt())
         conn.close()
         os.unlink(test_db)
 

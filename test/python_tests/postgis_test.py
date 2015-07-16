@@ -1,11 +1,16 @@
 #!/usr/bin/env python
+import sys
 
 from nose.tools import eq_,raises
 import atexit
-from utilities import execution_path, run_all
+from .utilities import execution_path, run_all
 from subprocess import Popen, PIPE
 import os, mapnik
 import threading
+
+PYTHON3 = sys.version_info[0] == 3
+if PYTHON3:
+    long = int
 
 
 MAPNIK_TEST_DBNAME = 'mapnik-tmp-postgis-test-db'
@@ -21,12 +26,11 @@ def call(cmd,silent=False):
     stdin, stderr = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE).communicate()
     if not stderr:
         return stdin.strip()
-    elif not silent and 'error' in stderr.lower() \
-        or 'not found' in stderr.lower() \
-        or 'could not connect' in stderr.lower() \
-        or 'bad connection' in stderr.lower() \
-        or 'not recognized as an internal' in stderr.lower():
-        raise RuntimeError(stderr.strip())
+    msg = str(stderr).lower()
+    if not silent and 'error' in msg\
+       or 'not found' in msg or 'not recognized as an internal' in msg\
+       or 'bad connection' in msg or 'could not connect' in msg:
+        raise RuntimeError(msg.strip())
 
 def psql_can_connect():
     """Test ability to connect to a postgis template db with no options.
@@ -40,7 +44,7 @@ def psql_can_connect():
         call('psql %s -c "select postgis_version()"' % POSTGIS_TEMPLATE_DBNAME)
         return True
     except RuntimeError:
-        print 'Notice: skipping postgis tests (connection)'
+        print('Notice: skipping postgis tests (connection)')
         return False
 
 def shp2pgsql_on_path():
@@ -52,7 +56,7 @@ def shp2pgsql_on_path():
         call('shp2pgsql')
         return True
     except RuntimeError:
-        print 'Notice: skipping postgis tests (shp2pgsql)'
+        print('Notice: skipping postgis tests (shp2pgsql)')
         return False
 
 def createdb_and_dropdb_on_path():
@@ -65,7 +69,7 @@ def createdb_and_dropdb_on_path():
         call('dropdb --help')
         return True
     except RuntimeError:
-        print 'Notice: skipping postgis tests (createdb/dropdb)'
+        print('Notice: skipping postgis tests (createdb/dropdb)')
         return False
 
 insert_table_1 = """
@@ -290,7 +294,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
                                 max_size=20,
                                 geometry_field='geom',
                                 user="rolethatdoesnotexist")
-        except Exception, e:
+        except Exception as e:
             assert 'role "rolethatdoesnotexist" does not exist' in str(e)
 
     def test_empty_db():
@@ -648,7 +652,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
                                 table='asdfasdfasdfasdfasdf',
                                 max_size=20)
             ds.all_features()
-        except Exception, e:
+        except Exception as e:
             eq_('in executeQuery' in str(e),True)
 
     def test_threaded_create2(NUM_THREADS=10):
@@ -809,8 +813,8 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
     def test_exception_message_reporting():
         try:
             mapnik.PostGIS(dbname=MAPNIK_TEST_DBNAME,table='doesnotexist')
-        except Exception, e:
-            eq_(e.message != 'unidentifiable C++ exception', True)
+        except Exception as e:
+            eq_(str(e) != 'unidentifiable C++ exception', True)
 
     def test_null_id_field():
         opts = {'type':'postgis',
@@ -820,7 +824,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         ds = mapnik.Datasource(**opts)
         fs = ds.featureset()
         feat = fs.next()
-        eq_(feat.id(),1L)
+        eq_(feat.id(), long(1))
         eq_(feat['osm_id'],None)
 
         meta = ds.describe()
@@ -852,9 +856,9 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         failed = False
         try:
             fs = ds_bad.featureset()
-            for feature in fs:
+            for feature in fs.features:
                 pass
-        except RuntimeError, e:
+        except RuntimeError as e:
             assert 'invalid input syntax for integer' in str(e)
             failed = True
 
@@ -863,7 +867,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         # Should be ok
         fs = ds_good.featureset()
         count = 0
-        for feature in fs:
+        for feature in fs.features:
             count += 1
         eq_(count,8)
 
@@ -918,7 +922,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
             mapnik.render_to_file(map1,'/tmp/mapnik-postgis-test-map1.png', 'png')
             # Test must fail if error was not raised just above
             eq_(False,True)
-        except RuntimeError, e:
+        except RuntimeError as e:
             assert 'invalid input syntax for integer' in str(e)
             pass
         # This used to raise an exception before correction of issue 2042

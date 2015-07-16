@@ -3,7 +3,7 @@
 
 import os, mapnik
 from timeit import Timer, time
-from utilities import execution_path, run_all
+from .utilities import execution_path, run_all
 
 def setup():
     # All of the paths used are relative, if we run the tests
@@ -108,14 +108,14 @@ def do_encoding():
             t = Timer(aerial_24)
             run(aerial_24,aerial_24_im,c,t)
 
-    for key, value in sorted(sortable.iteritems(), key=lambda (k,v): (v,k)):
+    for key, value in sorted(sortable.iteritems(), key=lambda k, v: (v,k)):
         s = results[key]
         min_ = str(s[0])[:6]
         avg = str(s[1])[:6]
         elapsed = str(s[2])[:6]
         name = s[3]
         size = s[4]
-        print 'min: %sms | avg: %sms | total: %sms | len: %s <-- %s' % (min_,avg,elapsed,size,name)
+        print('min: %sms | avg: %sms | total: %sms | len: %s <-- %s' % (min_,avg,elapsed,size,name))
 
 
 if __name__ == "__main__":

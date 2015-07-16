@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import, print_function
 
 import os, mapnik
-from nose.tools import raises,eq_
-from utilities import execution_path, run_all
+from nose.tools import raises, eq_
+from .utilities import execution_path, run_all
 
 def setup():
     # All of the paths used are relative, if we run the tests
@@ -73,14 +74,14 @@ if mapnik.has_webp():
                 expected = gen_filepath('blank',opt)
                 actual = os.path.join(tmp_dir,os.path.basename(expected))
                 if generate or not os.path.exists(expected):
-                    print 'generating expected image %s' % expected
+                    print('generating expected image', expected)
                     im.save(expected,opt)
                 im.save(actual,opt)
                 try:
                     expected_bytes = mapnik.Image.open(expected).tostring()
                 except RuntimeError:
                     # this will happen if libweb is old, since it cannot open images created by more recent webp
-                    print 'warning, cannot open webp expected image (your libwebp is likely too old)'
+                    print('warning, cannot open webp expected image (your libwebp is likely too old)')
                     continue
                 if mapnik.Image.open(actual).tostring() != expected_bytes:
                     fails.append('%s (actual) not == to %s (expected)' % (actual,expected))
@@ -91,14 +92,14 @@ if mapnik.has_webp():
                 expected = gen_filepath('solid',opt)
                 actual = os.path.join(tmp_dir,os.path.basename(expected))
                 if generate or not os.path.exists(expected):
-                    print 'generating expected image %s' % expected
+                    print('generating expected image', expected)
                     im.save(expected,opt)
                 im.save(actual,opt)
                 try:
                     expected_bytes = mapnik.Image.open(expected).tostring()
                 except RuntimeError:
                     # this will happen if libweb is old, since it cannot open images created by more recent webp
-                    print 'warning, cannot open webp expected image (your libwebp is likely too old)'
+                    print('warning, cannot open webp expected image (your libwebp is likely too old)')
                     continue
                 if mapnik.Image.open(actual).tostring() != expected_bytes:
                     fails.append('%s (actual) not == to %s (expected)' % (actual,expected))
@@ -108,21 +109,21 @@ if mapnik.has_webp():
                 expected = gen_filepath('aerial_rgba',opt)
                 actual = os.path.join(tmp_dir,os.path.basename(expected))
                 if generate or not os.path.exists(expected):
-                    print 'generating expected image %s' % expected
+                    print('generating expected image', expected)
                     im.save(expected,opt)
                 im.save(actual,opt)
                 try:
                     expected_bytes = mapnik.Image.open(expected).tostring()
                 except RuntimeError:
                     # this will happen if libweb is old, since it cannot open images created by more recent webp
-                    print 'warning, cannot open webp expected image (your libwebp is likely too old)'
+                    print('warning, cannot open webp expected image (your libwebp is likely too old)')
                     continue
                 if mapnik.Image.open(actual).tostring() != expected_bytes:
                     fails.append('%s (actual) not == to %s (expected)' % (actual,expected))
             # disabled to avoid failures on ubuntu when using old webp packages
             #eq_(fails,[],'\n'+'\n'.join(fails))
-        except RuntimeError, e:
-            print e
+        except RuntimeError as e:
+            print(e)
 
     def test_transparency_levels():
         try:
@@ -131,11 +132,11 @@ if mapnik.has_webp():
             im.fill(mapnik.Color('rgba(255,255,255,.5)'))
             c2 = mapnik.Color('rgba(255,255,0,.2)')
             c3 = mapnik.Color('rgb(0,255,255)')
-            for y in range(0,im.height()/2):
-                for x in range(0,im.width()/2):
+            for y in range(0, int(im.height()/2)):
+                for x in range(0, int(im.width()/2)):
                     im.set_pixel(x,y,c2)
-            for y in range(im.height()/2,im.height()):
-                for x in range(im.width()/2,im.width()):
+            for y in range(int(im.height()/2), im.height()):
+                for x in range(int(im.width()/2), im.width()):
                     im.set_pixel(x,y,c3)
 
             t0 = tmp_dir + 'white0-actual.webp'
@@ -152,11 +153,11 @@ if mapnik.has_webp():
                 expected_bytes = mapnik.Image.open(expected).tostring(format)
             except RuntimeError:
                 # this will happen if libweb is old, since it cannot open images created by more recent webp
-                print 'warning, cannot open webp expected image (your libwebp is likely too old)'
+                print('warning, cannot open webp expected image (your libwebp is likely too old)')
                 return
             eq_(t0_len,len(expected_bytes))
-        except RuntimeError, e:
-            print e
+        except RuntimeError as e:
+            print(e)
 
 
 if __name__ == "__main__":

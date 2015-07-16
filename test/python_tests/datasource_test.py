@@ -1,9 +1,14 @@
 #!/usr/bin/env python
+import sys
 
 from nose.tools import eq_, raises
-from utilities import execution_path, run_all
+from .utilities import execution_path, run_all
 import os, mapnik
 from itertools import groupby
+
+PYTHON3 = sys.version_info[0] == 3
+if PYTHON3:
+    xrange = range
 
 def setup():
     # All of the paths used are relative, if we run the tests
@@ -12,7 +17,7 @@ def setup():
 
 def test_that_datasources_exist():
     if len(mapnik.DatasourceCache.plugin_names()) == 0:
-        print '***NOTICE*** - no datasource plugins have been loaded'
+        print('***NOTICE*** - no datasource plugins have been loaded')
 
 # adapted from raster_symboliser_test#test_dataraster_query_point
 @raises(RuntimeError)
@@ -98,7 +103,8 @@ def test_sqlite_reading():
         eq_(num_feats, 245)
 
 def test_reading_json_from_string():
-    json = open('../data/json/points.geojson','r').read()
+    with open('../data/json/points.geojson', 'r') as f:
+        json = f.read()
     if 'ogr' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.Ogr(file=json,layer_by_index=0)
         features = ds.all_features()
@@ -145,8 +151,8 @@ def test_hit_grid():
         m.zoom_all()
         join_field = 'NAME'
         fg = [] # feature grid
-        for y in range(0, 256, 4):
-            for x in range(0, 256, 4):
+        for y in xrange(0, 256, 4):
+            for x in xrange(0, 256, 4):
                 featureset = m.query_map_point(0,x,y)
                 added = False
                 for feature in featureset.features:
@@ -157,7 +163,7 @@ def test_hit_grid():
         hit_list = '|'.join(rle_encode(fg))
         eq_(hit_list[:16],'730:|2:Greenland')
         eq_(hit_list[-12:],'1:Chile|812:')
-    except RuntimeError, e:
+    except RuntimeError as e:
         # only test datasources that we have installed
         if not 'Could not create datasource' in str(e):
             raise RuntimeError(str(e))

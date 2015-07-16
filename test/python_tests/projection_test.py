@@ -1,10 +1,15 @@
 #!/usr/bin/env python
+import sys
 
 from nose.tools import eq_,assert_almost_equal
 
 import mapnik
 import math
-from utilities import run_all, assert_box2d_almost_equal
+from .utilities import run_all, assert_box2d_almost_equal
+
+PYTHON3 = sys.version_info[0] == 3
+if PYTHON3:
+    xrange = range
 
 # Tests that exercise map projections.
 

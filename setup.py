@@ -8,6 +8,18 @@ import sys
 import shutil
 import re
 
+PYTHON3 = sys.version_info[0] == 3
+
+
+# Utils
+def check_output(args):
+    output = subprocess.check_output(args)
+    if PYTHON3:
+        # check_output returns bytes in PYTHON3.
+        output = output.decode()
+    return output.rstrip('\n')
+
+
 cflags = sysconfig.get_config_var('CFLAGS')
 sysconfig._config_vars['CFLAGS'] = re.sub(' +', ' ', cflags.replace('-g', '').replace('-Os', '').replace('-arch i386', ''))
 opt = sysconfig.get_config_var('OPT')
@@ -35,13 +47,13 @@ boost_system_lib = os.environ.get("BOOST_SYSTEM_LIB", 'boost_system-mt')
 boost_thread_lib = os.environ.get("BOOST_THREAD_LIB", 'boost_thread-mt')
 
 try:
-    linkflags = subprocess.check_output([mapnik_config, '--libs']).rstrip('\n').split(' ')
+    linkflags = check_output([mapnik_config, '--libs']).split(' ')
     lib_path = linkflags[0][2:]
-    linkflags.extend(subprocess.check_output([mapnik_config, '--ldflags']).rstrip('\n').split(' '))
+    linkflags.extend(check_output([mapnik_config, '--ldflags']).split(' '))
 except:
-    raise Exception("Failed to find proper linking flags from mapnik config");
+    raise Exception("Failed to find proper linking flags from mapnik config")
 
-## Dynamically make the mapnik/paths.py file if it doesn't exist.
+# Dynamically make the mapnik/paths.py file if it doesn't exist.
 if os.path.isfile('mapnik/paths.py'):
     create_paths = False
 else:
@@ -60,7 +72,7 @@ if mason_build:
         shutil.copyfile(f, os.path.join('mapnik', base_f))
     except shutil.Error:
         pass
-    input_plugin_path = subprocess.check_output([mapnik_config, '--input-plugins']).rstrip('\n')
+    input_plugin_path = check_output([mapnik_config, '--input-plugins'])
     input_plugin_files = os.listdir(input_plugin_path)
     input_plugin_files = [os.path.join(input_plugin_path, f) for f in input_plugin_files]
     if not os.path.exists(os.path.join('mapnik','plugins','input')):
@@ -70,7 +82,7 @@ if mason_build:
             shutil.copyfile(f, os.path.join('mapnik', 'plugins', 'input', os.path.basename(f)))
         except shutil.Error:
             pass
-    font_path = subprocess.check_output([mapnik_config, '--fonts']).rstrip('\n')
+    font_path = check_output([mapnik_config, '--fonts'])
     font_files = os.listdir(font_path)
     font_files = [os.path.join(font_path, f) for f in font_files]
     if not os.path.exists(os.path.join('mapnik','plugins','fonts')):
@@ -94,7 +106,7 @@ if create_paths:
 
 
 if not mason_build:
-    icu_path = subprocess.check_output([mapnik_config, '--icu-data']).rstrip('\n')
+    icu_path = check_output([mapnik_config, '--icu-data'])
 else:
     icu_path = 'mason_packages/.link/share/icu/'
 if icu_path:
@@ -109,7 +121,7 @@ if icu_path:
             pass
 
 if not mason_build:
-    gdal_path = subprocess.check_output([mapnik_config, '--gdal-data']).rstrip('\n')
+    gdal_path = check_output([mapnik_config, '--gdal-data'])
 else:
     gdal_path = 'mason_packages/.link/share/gdal/'
     if os.path.exists('mason_packages/.link/share/gdal/gdal/'):
@@ -126,7 +138,7 @@ if gdal_path:
             pass
 
 if not mason_build:
-    proj_path = subprocess.check_output([mapnik_config, '--proj-lib']).rstrip('\n')
+    proj_path = check_output([mapnik_config, '--proj-lib'])
 else:
     proj_path = 'mason_packages/.link/share/proj/'
     if os.path.exists('mason_packages/.link/share/proj/proj/'):
@@ -142,7 +154,7 @@ if proj_path:
         except shutil.Error:
             pass
 
-extra_comp_args = subprocess.check_output([mapnik_config, '--cflags']).rstrip('\n').split(' ')
+extra_comp_args = check_output([mapnik_config, '--cflags']).split(' ')
 
 if sys.platform == 'darwin':
     extra_comp_args.append('-mmacosx-version-min=10.8')
@@ -153,9 +165,9 @@ else:
     linkflags.append('-Wl,-rpath=$ORIGIN')
 
 if os.environ.get("CC",False) == False:
-    os.environ["CC"] = subprocess.check_output([mapnik_config, '--cxx']).rstrip('\n')
+    os.environ["CC"] = check_output([mapnik_config, '--cxx'])
 if os.environ.get("CXX",False) == False:
-    os.environ["CXX"] = subprocess.check_output([mapnik_config, '--cxx']).rstrip('\n')
+    os.environ["CXX"] = check_output([mapnik_config, '--cxx'])
 
 setup(
     name = "mapnik",

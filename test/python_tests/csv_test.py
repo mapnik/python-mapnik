@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+
 import glob
 from nose.tools import eq_,raises
-from utilities import execution_path
+from .utilities import execution_path
 
 import os, mapnik
 
@@ -11,7 +13,7 @@ default_logging_severity = mapnik.logger.get_severity()
 
 def setup():
     # make the tests silent since we intentially test error conditions that are noisy
-    mapnik.logger.set_severity(mapnik.severity_type.None)
+    mapnik.logger.set_severity(getattr(mapnik.severity_type, "None"))
     # All of the paths used are relative, if we run the tests
     # from another directory we need to chdir()
     os.chdir(execution_path('.'))
@@ -35,9 +37,9 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
             if visual:
                 try:
                     mapnik.Datasource(type='csv',file=csv,strict=True)
-                    print '\x1b[33mfailed: should have thrown\x1b[0m',csv
+                    print('\x1b[33mfailed: should have thrown\x1b[0m',csv)
                 except Exception:
-                    print '\x1b[1;32m✓ \x1b[0m', csv
+                    print('\x1b[1;32m✓ \x1b[0m', csv)
 
     def test_good_files(visual=False):
         good_files = glob.glob("../data/csv/*.*")
@@ -49,9 +51,9 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
             if visual:
                 try:
                     mapnik.Datasource(type='csv',file=csv)
-                    print '\x1b[1;32m✓ \x1b[0m', csv
-                except Exception, e:
-                    print '\x1b[33mfailed: should not have thrown\x1b[0m',csv,str(e)
+                    print('\x1b[1;32m✓ \x1b[0m', csv)
+                except Exception as e:
+                    print('\x1b[33mfailed: should not have thrown\x1b[0m',csv,str(e))
 
     def test_lon_lat_detection(**kwargs):
         ds = get_csv_ds('lon_lat.csv')
@@ -117,7 +119,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         fs = ds.featureset()
         attr = {'x': 0, 'empty_column': u'', 'text': u'a b', 'float': 1.0, 'datetime': u'1971-01-01T04:14:00', 'y': 0, 'boolean': True, 'time': u'04:14:00', 'date': u'1971-01-01', 'integer': 40}
         first = True
-        for feat in fs:
+        for feat in fs.features:
             if first:
                 first=False
                 eq_(feat.attributes,attr)

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from nose.tools import eq_,assert_true,assert_almost_equal,assert_false
-from utilities import run_all
+from .utilities import run_all
 import mapnik
 
 def test_coord_init():

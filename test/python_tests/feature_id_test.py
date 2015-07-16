@@ -1,9 +1,14 @@
 #!/usr/bin/env python
 
 from nose.tools import eq_
-from utilities import execution_path, run_all
+from .utilities import execution_path, run_all
 import os, mapnik
-import itertools
+
+try:
+    import itertools.izip as zip
+except ImportError:
+    pass
+
 
 def setup():
     # All of the paths used are relative, if we run the tests
@@ -22,7 +27,7 @@ def compare_shape_between_mapnik_and_ogr(shapefile,query=None):
             fs1 = ds1.featureset()
             fs2 = ds2.featureset()
         count = 0;
-        for feat1,feat2 in itertools.izip(fs1,fs2):
+        for feat1, feat2 in zip(fs1.features, fs2.features):
             count += 1
             eq_(feat1.id(),feat2.id(),
                 '%s : ogr feature id %s "%s" does not equal shapefile feature id %s "%s"'

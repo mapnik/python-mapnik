@@ -1,8 +1,13 @@
 #!/usr/bin/env python
 
 from nose.tools import eq_
-from utilities import execution_path, run_all
+from .utilities import execution_path, run_all
+
 import os, mapnik
+try:
+    import itertools.izip as zip
+except ImportError:
+    pass
 
 def setup():
     # All of the paths used are relative, if we run the tests
@@ -25,8 +30,7 @@ if 'shape' in plugins and 'ogr' in plugins:
         fs1 = ds1.featureset()
         fs2 = ds2.featureset()
         count = 0;
-        import itertools
-        for feat1,feat2 in itertools.izip(fs1, fs2):
+        for feat1, feat2 in zip(fs1.features, fs2.features):
             count += 1
             eq_(feat1.attributes,feat2.attributes)
             # TODO - revisit this: https://github.com/mapnik/mapnik/issues/1093
