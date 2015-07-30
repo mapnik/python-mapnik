@@ -64,7 +64,7 @@ void grid_encode_utf(T const& grid_type,
                             unsigned int resolution);
 
 template <typename T>
-boost::python::dict grid_encode( T const& grid, std::string const& format, bool add_features, unsigned int resolution);
+boost::python::object grid_encode( T const& grid, std::string const& format, bool add_features, unsigned int resolution);
 
 void render_layer_for_grid(const mapnik::Map& map,
                            mapnik::grid& grid,

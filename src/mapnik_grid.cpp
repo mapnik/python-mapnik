@@ -44,7 +44,7 @@
 using namespace boost::python;
 
 // help compiler see template definitions
-static dict (*encode)( mapnik::grid const&, std::string const& , bool, unsigned int) = mapnik::grid_encode;
+static object (*encode)( mapnik::grid const&, std::string const& , bool, unsigned int) = mapnik::grid_encode;
 
 bool painted(mapnik::grid const& grid)
 {
@@ -80,7 +80,7 @@ void export_grid()
         .def("clear",&mapnik::grid::clear)
         .def("encode",encode,
              ( boost::python::arg("encoding")="utf", boost::python::arg("features")=true,boost::python::arg("resolution")=4 ),
-             "Encode the grid as as optimized json\n"
+             "Encode the grid as optimized json or bitmap\n"
             )
         .add_property("key",
                       make_function(&mapnik::grid::get_key,return_value_policy<copy_const_reference>()),
