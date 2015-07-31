@@ -395,6 +395,27 @@ def GeoJSON(**keywords):
     keywords['type'] = 'geojson'
     return CreateDatasource(keywords)
 
+def GeoWave(**keywords):
+    """Create a GeoWave Datasource.
+
+    Required keyword arguments:
+      zookeeper_url -- The comma-delimited URLs for all zookeeper servers, this will be directly used to instantiate a ZookeeperInstance.
+      instance_name -- The zookeeper instance name, this will be directly used to instantiate a ZookeeperInstance.
+      username -- The username for the account to establish an Accumulo connector.
+      password -- The password for the account to establish an Accumulo connector.
+      table_namespace -- The table name to be used when interacting with GeoWave. 
+      adapter_id -- The adapter id which represents the dataset to be loaded.
+
+    >>> from mapnik import GeoWave, Layer
+    >>> params = dict(zookeeper_url='localhost:2181',instance_name='geowave',username='root',password='password',table_namespace='mapnik',adapter_id='id')
+    >>> geowave = GeoWave(**params)
+    >>> lyr = Layer('GeoWave Layer')
+    >>> lyr.datasource = geowave
+
+    """
+    keywords['type'] = 'geowave'
+    return CreateDatasource(keywords)
+
 def PostGIS(**keywords):
     """Create a PostGIS Datasource.
 
