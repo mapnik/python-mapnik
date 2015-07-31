@@ -942,7 +942,7 @@ class PDFPrinter:
                                     try:
                                         sym.avoid_edges=False
                                     except:
-                                        print "**** Cant set avoid edges for rule", r.name
+                                        print("**** Cant set avoid edges for rule", r.name)
                                 if r.min_scale <= m.scale_denominator() and m.scale_denominator() < r.max_scale:
                                     lerule = r
                                     lerule.min_scale = 0
