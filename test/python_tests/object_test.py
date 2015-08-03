@@ -502,7 +502,8 @@
 
 #     c1 = mapnik.Color('hsl(0, 100%, 50%)')   # red
 #     c2 = mapnik.Color('hsl(120, 100%, 50%)') # lime
-#     c3 = mapnik.Color('hsla(240, 100%, 50%, 0.5)') # semi-transparent solid blue
+# c3 = mapnik.Color('hsla(240, 100%, 50%, 0.5)') # semi-transparent solid
+# blue
 
 #     eq_(c1, mapnik.Color('red'))
 #     eq_(c2, mapnik.Color('lime'))

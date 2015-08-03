@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 
-from nose.tools import eq_
-from .utilities import execution_path, run_all, get_unique_colors
+import os
 
-import os, mapnik
+from nose.tools import eq_
+
+import mapnik
+
+from .utilities import execution_path, get_unique_colors, run_all
+
 
 def setup():
     # All of the paths used are relative, if we run the tests
@@ -16,33 +20,35 @@ def test_dataraster_coloring():
     lyr = mapnik.Layer('dataraster')
     if 'gdal' in mapnik.DatasourceCache.plugin_names():
         lyr.datasource = mapnik.Gdal(
-            file = '../data/raster/dataraster.tif',
-            band = 1,
-            )
+            file='../data/raster/dataraster.tif',
+            band=1,
+        )
         lyr.srs = srs
-        _map = mapnik.Map(256,256, srs)
+        _map = mapnik.Map(256, 256, srs)
         style = mapnik.Style()
         rule = mapnik.Rule()
         sym = mapnik.RasterSymbolizer()
         # Assigning a colorizer to the RasterSymbolizer tells the later
         # that it should use it to colorize the raw data raster
-        colorizer = mapnik.RasterColorizer(mapnik.COLORIZER_DISCRETE, mapnik.Color("transparent"))
+        colorizer = mapnik.RasterColorizer(
+            mapnik.COLORIZER_DISCRETE,
+            mapnik.Color("transparent"))
 
         for value, color in [
-            (  0, "#0044cc"),
-            ( 10, "#00cc00"),
-            ( 20, "#ffff00"),
-            ( 30, "#ff7f00"),
-            ( 40, "#ff0000"),
-            ( 50, "#ff007f"),
-            ( 60, "#ff00ff"),
-            ( 70, "#cc00cc"),
-            ( 80, "#990099"),
-            ( 90, "#660066"),
-            ( 200, "transparent"),
+            (0, "#0044cc"),
+            (10, "#00cc00"),
+            (20, "#ffff00"),
+            (30, "#ff7f00"),
+            (40, "#ff0000"),
+            (50, "#ff007f"),
+            (60, "#ff00ff"),
+            (70, "#cc00cc"),
+            (80, "#990099"),
+            (90, "#660066"),
+            (200, "transparent"),
         ]:
             colorizer.add_stop(value, mapnik.Color(color))
-        sym.colorizer = colorizer;
+        sym.colorizer = colorizer
         rule.symbols.append(sym)
         style.rules.append(rule)
         _map.append_style('foo', style)
@@ -50,52 +56,57 @@ def test_dataraster_coloring():
         _map.layers.append(lyr)
         _map.zoom_to_box(lyr.envelope())
 
-        im = mapnik.Image(_map.width,_map.height)
+        im = mapnik.Image(_map.width, _map.height)
         mapnik.render(_map, im)
         expected_file = './images/support/dataraster_coloring.png'
         actual_file = '/tmp/' + os.path.basename(expected_file)
-        im.save(actual_file,'png32')
+        im.save(actual_file, 'png32')
         if not os.path.exists(expected_file) or os.environ.get('UPDATE'):
-            im.save(expected_file,'png32')
+            im.save(expected_file, 'png32')
         actual = mapnik.Image.open(actual_file)
         expected = mapnik.Image.open(expected_file)
-        eq_(actual.tostring('png32'),expected.tostring('png32'), 'failed comparing actual (%s) and expected (%s)' % (actual_file,expected_file))
+        eq_(actual.tostring('png32'),
+            expected.tostring('png32'),
+            'failed comparing actual (%s) and expected (%s)' % (actual_file,
+                                                                expected_file))
+
 
 def test_dataraster_query_point():
     srs = '+init=epsg:32630'
     lyr = mapnik.Layer('dataraster')
     if 'gdal' in mapnik.DatasourceCache.plugin_names():
         lyr.datasource = mapnik.Gdal(
-            file = '../data/raster/dataraster.tif',
-            band = 1,
-            )
+            file='../data/raster/dataraster.tif',
+            band=1,
+        )
         lyr.srs = srs
-        _map = mapnik.Map(256,256, srs)
+        _map = mapnik.Map(256, 256, srs)
         _map.layers.append(lyr)
 
-        x, y = 556113.0,4381428.0 # center of extent of raster
+        x, y = 556113.0, 4381428.0  # center of extent of raster
         _map.zoom_all()
-        features = _map.query_point(0,x,y).features
+        features = _map.query_point(0, x, y).features
         assert len(features) == 1
         feat = features[0]
         center = feat.envelope().center()
-        assert center.x==x and center.y==y, center
+        assert center.x == x and center.y == y, center
         value = feat['value']
         assert value == 18.0, value
 
         # point inside map extent but outside raster extent
         current_box = _map.envelope()
-        current_box.expand_to_include(-427417,4477517)
+        current_box.expand_to_include(-427417, 4477517)
         _map.zoom_to_box(current_box)
-        features = _map.query_point(0,-427417,4477517).features
+        features = _map.query_point(0, -427417, 4477517).features
         assert len(features) == 0
 
         # point inside raster extent with nodata
-        features = _map.query_point(0,126850,4596050).features
+        features = _map.query_point(0, 126850, 4596050).features
         assert len(features) == 0
 
+
 def test_load_save_map():
-    map = mapnik.Map(256,256)
+    map = mapnik.Map(256, 256)
     in_map = "../data/good_maps/raster_symbolizer.xml"
     try:
         mapnik.load_map(map, in_map)
@@ -108,6 +119,7 @@ def test_load_save_map():
         # only test datasources that we have installed
         if not 'Could not create datasource' in str(e):
             raise RuntimeError(str(e))
+
 
 def test_raster_with_alpha_blends_correctly_with_background():
     WIDTH = 500
@@ -141,7 +153,8 @@ def test_raster_with_alpha_blends_correctly_with_background():
         mapnik.render(map, mim)
         mim.tostring()
         # All white is expected
-        eq_(get_unique_colors(mim),['rgba(254,254,254,255)'])
+        eq_(get_unique_colors(mim), ['rgba(254,254,254,255)'])
+
 
 def test_raster_warping():
     lyrSrs = "+init=epsg:32630"
@@ -149,16 +162,17 @@ def test_raster_warping():
     lyr = mapnik.Layer('dataraster', lyrSrs)
     if 'gdal' in mapnik.DatasourceCache.plugin_names():
         lyr.datasource = mapnik.Gdal(
-            file = '../data/raster/dataraster.tif',
-            band = 1,
-            )
+            file='../data/raster/dataraster.tif',
+            band=1,
+        )
         sym = mapnik.RasterSymbolizer()
-        sym.colorizer = mapnik.RasterColorizer(mapnik.COLORIZER_DISCRETE, mapnik.Color(255,255,0))
+        sym.colorizer = mapnik.RasterColorizer(
+            mapnik.COLORIZER_DISCRETE, mapnik.Color(255, 255, 0))
         rule = mapnik.Rule()
         rule.symbols.append(sym)
         style = mapnik.Style()
         style.rules.append(rule)
-        _map = mapnik.Map(256,256, mapSrs)
+        _map = mapnik.Map(256, 256, mapSrs)
         _map.append_style('foo', style)
         lyr.styles.append('foo')
         _map.layers.append(lyr)
@@ -168,16 +182,20 @@ def test_raster_warping():
                                          layer_proj)
         _map.zoom_to_box(prj_trans.backward(lyr.envelope()))
 
-        im = mapnik.Image(_map.width,_map.height)
+        im = mapnik.Image(_map.width, _map.height)
         mapnik.render(_map, im)
         expected_file = './images/support/raster_warping.png'
         actual_file = '/tmp/' + os.path.basename(expected_file)
-        im.save(actual_file,'png32')
+        im.save(actual_file, 'png32')
         if not os.path.exists(expected_file) or os.environ.get('UPDATE'):
-            im.save(expected_file,'png32')
+            im.save(expected_file, 'png32')
         actual = mapnik.Image.open(actual_file)
         expected = mapnik.Image.open(expected_file)
-        eq_(actual.tostring('png32'),expected.tostring('png32'), 'failed comparing actual (%s) and expected (%s)' % (actual_file,expected_file))
+        eq_(actual.tostring('png32'),
+            expected.tostring('png32'),
+            'failed comparing actual (%s) and expected (%s)' % (actual_file,
+                                                                expected_file))
+
 
 def test_raster_warping_does_not_overclip_source():
     lyrSrs = "+init=epsg:32630"
@@ -185,32 +203,36 @@ def test_raster_warping_does_not_overclip_source():
     lyr = mapnik.Layer('dataraster', lyrSrs)
     if 'gdal' in mapnik.DatasourceCache.plugin_names():
         lyr.datasource = mapnik.Gdal(
-            file = '../data/raster/dataraster.tif',
-            band = 1,
-            )
+            file='../data/raster/dataraster.tif',
+            band=1,
+        )
         sym = mapnik.RasterSymbolizer()
-        sym.colorizer = mapnik.RasterColorizer(mapnik.COLORIZER_DISCRETE, mapnik.Color(255,255,0))
+        sym.colorizer = mapnik.RasterColorizer(
+            mapnik.COLORIZER_DISCRETE, mapnik.Color(255, 255, 0))
         rule = mapnik.Rule()
         rule.symbols.append(sym)
         style = mapnik.Style()
         style.rules.append(rule)
-        _map = mapnik.Map(256,256, mapSrs)
-        _map.background=mapnik.Color('white')
+        _map = mapnik.Map(256, 256, mapSrs)
+        _map.background = mapnik.Color('white')
         _map.append_style('foo', style)
         lyr.styles.append('foo')
         _map.layers.append(lyr)
-        _map.zoom_to_box(mapnik.Box2d(3,42,4,43))
+        _map.zoom_to_box(mapnik.Box2d(3, 42, 4, 43))
 
-        im = mapnik.Image(_map.width,_map.height)
+        im = mapnik.Image(_map.width, _map.height)
         mapnik.render(_map, im)
         expected_file = './images/support/raster_warping_does_not_overclip_source.png'
         actual_file = '/tmp/' + os.path.basename(expected_file)
-        im.save(actual_file,'png32')
+        im.save(actual_file, 'png32')
         if not os.path.exists(expected_file) or os.environ.get('UPDATE'):
-            im.save(expected_file,'png32')
+            im.save(expected_file, 'png32')
         actual = mapnik.Image.open(actual_file)
         expected = mapnik.Image.open(expected_file)
-        eq_(actual.tostring('png32'),expected.tostring('png32'), 'failed comparing actual (%s) and expected (%s)' % (actual_file,expected_file))
+        eq_(actual.tostring('png32'),
+            expected.tostring('png32'),
+            'failed comparing actual (%s) and expected (%s)' % (actual_file,
+                                                                expected_file))
 
 if __name__ == "__main__":
     setup()

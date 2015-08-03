@@ -62,7 +62,7 @@
 #             def within_circle(p):
 #                 delta_x = p[0] - self.container.centre[0]
 #                 delta_y = p[0] - self.container.centre[0]
-#                 return delta_x*delta_x + delta_y*delta_y < self.radius*self.radius
+# return delta_x*delta_x + delta_y*delta_y < self.radius*self.radius
 
 #             if all(within_circle(p) for p in (tl,tr,bl,br)):
 #                 raise StopIteration()

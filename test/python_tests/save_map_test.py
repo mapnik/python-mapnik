@@ -1,12 +1,18 @@
 #!/usr/bin/env python
 
-from nose.tools import eq_
-from .utilities import execution_path, run_all
+import glob
+import os
 import tempfile
 
-import os, glob, mapnik
+from nose.tools import eq_
+
+import mapnik
+
+from .utilities import execution_path, run_all
+
 
 default_logging_severity = mapnik.logger.get_severity()
+
 
 def setup():
     # make the tests silent to suppress unsupported params from harfbuzz tests
@@ -16,8 +22,10 @@ def setup():
     # from another directory we need to chdir()
     os.chdir(execution_path('.'))
 
+
 def teardown():
     mapnik.logger.set_severity(default_logging_severity)
+
 
 def compare_map(xml):
     m = mapnik.Map(256, 256)
@@ -30,24 +38,29 @@ def compare_map(xml):
            and not 'could not connect' in str(e):
             raise RuntimeError(str(e))
         return
-    (handle, test_map) = tempfile.mkstemp(suffix='.xml', prefix='mapnik-temp-map1-')
+    (handle, test_map) = tempfile.mkstemp(
+        suffix='.xml', prefix='mapnik-temp-map1-')
     os.close(handle)
-    (handle, test_map2) = tempfile.mkstemp(suffix='.xml', prefix='mapnik-temp-map2-')
+    (handle, test_map2) = tempfile.mkstemp(
+        suffix='.xml', prefix='mapnik-temp-map2-')
     os.close(handle)
     if os.path.exists(test_map):
         os.remove(test_map)
     mapnik.save_map(m, test_map)
     new_map = mapnik.Map(256, 256)
-    mapnik.load_map(new_map, test_map,False,absolute_base)
+    mapnik.load_map(new_map, test_map, False, absolute_base)
     with open(test_map2, 'w') as f:
         f.write(mapnik.save_map_to_string(new_map))
-    diff = ' diff -u %s %s' % (os.path.abspath(test_map),os.path.abspath(test_map2))
+    diff = ' diff -u %s %s' % (os.path.abspath(test_map),
+                               os.path.abspath(test_map2))
     try:
         with open(test_map) as f1:
             with open(test_map2) as f2:
                 eq_(f1.read(), f2.read())
     except AssertionError as e:
-        raise AssertionError('serialized map "%s" not the same after being reloaded, \ncompare with command:\n\n$%s' % (xml,diff))
+        raise AssertionError(
+            'serialized map "%s" not the same after being reloaded, \ncompare with command:\n\n$%s' %
+            (xml, diff))
 
     if os.path.exists(test_map):
         os.remove(test_map)
@@ -55,11 +68,12 @@ def compare_map(xml):
         # Fail, the map wasn't written
         return False
 
+
 def test_compare_map():
     good_maps = glob.glob("../data/good_maps/*.xml")
     good_maps = [os.path.normpath(p) for p in good_maps]
     # remove one map that round trips CDATA differently, but this is okay
-    ignorable = os.path.join('..','data','good_maps','empty_parameter2.xml')
+    ignorable = os.path.join('..', 'data', 'good_maps', 'empty_parameter2.xml')
     good_maps.remove(ignorable)
     for m in good_maps:
         compare_map(m)
@@ -68,6 +82,8 @@ def test_compare_map():
         compare_map(m)
 
 # TODO - enforce that original xml does not equal first saved xml
+
+
 def test_compare_map_deprecations():
     dep = glob.glob("../data/deprecated_maps/*.xml")
     dep = [os.path.normpath(p) for p in dep]

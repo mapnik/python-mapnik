@@ -1,8 +1,12 @@
-#coding=utf8
+# coding=utf8
 import os
-import mapnik
-from .utilities import execution_path, run_all
+
 from nose.tools import eq_
+
+import mapnik
+
+from .utilities import execution_path, run_all
+
 
 def setup():
     # All of the paths used are relative, if we run the tests
@@ -11,32 +15,38 @@ def setup():
 
 if 'csv' in mapnik.DatasourceCache.plugin_names():
     def test_marker_ellipse_render1():
-        m = mapnik.Map(256,256)
-        mapnik.load_map(m,'../data/good_maps/marker_ellipse_transform.xml')
+        m = mapnik.Map(256, 256)
+        mapnik.load_map(m, '../data/good_maps/marker_ellipse_transform.xml')
         m.zoom_all()
-        im = mapnik.Image(m.width,m.height)
-        mapnik.render(m,im)
+        im = mapnik.Image(m.width, m.height)
+        mapnik.render(m, im)
         actual = '/tmp/mapnik-marker-ellipse-render1.png'
         expected = 'images/support/mapnik-marker-ellipse-render1.png'
-        im.save(actual,'png32')
+        im.save(actual, 'png32')
         if os.environ.get('UPDATE'):
-            im.save(expected,'png32')
+            im.save(expected, 'png32')
         expected_im = mapnik.Image.open(expected)
-        eq_(im.tostring('png32'),expected_im.tostring('png32'), 'failed comparing actual (%s) and expected (%s)' % (actual,'tests/python_tests/'+ expected))
+        eq_(im.tostring('png32'),
+            expected_im.tostring('png32'),
+            'failed comparing actual (%s) and expected (%s)' % (actual,
+                                                                'tests/python_tests/' + expected))
 
     def test_marker_ellipse_render2():
-        m = mapnik.Map(256,256)
-        mapnik.load_map(m,'../data/good_maps/marker_ellipse_transform2.xml')
+        m = mapnik.Map(256, 256)
+        mapnik.load_map(m, '../data/good_maps/marker_ellipse_transform2.xml')
         m.zoom_all()
-        im = mapnik.Image(m.width,m.height)
-        mapnik.render(m,im)
+        im = mapnik.Image(m.width, m.height)
+        mapnik.render(m, im)
         actual = '/tmp/mapnik-marker-ellipse-render2.png'
         expected = 'images/support/mapnik-marker-ellipse-render2.png'
-        im.save(actual,'png32')
+        im.save(actual, 'png32')
         if os.environ.get('UPDATE'):
-            im.save(expected,'png32')
+            im.save(expected, 'png32')
         expected_im = mapnik.Image.open(expected)
-        eq_(im.tostring('png32'),expected_im.tostring('png32'), 'failed comparing actual (%s) and expected (%s)' % (actual,'tests/python_tests/'+ expected))
+        eq_(im.tostring('png32'),
+            expected_im.tostring('png32'),
+            'failed comparing actual (%s) and expected (%s)' % (actual,
+                                                                'tests/python_tests/' + expected))
 
 if __name__ == "__main__":
     setup()
