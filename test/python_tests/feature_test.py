@@ -39,12 +39,16 @@ def test_add_geom_wkb():
 # POLYGON ((30 10, 10 20, 20 40, 40 40, 30 10))
     wkb = '010300000001000000050000000000000000003e4000000000000024400000000000002440000000000000344000000000000034400000000000004440000000000000444000000000000044400000000000003e400000000000002440'
     geometry = mapnik.Geometry.from_wkb(unhexlify(wkb))
-    eq_(geometry.is_valid(), True)
-    eq_(geometry.is_simple(), True)
+    if hasattr(geometry, 'is_valid'):
+        # Those are only available when python-mapnik has been built with
+        # boost >= 1.56.
+        eq_(geometry.is_valid(), True)
+        eq_(geometry.is_simple(), True)
     eq_(geometry.envelope(), mapnik.Box2d(10.0,10.0,40.0,40.0))
     geometry.correct()
-    # valid after calling correct
-    eq_(geometry.is_valid(), True)
+    if hasattr(geometry, 'is_valid'):
+        # valid after calling correct
+        eq_(geometry.is_valid(), True)
 
 def test_feature_expression_evaluation():
     context = mapnik.Context()
