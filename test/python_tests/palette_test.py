@@ -1,9 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
+import sys
+
 from nose.tools import eq_
-from utilities import execution_path, run_all
-import os, mapnik
+
+import mapnik
+
+from .utilities import execution_path, run_all
+
+PYTHON3 = sys.version_info[0] == 3
+
 
 def setup():
     # All of the paths used are relative, if we run the tests
@@ -16,38 +24,50 @@ expected_256 = '[Palette 256 colors #272727 #3c3c3c #484847 #564b41 #605243 #6a5
 
 expected_rgb = '[Palette 2 colors #ff00ff #ffffff]'
 
+
 def test_reading_palettes():
-    act = open('../data/palettes/palette64.act','rb')
-    palette = mapnik.Palette(act.read(),'act')
-    eq_(palette.to_string(),expected_64);
-    act = open('../data/palettes/palette256.act','rb')
-    palette = mapnik.Palette(act.read(),'act')
-    eq_(palette.to_string(),expected_256);
-    palette = mapnik.Palette('\xff\x00\xff\xff\xff\xff', 'rgb')
-    eq_(palette.to_string(),expected_rgb);
+    with open('../data/palettes/palette64.act', 'rb') as act:
+        palette = mapnik.Palette(act.read(), 'act')
+    eq_(palette.to_string(), expected_64)
+    with open('../data/palettes/palette256.act', 'rb') as act:
+        palette = mapnik.Palette(act.read(), 'act')
+    eq_(palette.to_string(), expected_256)
+    if PYTHON3:
+        palette = mapnik.Palette(b'\xff\x00\xff\xff\xff\xff', 'rgb')
+    else:
+        palette = mapnik.Palette('\xff\x00\xff\xff\xff\xff', 'rgb')
+    eq_(palette.to_string(), expected_rgb)
 
 if 'shape' in mapnik.DatasourceCache.plugin_names():
 
     def test_render_with_palette():
-        m = mapnik.Map(600,400)
-        mapnik.load_map(m,'../data/good_maps/agg_poly_gamma_map.xml')
+        m = mapnik.Map(600, 400)
+        mapnik.load_map(m, '../data/good_maps/agg_poly_gamma_map.xml')
         m.zoom_all()
-        im = mapnik.Image(m.width,m.height)
-        mapnik.render(m,im)
-        act = open('../data/palettes/palette256.act','rb')
-        palette = mapnik.Palette(act.read(),'act')
+        im = mapnik.Image(m.width, m.height)
+        mapnik.render(m, im)
+        with open('../data/palettes/palette256.act', 'rb') as act:
+            palette = mapnik.Palette(act.read(), 'act')
         # test saving directly to filesystem
-        im.save('/tmp/mapnik-palette-test.png','png',palette)
+        im.save('/tmp/mapnik-palette-test.png', 'png', palette)
         expected = './images/support/mapnik-palette-test.png'
         if os.environ.get('UPDATE'):
-            im.save(expected,"png",palette);
+            im.save(expected, "png", palette)
 
         # test saving to a string
-        open('/tmp/mapnik-palette-test2.png','wb').write(im.tostring('png',palette));
+        with open('/tmp/mapnik-palette-test2.png', 'wb') as f:
+            f.write(im.tostring('png', palette))
         # compare the two methods
-        eq_(mapnik.Image.open('/tmp/mapnik-palette-test.png').tostring('png32'),mapnik.Image.open('/tmp/mapnik-palette-test2.png').tostring('png32'),'%s not eq to %s' % ('/tmp/mapnik-palette-test.png','/tmp/mapnik-palette-test2.png'))
+        eq_(mapnik.Image.open('/tmp/mapnik-palette-test.png').tostring('png32'),
+            mapnik.Image.open(
+                '/tmp/mapnik-palette-test2.png').tostring('png32'),
+            '%s not eq to %s' % ('/tmp/mapnik-palette-test.png',
+                                 '/tmp/mapnik-palette-test2.png'))
         # compare to expected
-        eq_(mapnik.Image.open('/tmp/mapnik-palette-test.png').tostring('png32'),mapnik.Image.open(expected).tostring('png32'),'%s not eq to %s' % ('/tmp/mapnik-palette-test.png',expected))
+        eq_(mapnik.Image.open('/tmp/mapnik-palette-test.png').tostring('png32'),
+            mapnik.Image.open(expected).tostring('png32'),
+            '%s not eq to %s' % ('/tmp/mapnik-palette-test.png',
+                                 expected))
 
 if __name__ == "__main__":
     setup()

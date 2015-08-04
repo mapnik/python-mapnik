@@ -1,20 +1,26 @@
 #!/usr/bin/env python
 
+import os
+
 from nose.tools import eq_
-from utilities import execution_path, run_all
-import os, mapnik
+
+import mapnik
+
+from .utilities import execution_path, run_all
+
 
 def setup():
     # All of the paths used are relative, if we run the tests
     # from another directory we need to chdir()
     os.chdir(execution_path('.'))
 
+
 def test_loading_fontset_from_map():
-    m = mapnik.Map(256,256)
-    mapnik.load_map(m,'../data/good_maps/fontset.xml',True)
+    m = mapnik.Map(256, 256)
+    mapnik.load_map(m, '../data/good_maps/fontset.xml', True)
     fs = m.find_fontset('book-fonts')
-    eq_(len(fs.names),2)
-    eq_(list(fs.names),['DejaVu Sans Book','DejaVu Sans Oblique'])
+    eq_(len(fs.names), 2)
+    eq_(list(fs.names), ['DejaVu Sans Book', 'DejaVu Sans Oblique'])
 
 # def test_loading_fontset_from_python():
 #     m = mapnik.Map(256,256)

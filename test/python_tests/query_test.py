@@ -1,15 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os, mapnik
+import os
 
-from nose.tools import eq_,assert_almost_equal,raises
-from utilities import execution_path, run_all
+from nose.tools import assert_almost_equal, eq_, raises
+
+import mapnik
+
+from .utilities import execution_path, run_all
+
 
 def setup():
     # All of the paths used are relative, if we run the tests
     # from another directory we need to chdir()
     os.chdir(execution_path('.'))
+
 
 def test_query_init():
     bbox = (-180, -90, 180, 90)
@@ -18,11 +23,13 @@ def test_query_init():
     assert_almost_equal(r[0], 1.0, places=7)
     assert_almost_equal(r[1], 1.0, places=7)
     # https://github.com/mapnik/mapnik/issues/1762
-    eq_(query.property_names,[])
+    eq_(query.property_names, [])
     query.add_property_name('migurski')
-    eq_(query.property_names,['migurski'])
+    eq_(query.property_names, ['migurski'])
 
 # Converting *from* tuples *to* resolutions is not yet supported
+
+
 @raises(TypeError)
 def test_query_resolution():
     bbox = (-180, -90, 180, 90)

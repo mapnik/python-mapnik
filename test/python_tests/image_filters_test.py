@@ -1,27 +1,33 @@
 #!/usr/bin/env python
 
-from nose.tools import eq_
-from utilities import execution_path, run_all
-from utilities import side_by_side_image
-import os, mapnik
+import os
 import re
+
+from nose.tools import eq_
+
+import mapnik
+
+from .utilities import execution_path, run_all, side_by_side_image
+
 
 def setup():
     # All of the paths used are relative, if we run the tests
     # from another directory we need to chdir()
     os.chdir(execution_path('.'))
 
+
 def replace_style(m, name, style):
     m.remove_style(name)
     m.append_style(name, style)
 
+
 def test_append():
     s = mapnik.Style()
-    eq_(s.image_filters,'')
+    eq_(s.image_filters, '')
     s.image_filters = 'gray'
-    eq_(s.image_filters,'gray')
+    eq_(s.image_filters, 'gray')
     s.image_filters = 'sharpen'
-    eq_(s.image_filters,'sharpen')
+    eq_(s.image_filters, 'sharpen')
 
 if 'shape' in mapnik.DatasourceCache.plugin_names():
     def test_style_level_image_filter():
@@ -49,19 +55,25 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
             mapnik.render(m, im)
             actual = '/tmp/mapnik-style-image-filter-' + filename + '.png'
             expected = 'images/style-image-filter/' + filename + '.png'
-            im.save(actual,"png32")
+            im.save(actual, "png32")
             if not os.path.exists(expected) or os.environ.get('UPDATE'):
-                print 'generating expected test image: %s' % expected
-                im.save(expected,'png32')
+                print('generating expected test image: %s' % expected)
+                im.save(expected, 'png32')
             expected_im = mapnik.Image.open(expected)
             # compare them
             if im.tostring('png32') == expected_im.tostring('png32'):
                 successes.append(name)
             else:
-                fails.append('failed comparing actual (%s) and expected(%s)' % (actual,'tests/python_tests/'+ expected))
+                fails.append(
+                    'failed comparing actual (%s) and expected(%s)' %
+                    (actual, 'tests/python_tests/' + expected))
                 fail_im = side_by_side_image(expected_im, im)
-                fail_im.save('/tmp/mapnik-style-image-filter-' + filename + '.fail.png','png32')
-        eq_(len(fails), 0, '\n'+'\n'.join(fails))
+                fail_im.save(
+                    '/tmp/mapnik-style-image-filter-' +
+                    filename +
+                    '.fail.png',
+                    'png32')
+        eq_(len(fails), 0, '\n' + '\n'.join(fails))
 
 if __name__ == "__main__":
     setup()
