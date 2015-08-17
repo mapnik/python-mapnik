@@ -29,6 +29,8 @@
 #pragma GCC diagnostic ignored "-Wunused-local-typedef"
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #pragma GCC diagnostic ignored "-Wshadow"
+#pragma GCC diagnostic ignored "-Wshorten-64-to-32"
+
 #include <boost/python.hpp>
 #pragma GCC diagnostic pop
 
