@@ -71,13 +71,13 @@ void grid2utf(T const& grid_type,
     // start counting at utf8 codepoint 32, aka space character
     std::uint16_t codepoint = 32;
 
-    unsigned array_size = data.width();
-    for (unsigned y = 0; y < data.height(); ++y)
+    std::size_t array_size = data.width();
+    for (std::size_t y = 0; y < data.height(); ++y)
     {
         std::uint16_t idx = 0;
         const std::unique_ptr<Py_UNICODE[]> line(new Py_UNICODE[array_size]);
         typename T::value_type const* row = data.get_row(y);
-        for (unsigned x = 0; x < data.width(); ++x)
+        for (std::size_t x = 0; x < data.width(); ++x)
         {
             typename T::value_type feature_id = row[x];
             feature_pos = feature_keys.find(feature_id);
@@ -201,14 +201,13 @@ void grid2utf2(T const& grid_type,
     mapnik::grid::data_type target(data.width()/resolution,data.height()/resolution);
     mapnik::scale_grid(target,grid_type.data(),0.0,0.0);
 
-    unsigned array_size = target.width();
-    for (unsigned y = 0; y < target.height(); ++y)
+    std::size_t array_size = target.width();
+    for (std::size_t y = 0; y < target.height(); ++y)
     {
         uint16_t idx = 0;
         const std::unique_ptr<Py_UNICODE[]> line(new Py_UNICODE[array_size]);
         mapnik::grid::value_type * row = target.get_row(y);
-        unsigned x;
-        for (x = 0; x < target.width(); ++x)
+        for (std::size_t x = 0; x < target.width(); ++x)
         {
             feature_pos = feature_keys.find(row[x]);
             if (feature_pos != feature_keys.end())

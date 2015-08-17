@@ -165,7 +165,7 @@ mapnik::parameter get_params_by_index(mapnik::parameters const& p, int index)
     throw boost::python::error_already_set();
 }
 
-unsigned get_params_size(mapnik::parameters const& p)
+std::size_t get_params_size(mapnik::parameters const& p)
 {
     return p.size();
 }

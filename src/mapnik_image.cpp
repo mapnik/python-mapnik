@@ -145,7 +145,7 @@ std::shared_ptr<image_any> copy(mapnik::image_any const& im, mapnik::image_dtype
     return std::make_shared<image_any>(mapnik::image_copy(im, type, offset, scaling));
 }
 
-unsigned compare(mapnik::image_any const& im1, mapnik::image_any const& im2, double threshold, bool alpha)
+std::size_t compare(mapnik::image_any const& im1, mapnik::image_any const& im2, double threshold, bool alpha)
 {
     return mapnik::compare(im1, im2, threshold, alpha);
 }
