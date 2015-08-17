@@ -173,6 +173,9 @@ extra_comp_args = check_output([mapnik_config, '--cflags']).split(' ')
 
 if sys.platform == 'darwin':
     extra_comp_args.append('-mmacosx-version-min=10.8')
+    # silence warning coming from boost python macros which
+    # would is hard to silence via pragma
+    extra_comp_args.append('-Wno-parentheses-equality')
     linkflags.append('-mmacosx-version-min=10.8')
 else:
     linkflags.append('-lrt')
