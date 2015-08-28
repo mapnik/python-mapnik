@@ -1,13 +1,15 @@
 #! /usr/bin/env python
 
 import os
+import os.path
+import platform
 import re
 import shutil
 import subprocess
 import sys
 from distutils import sysconfig
 
-from setuptools import Extension, setup
+from setuptools import Command, Extension, setup
 
 PYTHON3 = sys.version_info[0] == 3
 
@@ -19,6 +21,92 @@ def check_output(args):
         # check_output returns bytes in PYTHON3.
         output = output.decode()
     return output.rstrip('\n')
+
+
+def clean_boost_name(name):
+    name = name.split('.')[0]
+    if name.startswith('lib'):
+        name = name[3:]
+    return name
+
+
+def find_boost_library(_dir, _id):
+    if not os.path.exists(_dir):
+        return
+    for name in os.listdir(_dir):
+        if _id in name:
+            # Special case for boost_python, as it could contain python version
+            # number.
+            if "python" in _id:
+                if PYTHON3:
+                    if "3" not in name:
+                        continue
+                else:
+                    if "3" in name:
+                        continue
+            return clean_boost_name(name)
+
+
+def get_boost_library_names():
+    # A few examples:
+    # - Ubuntu 15.04 Multiarch or Debian sid:
+    #   /usr/lib/x86_64-linux-gnu/libboost_python.a -> libboost_python-py27.a
+    #   /usr/lib/x86_64-linux-gnu/libboost_python-py27.a
+    #   /usr/lib/x86_64-linux-gnu/libboost_python-py34.a
+    #   /usr/lib/x86_64-linux-gnu/libboost_system.a
+    #   /usr/lib/x86_64-linux-gnu/libboost_thread.a
+    # - Fedora 64 bits:
+    #   /usr/lib64/libboost_python.so
+    #   /usr/lib64/libboost_python3.so
+    #   /usr/lib64/libboost_system.so
+    #   /usr/lib64/libboost_thread.so
+    # - OSX with homebrew
+    #   /usr/local/lib/libboost_thread-mt.a -> ../Cellar/boost/1.57.0/lib/libboost_thread-mt.a  # noqa
+    # - Debian Wheezy
+    #   /usr/lib/libboost_python-py27.so
+    #   /usr/lib/libboost_python-mt-py27.so
+    names = {
+        "boost_python": os.environ.get("BOOST_PYTHON_LIB"),
+        "boost_system": os.environ.get("BOOST_SYSTEM_LIB"),
+        "boost_thread": os.environ.get("BOOST_THREAD_LIB")
+    }
+    if all(names.values()):
+        return names.values()
+    if os.name == 'posix':  # Unix system (Linux, MacOS)
+        libdirs = ['/lib', '/lib64', '/usr/lib', '/usr/lib64']
+        multiarch = sysconfig.get_config_var("MULTIARCH")
+        if multiarch:
+            libdirs.extend(['/lib/%s' % multiarch, '/usr/lib/%s' % multiarch])
+        if platform.system() == "Darwin":
+            libdirs.extend(['/opt/local/lib/'])
+        if os.environ.get('BOOST_ROOT'):
+            libdirs.append(os.environ.get('BOOST_ROOT'))
+        for _dir in libdirs:
+            for key, value in names.items():
+                if not value:
+                    value = find_boost_library(_dir, key)
+                    if value:
+                        names[key] = value
+            if all(names.values()):
+                break
+    for key, value in names.items():
+        if not value:
+            names[key] = key  # Set default.
+    return names.values()
+
+
+class WhichBoostCommand(Command):
+    description = 'Output found boost names. Useful for debug.'
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        print("\n".join(list(get_boost_library_names())))
 
 
 cflags = sysconfig.get_config_var('CFLAGS')
@@ -48,9 +136,6 @@ else:
     mapnik_config = 'mapnik-config'
     mason_build = False
 
-boost_python_lib = os.environ.get("BOOST_PYTHON_LIB", 'boost_python-mt')
-boost_system_lib = os.environ.get("BOOST_SYSTEM_LIB", 'boost_system-mt')
-boost_thread_lib = os.environ.get("BOOST_THREAD_LIB", 'boost_thread-mt')
 
 try:
     linkflags = check_output([mapnik_config, '--libs']).split(' ')
@@ -204,6 +289,9 @@ setup(
         'mapnik': ['libmapnik.*', 'plugins/*/*'],
     },
     test_suite='nose.collector',
+    cmdclass={
+        'whichboost': WhichBoostCommand,
+    },
     ext_modules=[
         Extension('mapnik._mapnik', [
             'src/mapnik_color.cpp',
@@ -247,10 +335,7 @@ setup(
                 'mapnik',
                 'mapnik-wkt',
                 'mapnik-json',
-                boost_python_lib,
-                boost_thread_lib,
-                boost_system_lib
-        ],
+            ] + list(get_boost_library_names()),
             extra_compile_args=extra_comp_args,
             extra_link_args=linkflags,
         )
