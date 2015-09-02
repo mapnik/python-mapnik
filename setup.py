@@ -2,16 +2,16 @@
 
 import os
 import os.path
-import platform
 import re
 import shutil
 import subprocess
 import sys
 from distutils import sysconfig
+from ctypes.util import find_library
 
 from setuptools import Command, Extension, setup
 
-PYTHON3 = sys.version_info[0] == 3
+PYTHON3 = sys.version_info.major == 3
 
 
 # Utils
@@ -30,69 +30,41 @@ def clean_boost_name(name):
     return name
 
 
-def find_boost_library(_dir, _id):
-    if not os.path.exists(_dir):
-        return
-    for name in os.listdir(_dir):
-        if _id in name:
-            # Special case for boost_python, as it could contain python version
-            # number.
-            if "python" in _id:
-                if PYTHON3:
-                    if "3" not in name:
-                        continue
-                else:
-                    if "3" in name:
-                        continue
-            return clean_boost_name(name)
+def find_boost_library(_id):
+    suffixes = [
+        "",  # standard naming
+        "-mt"  # former naming schema for multithreading build
+    ]
+    if "python" in _id:
+        # Debian naming convention for versions installed in parallel
+        suffixes.insert(0, "-py%d%d" % (sys.version_info.major,
+                                        sys.version_info.minor))
+        # standard suffix for Python3
+        suffixes.insert(1, sys.version_info.major)
+    for suf in suffixes:
+        name = "%s%s" % (_id, suf)
+        lib = find_library(name)
+        if lib is not None:
+            return name
 
 
 def get_boost_library_names():
-    # A few examples:
-    # - Ubuntu 15.04 Multiarch or Debian sid:
-    #   /usr/lib/x86_64-linux-gnu/libboost_python.a -> libboost_python-py27.a
-    #   /usr/lib/x86_64-linux-gnu/libboost_python-py27.a
-    #   /usr/lib/x86_64-linux-gnu/libboost_python-py34.a
-    #   /usr/lib/x86_64-linux-gnu/libboost_system.a
-    #   /usr/lib/x86_64-linux-gnu/libboost_thread.a
-    # - Fedora 64 bits:
-    #   /usr/lib64/libboost_python.so
-    #   /usr/lib64/libboost_python3.so
-    #   /usr/lib64/libboost_system.so
-    #   /usr/lib64/libboost_thread.so
-    # - OSX with homebrew
-    #   /usr/local/lib/libboost_thread-mt.a -> ../Cellar/boost/1.57.0/lib/libboost_thread-mt.a  # noqa
-    # - Debian Wheezy
-    #   /usr/lib/libboost_python-py27.so
-    #   /usr/lib/libboost_python-mt-py27.so
-    names = {
-        "boost_python": os.environ.get("BOOST_PYTHON_LIB"),
-        "boost_system": os.environ.get("BOOST_SYSTEM_LIB"),
-        "boost_thread": os.environ.get("BOOST_THREAD_LIB")
-    }
-    if all(names.values()):
-        return names.values()
-    if os.name == 'posix':  # Unix system (Linux, MacOS)
-        libdirs = ['/lib', '/lib64', '/usr/lib', '/usr/lib64']
-        multiarch = sysconfig.get_config_var("MULTIARCH")
-        if multiarch:
-            libdirs.extend(['/lib/%s' % multiarch, '/usr/lib/%s' % multiarch])
-        if platform.system() == "Darwin":
-            libdirs.extend(['/opt/local/lib/'])
-        if os.environ.get('BOOST_ROOT'):
-            libdirs.append(os.environ.get('BOOST_ROOT'))
-        for _dir in libdirs:
-            for key, value in names.items():
-                if not value:
-                    value = find_boost_library(_dir, key)
-                    if value:
-                        names[key] = value
-            if all(names.values()):
-                break
-    for key, value in names.items():
-        if not value:
-            names[key] = key  # Set default.
-    return names.values()
+    wanted = ['boost_python', 'boost_system', 'boost_thread']
+    found = []
+    missing = []
+    for _id in wanted:
+        name = os.environ.get("%s_LIB" % _id.upper(), find_boost_library(_id))
+        if name:
+            found.append(name)
+        else:
+            missing.append(_id)
+    if missing:
+        msg = ""
+        for name in missing:
+            msg += ("\nMissing {} boost library, try to add its name with "
+                    "{}_LIB environment var.").format(name, name.upper())
+        raise EnvironmentError(msg)
+    return found
 
 
 class WhichBoostCommand(Command):
@@ -106,7 +78,7 @@ class WhichBoostCommand(Command):
         pass
 
     def run(self):
-        print("\n".join(list(get_boost_library_names())))
+        print("\n".join(get_boost_library_names()))
 
 
 cflags = sysconfig.get_config_var('CFLAGS')
@@ -335,7 +307,7 @@ setup(
                 'mapnik',
                 'mapnik-wkt',
                 'mapnik-json',
-            ] + list(get_boost_library_names()),
+            ] + get_boost_library_names(),
             extra_compile_args=extra_comp_args,
             extra_link_args=linkflags,
         )
