@@ -18,3 +18,4 @@ mapnik/paths.py
 .mason/
 mason_packages/
 mapnik/plugins
+.coverage
