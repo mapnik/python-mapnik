@@ -1,15 +1,17 @@
 #! /usr/bin/env python
 
 import os
+import os.path
 import re
 import shutil
 import subprocess
 import sys
 from distutils import sysconfig
+from ctypes.util import find_library
 
-from setuptools import Extension, setup
+from setuptools import Command, Extension, setup
 
-PYTHON3 = sys.version_info[0] == 3
+PYTHON3 = sys.version_info.major == 3
 
 
 # Utils
@@ -19,6 +21,64 @@ def check_output(args):
         # check_output returns bytes in PYTHON3.
         output = output.decode()
     return output.rstrip('\n')
+
+
+def clean_boost_name(name):
+    name = name.split('.')[0]
+    if name.startswith('lib'):
+        name = name[3:]
+    return name
+
+
+def find_boost_library(_id):
+    suffixes = [
+        "",  # standard naming
+        "-mt"  # former naming schema for multithreading build
+    ]
+    if "python" in _id:
+        # Debian naming convention for versions installed in parallel
+        suffixes.insert(0, "-py%d%d" % (sys.version_info.major,
+                                        sys.version_info.minor))
+        # standard suffix for Python3
+        suffixes.insert(1, sys.version_info.major)
+    for suf in suffixes:
+        name = "%s%s" % (_id, suf)
+        lib = find_library(name)
+        if lib is not None:
+            return name
+
+
+def get_boost_library_names():
+    wanted = ['boost_python', 'boost_system', 'boost_thread']
+    found = []
+    missing = []
+    for _id in wanted:
+        name = os.environ.get("%s_LIB" % _id.upper(), find_boost_library(_id))
+        if name:
+            found.append(name)
+        else:
+            missing.append(_id)
+    if missing:
+        msg = ""
+        for name in missing:
+            msg += ("\nMissing {} boost library, try to add its name with "
+                    "{}_LIB environment var.").format(name, name.upper())
+        raise EnvironmentError(msg)
+    return found
+
+
+class WhichBoostCommand(Command):
+    description = 'Output found boost names. Useful for debug.'
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        print("\n".join(get_boost_library_names()))
 
 
 cflags = sysconfig.get_config_var('CFLAGS')
@@ -48,9 +108,6 @@ else:
     mapnik_config = 'mapnik-config'
     mason_build = False
 
-boost_python_lib = os.environ.get("BOOST_PYTHON_LIB", 'boost_python-mt')
-boost_system_lib = os.environ.get("BOOST_SYSTEM_LIB", 'boost_system-mt')
-boost_thread_lib = os.environ.get("BOOST_THREAD_LIB", 'boost_thread-mt')
 
 try:
     linkflags = check_output([mapnik_config, '--libs']).split(' ')
@@ -204,6 +261,9 @@ setup(
         'mapnik': ['libmapnik.*', 'plugins/*/*'],
     },
     test_suite='nose.collector',
+    cmdclass={
+        'whichboost': WhichBoostCommand,
+    },
     ext_modules=[
         Extension('mapnik._mapnik', [
             'src/mapnik_color.cpp',
@@ -247,10 +307,7 @@ setup(
                 'mapnik',
                 'mapnik-wkt',
                 'mapnik-json',
-                boost_python_lib,
-                boost_thread_lib,
-                boost_system_lib
-        ],
+            ] + get_boost_library_names(),
             extra_compile_args=extra_comp_args,
             extra_link_args=linkflags,
         )
