@@ -193,7 +193,7 @@ class _Box2d(Box2d, _injector):
     Following operators are defined for Box2d:
 
     Addition:
-    e1 + e2 is equvalent to e1.expand_to_include(e2) but yields
+    e1 + e2 is equivalent to e1.expand_to_include(e2) but yields
     a new envelope instead of modifying e1
 
     Subtraction:
@@ -433,7 +433,7 @@ def PostGIS(**keywords):
     Optional db connection keyword arguments:
       user -- database user to connect as (default: see postgres docs)
       password -- password for database user (default: see postgres docs)
-      host -- portgres hostname (default: see postgres docs)
+      host -- postgres hostname (default: see postgres docs)
       port -- postgres port (default: see postgres docs)
       initial_size -- integer size of connection pool (default: 1)
       max_size -- integer max of connection pool (default: 10)
@@ -476,7 +476,7 @@ def PgRaster(**keywords):
     Optional db connection keyword arguments:
       user -- database user to connect as (default: see postgres docs)
       password -- password for database user (default: see postgres docs)
-      host -- portgres hostname (default: see postgres docs)
+      host -- postgres hostname (default: see postgres docs)
       port -- postgres port (default: see postgres docs)
       initial_size -- integer size of connection pool (default: 1)
       max_size -- integer max of connection pool (default: 10)
@@ -630,7 +630,7 @@ def SQLite(**keywords):
       base -- path prefix (default None)
       encoding -- file encoding (default 'utf-8')
       extent -- manually specified data extent (comma delimited string, default None)
-      metadata -- name of auxillary table containing record for table with xmin, ymin, xmax, ymax, and f_table_name
+      metadata -- name of auxiliary table containing record for table with xmin, ymin, xmax, ymax, and f_table_name
       geometry_field -- name of geometry field (default 'the_geom')
       key_field -- name of primary key field (default 'OGC_FID')
       row_offset -- specify a custom integer row offset (default 0)
@@ -738,7 +738,7 @@ class PythonDatasource(object):
         return None
 
     def features_at_point(self, point):
-        """Rarely uses. Return an iterable which yields instances of Feature for the specified point."""
+        """Rarely used. Return an iterable which yields instances of Feature for the specified point."""
         return None
 
     @classmethod
