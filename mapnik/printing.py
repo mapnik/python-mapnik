@@ -1023,8 +1023,8 @@ class PDFPrinter:
         ctx: A cairo context to render the legend to. If this is None (the default) then
             automatically create a context and choose the best location for the legend.
         width: Width of area available to render legend in (in m)
-        page_break: move to next page if legen over flows this one
-        collumns: number of collumns available in legend box
+        page_break: move to next page if legend overflows this one
+        collumns: number of columns available in legend box
         attribution: additional text that will be rendered in gray under the layer name. keyed by layer name
         legend_item_box_size:  two tuple with width and height of legend item box size in meters
 
