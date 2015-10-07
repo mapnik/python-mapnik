@@ -433,7 +433,9 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
                             geometry_field='geom',
                             autodetect_key_field=True)
         fs = ds.featureset()
-        eq_(fs.next()['manual_id'], 0)
+        f = fs.next()
+        eq_(len(ds.fields()),len(f.attributes))
+        eq_(f['manual_id'], 0)
         eq_(fs.next()['manual_id'], 1)
         eq_(fs.next()['manual_id'], 1000)
         eq_(fs.next()['manual_id'], -1000)
@@ -459,8 +461,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         fs = ds.featureset()
         feat = fs.next()
         eq_(feat['manual_id'], 0)
-        # will fail: https://github.com/mapnik/mapnik/issues/895
-        # eq_(feat['non_id'],9223372036854775807)
+        eq_(feat['non_id'],9223372036854775807)
         eq_(fs.next()['manual_id'], 1)
         eq_(fs.next()['manual_id'], 1000)
         eq_(fs.next()['manual_id'], -1000)
@@ -494,7 +495,9 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
                             geometry_field='geom',
                             autodetect_key_field=True)
         fs = ds.featureset()
-        eq_(fs.next()['manual_id'], 0)
+        f = fs.next()
+        eq_(len(ds.fields()),len(f.attributes))
+        eq_(f['manual_id'], 0)
         eq_(fs.next()['manual_id'], 1)
         eq_(fs.next()['manual_id'], 1000)
         eq_(fs.next()['manual_id'], -1000)
@@ -548,7 +551,9 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
                             geometry_field='geom',
                             autodetect_key_field=True)
         fs = ds.featureset()
-        eq_(fs.next()['manual_id'], 0)
+        f = fs.next()
+        eq_(len(ds.fields()),len(f.attributes))
+        eq_(f['manual_id'], 0)
         eq_(fs.next()['manual_id'], 1)
         eq_(fs.next()['manual_id'], 1000)
         eq_(fs.next()['manual_id'], -1000)
@@ -592,7 +597,9 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
                             key_field='manual_id',
                             autodetect_key_field=True)
         fs = ds.featureset()
-        eq_(fs.next()['manual_id'], 0)
+        f = fs.next()
+        eq_(len(ds.fields()),len(f.attributes))
+        eq_(f['manual_id'], 0)
         eq_(fs.next()['manual_id'], 1)
         eq_(fs.next()['manual_id'], 1000)
         eq_(fs.next()['manual_id'], -1000)
