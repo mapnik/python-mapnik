@@ -454,6 +454,27 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         eq_(meta.get('key_field'), u'manual_id')
         eq_(meta['geometry_type'], mapnik.DataGeometryType.Point)
 
+    def test_auto_detection_of_unique_feature_id_32_bit_no_attribute():
+        ds = mapnik.PostGIS(dbname=MAPNIK_TEST_DBNAME, table='test2',
+                            geometry_field='geom',
+                            autodetect_key_field=True,
+                            key_field_as_attribute=False)
+        fs = ds.featureset()
+        f = fs.next()
+        eq_(len(ds.fields()),len(f.attributes))
+        eq_(len(ds.fields()),0)
+        eq_(len(f.attributes),0)
+        eq_(f.id(), 0)
+        eq_(fs.next().id(), 1)
+        eq_(fs.next().id(), 1000)
+        eq_(fs.next().id(), -1000)
+        eq_(fs.next().id(), 2147483647)
+        eq_(fs.next().id(), -2147483648)
+        meta = ds.describe()
+        eq_(meta['srid'], 4326)
+        eq_(meta.get('key_field'), u'manual_id')
+        eq_(meta['geometry_type'], mapnik.DataGeometryType.Point)
+
     def test_auto_detection_will_fail_since_no_primary_key():
         ds = mapnik.PostGIS(dbname=MAPNIK_TEST_DBNAME, table='test3',
                             geometry_field='geom',
