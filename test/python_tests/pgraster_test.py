@@ -12,7 +12,7 @@ from nose.tools import assert_almost_equal, eq_
 
 import mapnik
 
-from utilities import execution_path, run_all, side_by_side_image
+from .utilities import execution_path, run_all, side_by_side_image
 
 MAPNIK_TEST_DBNAME = 'mapnik-tmp-pgraster-test-db'
 POSTGIS_TEMPLATE_DBNAME = 'template_postgis'
