@@ -1239,6 +1239,15 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         eq_(feat.geometry.to_wkt(),
             'MULTIPOLYGON(((0 0,1 1,2 2,0 0)),((0 0,1 1,2 2,0 0)))')
 
+    def test_handling_of_discarded_key_field():
+        ds = mapnik.PostGIS(dbname=MAPNIK_TEST_DBNAME,
+                            table='(select * from test12) as tmp',
+                            key_field='gid',
+                            key_field_as_attribute=False)
+        fs = ds.featureset()
+        feat = fs.next()
+        eq_(feat['name'],'Point')
+
     def test_variable_in_subquery1():
         ds = mapnik.PostGIS(dbname=MAPNIK_TEST_DBNAME, table='''
            (select * from test where @zoom = 30 ) as tmp''',
