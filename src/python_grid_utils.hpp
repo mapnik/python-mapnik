@@ -46,13 +46,6 @@ void grid2utf(T const& grid_type,
 
 
 template <typename T>
-void grid2utf2(T const& grid_type,
-                      boost::python::list& l,
-                      std::vector<typename T::lookup_type>& key_order,
-                      unsigned int resolution);
-
-
-template <typename T>
 void write_features(T const& grid_type,
                            boost::python::dict& feature_data,
                            std::vector<typename T::lookup_type> const& key_order);

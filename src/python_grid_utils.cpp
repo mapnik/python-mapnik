@@ -42,7 +42,6 @@
 #include <mapnik/debug.hpp>
 #include <mapnik/grid/grid_renderer.hpp>
 #include <mapnik/grid/grid.hpp>
-#include <mapnik/grid/grid_util.hpp>
 #include <mapnik/grid/grid_view.hpp>
 #include <mapnik/value_error.hpp>
 #include <mapnik/feature.hpp>
@@ -180,65 +179,6 @@ void grid2utf(T const& grid_type,
     }
 }
 
-
-template <typename T>
-void grid2utf2(T const& grid_type,
-                      boost::python::list& l,
-                      std::vector<typename T::lookup_type>& key_order,
-                      unsigned int resolution)
-{
-    using keys_type = std::map< typename T::lookup_type, typename T::value_type>;
-    using keys_iterator = typename keys_type::iterator;
-
-    typename T::data_type const& data = grid_type.data();
-    typename T::feature_key_type const& feature_keys = grid_type.get_feature_keys();
-    typename T::feature_key_type::const_iterator feature_pos;
-
-    keys_type keys;
-    // start counting at utf8 codepoint 32, aka space character
-    uint16_t codepoint = 32;
-
-    mapnik::grid::data_type target(data.width()/resolution,data.height()/resolution);
-    mapnik::scale_grid(target,grid_type.data(),0.0,0.0);
-
-    std::size_t array_size = target.width();
-    for (std::size_t y = 0; y < target.height(); ++y)
-    {
-        uint16_t idx = 0;
-        const std::unique_ptr<Py_UNICODE[]> line(new Py_UNICODE[array_size]);
-        mapnik::grid::value_type * row = target.get_row(y);
-        for (std::size_t x = 0; x < target.width(); ++x)
-        {
-            feature_pos = feature_keys.find(row[x]);
-            if (feature_pos != feature_keys.end())
-            {
-                mapnik::grid::lookup_type val = feature_pos->second;
-                keys_iterator key_pos = keys.find(val);
-                if (key_pos == keys.end())
-                {
-                    // Create a new entry for this key. Skip the codepoints that
-                    // can't be encoded directly in JSON.
-                    if (codepoint == 34) ++codepoint;      // Skip "
-                    else if (codepoint == 92) ++codepoint; // Skip backslash
-                    keys[val] = codepoint;
-                    key_order.push_back(val);
-                    line[idx++] = static_cast<Py_UNICODE>(codepoint);
-                    ++codepoint;
-                }
-                else
-                {
-                    line[idx++] = static_cast<Py_UNICODE>(key_pos->second);
-                }
-            }
-            // else, shouldn't get here...
-        }
-        l.append(boost::python::object(
-                     boost::python::handle<>(
-                         PyUnicode_FromUnicode(line.get(), array_size))));
-    }
-}
-
-
 template <typename T>
 void write_features(T const& grid_type,
                            boost::python::dict& feature_data,
@@ -298,12 +238,9 @@ void grid_encode_utf(T const& grid_type,
     boost::python::list l;
     std::vector<typename T::lookup_type> key_order;
 
-    if (resolution != 1) {
-        // resample on the fly - faster, less accurate
+    if (resolution != 1)
+    {
         mapnik::grid2utf<T>(grid_type,l,key_order,resolution);
-
-        // resample first - slower, more accurate
-        //mapnik::grid2utf2<T>(grid_type,l,key_order,resolution);
     }
     else
     {
