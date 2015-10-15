@@ -167,8 +167,12 @@ elif create_paths:
 
 if create_paths:
     f_paths.write("inputpluginspath = os.path.join(mapniklibpath,'input')\n")
+    if os.environ.get('SYSTEM_FONTS'):
+        font_path = "os.path.normpath('%s')" % os.environ.get('SYSTEM_FONTS')
+    else:
+        font_path = "os.path.join(mapniklibpath,'fonts')"
     f_paths.write(
-        "fontscollectionpath = os.path.join(mapniklibpath,'fonts')\n")
+        "fontscollectionpath = " + font_path + "\n")
     f_paths.write(
         "__all__ = [mapniklibpath,inputpluginspath,fontscollectionpath]\n")
     f_paths.close()
