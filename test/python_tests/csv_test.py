@@ -54,7 +54,9 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         good_files.extend(glob.glob("../data/csv/warns/*.*"))
         ignorable = os.path.join('..', 'data', 'csv', 'long_lat.vrt')
         good_files.remove(ignorable)
-
+        for f in good_files:
+            if f.endswith('.index'):
+                good_files.remove(f)
         for csv in good_files:
             if visual:
                 try:
@@ -492,18 +494,13 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
 
     def test_that_blank_undelimited_rows_are_still_parsed(**kwargs):
         ds = get_csv_ds('more_headers_than_column_values.csv')
-        eq_(len(ds.fields()), 5)
-        eq_(ds.fields(), ['x', 'y', 'one', 'two', 'three'])
-        eq_(ds.field_types(), ['int', 'int', 'str', 'str', 'str'])
+        eq_(len(ds.fields()), 0)
+        eq_(ds.fields(), [])
+        eq_(ds.field_types(), [])
         fs = ds.featureset()
-        feat = fs.next()
-        eq_(feat['x'], 0)
-        eq_(feat['y'], 0)
-        eq_(feat['one'], '')
-        eq_(feat['two'], '')
-        eq_(feat['three'], '')
+        eq_(fs, None)
         desc = ds.describe()
-        eq_(desc['geometry_type'], mapnik.DataGeometryType.Point)
+        eq_(desc['geometry_type'], None)
 
     @raises(RuntimeError)
     def test_that_fewer_headers_than_rows_throws(**kwargs):
