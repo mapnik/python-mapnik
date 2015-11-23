@@ -33,6 +33,8 @@ def setup():
 def call(cmd, silent=False):
     stdin, stderr = Popen(cmd, shell=True, stdout=PIPE,
                           stderr=PIPE).communicate()
+    stdin = stdin.decode()
+    stderr = stderr.decode()
     if not stderr:
         return stdin.strip()
     elif not silent and 'error' in stderr.lower() \
@@ -212,18 +214,18 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         lap = time.time() - t0
         log('T ' + str(lap) + ' -- ' + lbl + ' E:full')
         # no data
-        eq_(im.view(1, 1, 1, 1).tostring(), '\x00\x00\x00\x00')
-        eq_(im.view(255, 255, 1, 1).tostring(), '\x00\x00\x00\x00')
-        eq_(im.view(195, 116, 1, 1).tostring(), '\x00\x00\x00\x00')
+        eq_(im.view(1, 1, 1, 1).tostring(), b'\x00\x00\x00\x00')
+        eq_(im.view(255, 255, 1, 1).tostring(), b'\x00\x00\x00\x00')
+        eq_(im.view(195, 116, 1, 1).tostring(), b'\x00\x00\x00\x00')
         # A0A0A0
-        eq_(im.view(100, 120, 1, 1).tostring(), '\xa0\xa0\xa0\xff')
-        eq_(im.view(75, 80, 1, 1).tostring(), '\xa0\xa0\xa0\xff')
+        eq_(im.view(100, 120, 1, 1).tostring(), b'\xa0\xa0\xa0\xff')
+        eq_(im.view(75, 80, 1, 1).tostring(), b'\xa0\xa0\xa0\xff')
         # 808080
-        eq_(im.view(74, 170, 1, 1).tostring(), '\x80\x80\x80\xff')
-        eq_(im.view(30, 50, 1, 1).tostring(), '\x80\x80\x80\xff')
+        eq_(im.view(74, 170, 1, 1).tostring(), b'\x80\x80\x80\xff')
+        eq_(im.view(30, 50, 1, 1).tostring(), b'\x80\x80\x80\xff')
         # 404040
-        eq_(im.view(190, 70, 1, 1).tostring(), '\x40\x40\x40\xff')
-        eq_(im.view(140, 170, 1, 1).tostring(), '\x40\x40\x40\xff')
+        eq_(im.view(190, 70, 1, 1).tostring(), b'\x40\x40\x40\xff')
+        eq_(im.view(140, 170, 1, 1).tostring(), b'\x40\x40\x40\xff')
 
         # Now zoom over a portion of the env (1/10)
         newenv = mapnik.Box2d(273663, 4024478, 330738, 4072303)
@@ -233,16 +235,16 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         lap = time.time() - t0
         log('T ' + str(lap) + ' -- ' + lbl + ' E:1/10')
         # nodata
-        eq_(hexlify(im.view(255, 255, 1, 1).tostring()), '00000000')
-        eq_(hexlify(im.view(200, 254, 1, 1).tostring()), '00000000')
+        eq_(hexlify(im.view(255, 255, 1, 1).tostring()), b'00000000')
+        eq_(hexlify(im.view(200, 254, 1, 1).tostring()), b'00000000')
         # A0A0A0
-        eq_(hexlify(im.view(90, 232, 1, 1).tostring()), 'a0a0a0ff')
-        eq_(hexlify(im.view(96, 245, 1, 1).tostring()), 'a0a0a0ff')
+        eq_(hexlify(im.view(90, 232, 1, 1).tostring()), b'a0a0a0ff')
+        eq_(hexlify(im.view(96, 245, 1, 1).tostring()), b'a0a0a0ff')
         # 808080
-        eq_(hexlify(im.view(1, 1, 1, 1).tostring()), '808080ff')
-        eq_(hexlify(im.view(128, 128, 1, 1).tostring()), '808080ff')
+        eq_(hexlify(im.view(1, 1, 1, 1).tostring()), b'808080ff')
+        eq_(hexlify(im.view(128, 128, 1, 1).tostring()), b'808080ff')
         # 404040
-        eq_(hexlify(im.view(255, 0, 1, 1).tostring()), '404040ff')
+        eq_(hexlify(im.view(255, 0, 1, 1).tostring()), b'404040ff')
 
     def _test_dataraster_16bsi(lbl, tilesize, constraint, overview):
         import_raster(
@@ -319,12 +321,12 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
             lyr.name, lbl, overview, clip)
         compare_images(expected, im)
         # no data
-        eq_(hexlify(im.view(3, 3, 1, 1).tostring()), '00000000')
-        eq_(hexlify(im.view(250, 250, 1, 1).tostring()), '00000000')
+        eq_(hexlify(im.view(3, 3, 1, 1).tostring()), b'00000000')
+        eq_(hexlify(im.view(250, 250, 1, 1).tostring()), b'00000000')
         # full opaque river color
-        eq_(hexlify(im.view(175, 118, 1, 1).tostring()), 'b9d8f8ff')
+        eq_(hexlify(im.view(175, 118, 1, 1).tostring()), b'b9d8f8ff')
         # half-transparent pixel
-        pxstr = hexlify(im.view(122, 138, 1, 1).tostring())
+        pxstr = hexlify(im.view(122, 138, 1, 1).tostring()).decode()
         apat = ".*(..)$"
         match = re.match(apat, pxstr)
         assert match, 'pixel ' + pxstr + ' does not match pattern ' + apat
@@ -344,12 +346,12 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
             lyr.name, lbl, overview, clip)
         compare_images(expected, im)
         # no data
-        eq_(hexlify(im.view(255, 255, 1, 1).tostring()), '00000000')
-        eq_(hexlify(im.view(200, 40, 1, 1).tostring()), '00000000')
+        eq_(hexlify(im.view(255, 255, 1, 1).tostring()), b'00000000')
+        eq_(hexlify(im.view(200, 40, 1, 1).tostring()), b'00000000')
         # full opaque river color
-        eq_(hexlify(im.view(100, 168, 1, 1).tostring()), 'b9d8f8ff')
+        eq_(hexlify(im.view(100, 168, 1, 1).tostring()), b'b9d8f8ff')
         # half-transparent pixel
-        pxstr = hexlify(im.view(122, 138, 1, 1).tostring())
+        pxstr = hexlify(im.view(122, 138, 1, 1).tostring()).decode()
         apat = ".*(..)$"
         match = re.match(apat, pxstr)
         assert match, 'pixel ' + pxstr + ' does not match pattern ' + apat
@@ -502,7 +504,7 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         # 13 | v | b | v |
         #    +---+---+---+
         #
-        val_a = value / 3
+        val_a = int(value / 3)
         val_b = val_a * 2
         sql = "(select 3 as i, " \
               " ST_SetValues(" \
@@ -556,10 +558,13 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         compare_images(expected, im)
         h = format(value, '02x')
         hex_v = h + h + h + 'ff'
+        hex_v = hex_v.encode()
         h = format(val_a, '02x')
         hex_a = h + h + h + 'ff'
+        hex_a = hex_a.encode()
         h = format(val_b, '02x')
         hex_b = h + h + h + 'ff'
+        hex_b = hex_b.encode()
         eq_(hexlify(im.view(3, 3, 1, 1).tostring()), hex_v)
         eq_(hexlify(im.view(8, 3, 1, 1).tostring()), hex_v)
         eq_(hexlify(im.view(13, 3, 1, 1).tostring()), hex_v)
@@ -788,9 +793,9 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         expected = 'images/support/pgraster/%s-%s-%s-%s-%s-%s-%s-%s-%s.png' % (
             lyr.name, lbl, pixtype, r, g, b, a, g1, b1)
         compare_images(expected, im)
-        hex_v = format(r << 24 | g << 16 | b << 8 | a, '08x')
-        hex_a = format(r << 24 | g1 << 16 | b << 8 | a, '08x')
-        hex_b = format(r << 24 | g << 16 | b1 << 8 | a, '08x')
+        hex_v = format(r << 24 | g << 16 | b << 8 | a, '08x').encode()
+        hex_a = format(r << 24 | g1 << 16 | b << 8 | a, '08x').encode()
+        hex_b = format(r << 24 | g << 16 | b1 << 8 | a, '08x').encode()
         eq_(hexlify(im.view(3, 3, 1, 1).tostring()), hex_v)
         eq_(hexlify(im.view(8, 3, 1, 1).tostring()), hex_v)
         eq_(hexlify(im.view(13, 3, 1, 1).tostring()), hex_v)
