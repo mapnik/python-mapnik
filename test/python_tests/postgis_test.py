@@ -369,7 +369,8 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
                                 geometry_field='geom',
                                 user="rolethatdoesnotexist")
         except Exception as e:
-            assert 'role "rolethatdoesnotexist" does not exist' in str(e)
+            assert 'role "rolethatdoesnotexist" does not exist' in str(e) or \
+                'authentication failed for user "rolethatdoesnotexist"' in str(e)
 
     def test_empty_db():
         ds = mapnik.PostGIS(dbname=MAPNIK_TEST_DBNAME, table='empty')
