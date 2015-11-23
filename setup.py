@@ -125,6 +125,9 @@ else:
     f_paths.write('import os\n')
     f_paths.write('\n')
 
+input_plugin_path = check_output([mapnik_config, '--input-plugins'])
+font_path = check_output([mapnik_config, '--fonts'])
+
 if mason_build:
     try:
         if sys.platform == 'darwin':
@@ -135,7 +138,6 @@ if mason_build:
         shutil.copyfile(f, os.path.join('mapnik', base_f))
     except shutil.Error:
         pass
-    input_plugin_path = check_output([mapnik_config, '--input-plugins'])
     input_plugin_files = os.listdir(input_plugin_path)
     input_plugin_files = [os.path.join(
         input_plugin_path, f) for f in input_plugin_files]
@@ -147,7 +149,6 @@ if mason_build:
                 'mapnik', 'plugins', 'input', os.path.basename(f)))
         except shutil.Error:
             pass
-    font_path = check_output([mapnik_config, '--fonts'])
     font_files = os.listdir(font_path)
     font_files = [os.path.join(font_path, f) for f in font_files]
     if not os.path.exists(os.path.join('mapnik', 'plugins', 'fonts')):
@@ -161,18 +162,17 @@ if mason_build:
     if create_paths:
         f_paths.write(
             'mapniklibpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "plugins")\n')
+        f_paths.write("inputpluginspath = os.path.join(mapniklibpath,'input')\n")
+        f_paths.write("fontscollectionpath = os.path.join(mapniklibpath,'fonts')\n")
 elif create_paths:
     f_paths.write("mapniklibpath = '" + lib_path + "/mapnik'\n")
     f_paths.write('mapniklibpath = os.path.normpath(mapniklibpath)\n')
+    f_paths.write(
+        "inputpluginspath = '{path}'\n".format(path=input_plugin_path))
+    f_paths.write(
+        "fontscollectionpath = '{path}'\n".format(path=font_path))
 
 if create_paths:
-    f_paths.write("inputpluginspath = os.path.join(mapniklibpath,'input')\n")
-    if os.environ.get('SYSTEM_FONTS'):
-        font_path = "os.path.normpath('{path}')".format(path=os.environ.get('SYSTEM_FONTS'))
-    else:
-        font_path = "os.path.join(mapniklibpath,'fonts')"
-    f_paths.write(
-        "fontscollectionpath = {path}\n".format(path=font_path))
     f_paths.write(
         "__all__ = [mapniklibpath,inputpluginspath,fontscollectionpath]\n")
     f_paths.close()
