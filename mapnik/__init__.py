@@ -110,7 +110,7 @@ class Envelope(Box2d):
         Box2d.__init__(self, *args, **kwargs)
 
 
-class _Coord(Coord, _injector):
+class Coord(Coord, _injector):
     """
     Represents a point with two coordinates (either lon/lat or x/y).
 
@@ -185,7 +185,7 @@ class _Coord(Coord, _injector):
         return inverse_(self, projection)
 
 
-class _Box2d(Box2d, _injector):
+class Box2d(Box2d, _injector):
     """
     Represents a spatial envelope (i.e. bounding box).
 
@@ -240,7 +240,7 @@ class _Box2d(Box2d, _injector):
         return inverse_(self, projection)
 
 
-class _Projection(Projection, _injector):
+class Projection(Projection, _injector):
 
     def __repr__(self):
         return "Projection('%s')" % self.params()
@@ -268,15 +268,15 @@ class _Projection(Projection, _injector):
         return inverse_(obj, self)
 
 
-class _Feature(Feature, _injector):
+class Feature(Feature, _injector):
     __geo_interface__ = property(lambda self: json.loads(self.to_geojson()))
 
 
-class _Geometry(Geometry, _injector):
+class Geometry(Geometry, _injector):
     __geo_interface__ = property(lambda self: json.loads(self.to_geojson()))
 
 
-class _Datasource(Datasource, _injector):
+class Datasource(Datasource, _injector):
 
     def all_features(self, fields=None, variables={}):
         query = Query(self.envelope())
@@ -295,7 +295,7 @@ class _Datasource(Datasource, _injector):
         return self.features(query)
 
 
-class _Color(Color, _injector):
+class Color(Color, _injector):
 
     def __repr__(self):
         return "Color(R=%d,G=%d,B=%d,A=%d)" % (self.r, self.g, self.b, self.a)
