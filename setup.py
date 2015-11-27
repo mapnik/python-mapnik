@@ -162,7 +162,11 @@ if mason_build:
         f_paths.write(
             'mapniklibpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "plugins")\n')
 elif create_paths:
-    f_paths.write("mapniklibpath = '" + lib_path + "/mapnik'\n")
+    if os.environ.get('LIB_DIR_NAME'):
+        mapnik_lib_path = lib_path + os.environ.get('LIB_DIR_NAME')
+    else:
+        mapnik_lib_path = lib_path + "/mapnik"
+    f_paths.write("mapniklibpath = '{path}'\n".format(path=mapnik_lib_path))
     f_paths.write('mapniklibpath = os.path.normpath(mapniklibpath)\n')
 
 if create_paths:
