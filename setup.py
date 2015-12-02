@@ -236,6 +236,14 @@ if proj_path:
 
 extra_comp_args = check_output([mapnik_config, '--cflags']).split(' ')
 
+if os.environ.get("PYCAIRO", "false") == "true":
+    try:
+        extra_comp_args.append('-DHAVE_PYCAIRO')
+        extra_comp_args.extend(check_output(["pkg-config", '--cflags', 'pycairo']).strip().split(' '))
+        linkflags.extend(check_output(["pkg-config", '--libs', 'pycairo']).strip().split(' '))
+    except:
+        raise Exception("Failed to find compiler options for pycairo")
+
 if sys.platform == 'darwin':
     extra_comp_args.append('-mmacosx-version-min=10.8')
     # silence warning coming from boost python macros which
