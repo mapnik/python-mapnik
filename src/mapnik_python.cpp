@@ -29,6 +29,7 @@
 #pragma GCC diagnostic ignored "-Wunused-local-typedef"
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #include "python_to_value.hpp"
+#include <boost/thread/tss.hpp>
 #include <boost/python/args.hpp>        // for keywords, arg, etc
 #include <boost/python/converter/from_python.hpp>
 #include <boost/python/def.hpp>         // for def
@@ -190,7 +191,7 @@ using mapnik::python_unblock_auto_block;
 #ifdef MAPNIK_DEBUG
 bool python_thread::thread_support = true;
 #endif
-thread_local std::unique_ptr<PyThreadState> python_thread::state;
+boost::thread_specific_ptr<PyThreadState> python_thread::state;
 
 struct agg_renderer_visitor_1
 {
