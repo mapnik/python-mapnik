@@ -83,19 +83,19 @@ class WhichBoostCommand(Command):
 
 cflags = sysconfig.get_config_var('CFLAGS')
 sysconfig._config_vars['CFLAGS'] = re.sub(
-    ' +', ' ', cflags.replace('-g', '').replace('-Os', '').replace('-arch i386', ''))
+    ' +', ' ', cflags.replace('-g ', '').replace('-Os', '').replace('-arch i386', ''))
 opt = sysconfig.get_config_var('OPT')
 sysconfig._config_vars['OPT'] = re.sub(
-    ' +', ' ', opt.replace('-g', '').replace('-Os', ''))
+    ' +', ' ', opt.replace('-g ', '').replace('-Os', ''))
 ldshared = sysconfig.get_config_var('LDSHARED')
 sysconfig._config_vars['LDSHARED'] = re.sub(
-    ' +', ' ', ldshared.replace('-g', '').replace('-Os', '').replace('-arch i386', ''))
+    ' +', ' ', ldshared.replace('-g ', '').replace('-Os', '').replace('-arch i386', ''))
 ldflags = sysconfig.get_config_var('LDFLAGS')
 sysconfig._config_vars['LDFLAGS'] = re.sub(
-    ' +', ' ', ldflags.replace('-g', '').replace('-Os', '').replace('-arch i386', ''))
+    ' +', ' ', ldflags.replace('-g ', '').replace('-Os', '').replace('-arch i386', ''))
 pycflags = sysconfig.get_config_var('PY_CFLAGS')
 sysconfig._config_vars['PY_CFLAGS'] = re.sub(
-    ' +', ' ', pycflags.replace('-g', '').replace('-Os', '').replace('-arch i386', ''))
+    ' +', ' ', pycflags.replace('-g ', '').replace('-Os', '').replace('-arch i386', ''))
 sysconfig._config_vars['CFLAGSFORSHARED'] = ''
 os.environ['ARCHFLAGS'] = ''
 
