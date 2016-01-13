@@ -389,7 +389,7 @@ void export_map()
              "by specifying a Mapnik Box2d.\n"
              "\n"
              "Usage:\n"
-             ">>> extext = Box2d(-180.0, -90.0, 180.0, 90.0)\n"
+             ">>> extent = Box2d(-180.0, -90.0, 180.0, 90.0)\n"
              ">>> m.zoom_to_box(extent)\n"
             )
 
