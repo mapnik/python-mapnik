@@ -34,9 +34,7 @@ if mapnik.has_png():
         'png8:m=h:t=0',
         'png8:m=h:c=1:t=0',
         'png8:m=h:t=1',
-        'png8:m=h:t=2',
-        'png32:e=miniz',
-        'png8:e=miniz'
+        'png8:m=h:t=2'
     ]
 
     # Todo - use itertools.product

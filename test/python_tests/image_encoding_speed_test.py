@@ -45,9 +45,7 @@ combinations = ['png',
                 'png:z=1:s=huff',
                 'png:z=1:s=rle',
                 'png8:m=h:g=2.0',
-                'png8:m=h:g=1.0',
-                'png:e=miniz',
-                'png8:e=miniz'
+                'png8:m=h:g=1.0'
                 ]
 
 tiles = [
