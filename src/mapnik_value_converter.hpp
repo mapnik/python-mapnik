@@ -55,9 +55,9 @@ namespace boost { namespace python {
 
         PyObject * operator() (mapnik::value_unicode_string const& s) const
         {
-            std::string buffer;
-            mapnik::to_utf8(s,buffer);
-            return ::PyUnicode_DecodeUTF8(buffer.c_str(),implicit_cast<ssize_t>(buffer.length()),0);
+            const char* data = reinterpret_cast<const char*>(s.getBuffer());
+            Py_ssize_t size = implicit_cast<Py_ssize_t>(s.length() * sizeof(s[0]));
+            return ::PyUnicode_DecodeUTF16(data, size, nullptr, nullptr);
         }
 
         PyObject * operator() (mapnik::value_null const& /*s*/) const
