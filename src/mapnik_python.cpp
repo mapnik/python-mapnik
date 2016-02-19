@@ -32,6 +32,7 @@
 #pragma GCC diagnostic ignored "-Wshorten-64-to-32"
 
 #include "python_to_value.hpp"
+#include <boost/thread/tss.hpp>
 #include <boost/python/args.hpp>        // for keywords, arg, etc
 #include <boost/python/converter/from_python.hpp>
 #include <boost/python/def.hpp>         // for def
