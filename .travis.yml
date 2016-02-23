@@ -42,16 +42,22 @@ before_install:
  - PYTHONUSERBASE=$(pwd)/mason_packages/.link pip install --user nose
  - PYTHONUSERBASE=$(pwd)/mason_packages/.link pip install --user wheel
  - PYTHONUSERBASE=$(pwd)/mason_packages/.link pip install --user twine
+ # prevent from compiling libyaml (which fails with clang) when installing PyYAML as python-coveralls dependency
+ - PYTHONUSERBASE=$(pwd)/mason_packages/.link pip install --user --global-option="--without-libyaml" PyYAML
+ - PYTHONUSERBASE=$(pwd)/mason_packages/.link pip install --user --no-compile python-coveralls
  - python --version
 
 install:
  - python setup.py install --prefix $(pwd)/mason_packages/.link
 
-before_script:
- - python test/run_tests.py -q
-
 script:
  - python test/visual.py -q
+ - python setup.py nosetests --with-coverage --cover-package=mapnik
+
+after_script:
+ - coveralls
+
+after_success:
  - if [[ ${COMMIT_MESSAGE} =~ "[publish]" ]]; then
     python setup.py bdist_wheel;
     if [[ $(uname -s) == 'Linux' ]]; then
