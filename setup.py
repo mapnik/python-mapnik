@@ -49,7 +49,7 @@ def find_boost_library(_id):
 
 
 def get_boost_library_names():
-    wanted = ['boost_python', 'boost_system', 'boost_thread']
+    wanted = ['boost_python', 'boost_thread', 'boost_system']
     found = []
     missing = []
     for _id in wanted:
