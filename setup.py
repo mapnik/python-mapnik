@@ -109,12 +109,9 @@ else:
     mason_build = False
 
 
-try:
-    linkflags = check_output([mapnik_config, '--libs']).split(' ')
-    lib_path = linkflags[0][2:]
-    linkflags.extend(check_output([mapnik_config, '--ldflags']).split(' '))
-except:
-    raise Exception("Failed to find proper linking flags from mapnik config")
+linkflags = []
+lib_path = os.path.join(check_output([mapnik_config, '--prefix']),'lib')
+linkflags.extend(check_output([mapnik_config, '--ldflags']).split(' '))
 
 # Dynamically make the mapnik/paths.py file if it doesn't exist.
 if os.path.isfile('mapnik/paths.py'):
