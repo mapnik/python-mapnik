@@ -39,6 +39,8 @@ env:
     - CCACHE_COMPRESS=1
 
 before_install:
+ # try working around https://github.com/mapnik/python-mapnik/issues/88
+ - export LDSHARED=$(python -c "import os;from distutils import sysconfig;print sysconfig.get_config_var('LDSHARED').replace('cc ','clang++-3.5 ')")
  - export PYTHONUSERBASE=$(pwd)/mason_packages/.link
  - export PATH=$(pwd)/mason_packages/.link/bin:${PYTHONUSERBASE}/bin:${PATH}
  - export MASON_BUILD=true
