@@ -24,24 +24,27 @@ function install() {
 ICU_VERSION="55.1"
 
 function install_mason_deps() {
-    install mapnik latest
-    install gdal 1.11.2
-    install boost 1.59.0
-    install boost_liball 1.59.0
-    install freetype 2.6
-    install harfbuzz 0.9.40
-    install jpeg_turbo 1.4.0
-    install libpng 1.6.17
-    install webp 0.4.2
-    install icu ${ICU_VERSION}
-    install proj 4.8.0
-    install libtiff 4.0.4beta
-    install libpq 9.4.0
-    install sqlite 3.8.8.1
-    install expat 2.1.0
-    install pixman 0.32.6
-    install cairo 1.14.2
-    install protobuf 2.6.1
+    install mapnik latest &
+    install ccache 3.2.4 &
+    install jpeg_turbo 1.4.0 libjpeg &
+    install libpng 1.6.20 libpng &
+    install libtiff 4.0.4beta libtiff &
+    install libpq 9.4.1 &
+    install sqlite 3.8.8.3 libsqlite3 &
+    install expat 2.1.0 libexpat &
+    wait
+    install icu ${ICU_VERSION} &
+    install proj 4.8.0 libproj &
+    install pixman 0.32.6 libpixman-1 &
+    install cairo 1.14.2 libcairo &
+    wait
+    install webp 0.4.2 libwebp &
+    install gdal 1.11.2 libgdal &
+    install boost 1.59.0 &
+    install boost_liball 1.59.0 &
+    install freetype 2.6 libfreetype &
+    install harfbuzz 0.9.41 libharfbuzz &
+    wait
 }
 
 function setup_runtime_settings() {

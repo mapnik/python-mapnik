@@ -1,4 +1,4 @@
-language: cpp
+language: generic
 
 sudo: false
 
@@ -6,12 +6,27 @@ git:
   submodules: true
   depth: 10
 
+addons:
+  postgresql: "9.4"
+
 matrix:
   include:
-     - os: linux
-       compiler: clang
-     - os: osx
-       compiler: clang
+    - os: linux
+      sudo: false
+      compiler: ": clang-release"
+      env: JOBS=8 CXX="ccache clang++-3.5 -Qunused-arguments" CC="clang-3.5"
+      addons:
+        apt:
+          sources: [ 'ubuntu-toolchain-r-test', 'llvm-toolchain-precise-3.5' ]
+          packages: [ 'clang-3.5' ]
+    - os: osx
+      osx_image: xcode7.3 # upgrades clang from 6 -> 7
+      compiler: clang
+      env: JOBS=4
+
+cache:
+  directories:
+  - $HOME/.ccache
 
 env:
   global:
@@ -20,31 +35,24 @@ env:
     - BOOST_PYTHON_LIB="boost_python"
     - BOOST_SYSTEM_LIB="boost_system"
     - BOOST_THREAD_LIB="boost_thread"
-
-addons:
-  postgresql: "9.4"
-  apt:
-    sources:
-     - ubuntu-toolchain-r-test
-     - llvm-toolchain-precise-3.5
-    packages:
-     - clang-3.5
+    - CCACHE_TEMPDIR=/tmp/.ccache-temp
+    - CCACHE_COMPRESS=1
 
 before_install:
- - export COMMIT_MESSAGE=$(git show -s --format=%B $TRAVIS_COMMIT | tr -d '\n')
+ - export PYTHONUSERBASE=$(pwd)/mason_packages/.link
+ - export PATH=$(pwd)/mason_packages/.link/bin:${PYTHONUSERBASE}/bin:${PATH}
  - export MASON_BUILD=true
+ - export COMMIT_MESSAGE=$(git show -s --format=%B $TRAVIS_COMMIT | tr -d '\n')
  - if [[ $(uname -s) == 'Linux' ]]; then
-     psql -U postgres -c 'create database template_postgis;' -U postgres;
-     psql -U postgres -c 'create extension postgis;' -d template_postgis -U postgres;
-     export CXX="clang++-3.5";
-     export CC="clang++-3.5";
      export PYTHONPATH=$(pwd)/mason_packages/.link/lib/python2.7/site-packages;
    else
      export PYTHONPATH=$(pwd)/mason_packages/.link/lib/python/site-packages;
    fi;
- - PYTHONUSERBASE=$(pwd)/mason_packages/.link pip install --user nose
- - PYTHONUSERBASE=$(pwd)/mason_packages/.link pip install --user wheel
- - PYTHONUSERBASE=$(pwd)/mason_packages/.link pip install --user twine
+ - psql -c 'create database template_postgis;' -U postgres
+ - psql -c 'create extension postgis;' -d template_postgis -U postgres
+ - pip install --user nose
+ - pip install --user wheel
+ - pip install --user twine
  - python --version
 
 install:
