@@ -14,7 +14,7 @@ matrix:
     - os: linux
       sudo: false
       compiler: ": clang-release"
-      env: JOBS=8 CXX="ccache clang++-3.5 -Qunused-arguments" CC="ccache clang++-3.5 -Qunused-arguments"
+      env: JOBS=8 CXX="clang++-3.5" CC="ccache clang++-3.5 -Qunused-arguments"
       addons:
         apt:
           sources: [ 'ubuntu-toolchain-r-test', 'llvm-toolchain-precise-3.5' ]
@@ -39,13 +39,13 @@ env:
     - CCACHE_COMPRESS=1
 
 before_install:
- # try working around https://github.com/mapnik/python-mapnik/issues/88
- - export LDSHARED=$(python -c "import os;from distutils import sysconfig;print sysconfig.get_config_var('LDSHARED').replace('cc ','clang++-3.5 ')")
  - export PYTHONUSERBASE=$(pwd)/mason_packages/.link
  - export PATH=$(pwd)/mason_packages/.link/bin:${PYTHONUSERBASE}/bin:${PATH}
  - export MASON_BUILD=true
  - export COMMIT_MESSAGE=$(git show -s --format=%B $TRAVIS_COMMIT | tr -d '\n')
  - if [[ $(uname -s) == 'Linux' ]]; then
+     # try working around https://github.com/mapnik/python-mapnik/issues/88
+     export LDSHARED=$(python -c "import os;from distutils import sysconfig;print sysconfig.get_config_var('LDSHARED').replace('cc ','clang++-3.5 ')")
      export PYTHONPATH=$(pwd)/mason_packages/.link/lib/python2.7/site-packages;
    else
      export PYTHONPATH=$(pwd)/mason_packages/.link/lib/python/site-packages;
