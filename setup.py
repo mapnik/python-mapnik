@@ -112,6 +112,11 @@ else:
 linkflags = []
 lib_path = os.path.join(check_output([mapnik_config, '--prefix']),'lib')
 linkflags.extend(check_output([mapnik_config, '--ldflags']).split(' '))
+linkflags.extend([
+'-lmapnik',
+'-lmapnik-wkt',
+'-lmapnik-json',
+] + ['-l%s' % i for i in get_boost_library_names()])
 
 # Dynamically make the mapnik/paths.py file if it doesn't exist.
 if os.path.isfile('mapnik/paths.py'):
@@ -316,11 +321,6 @@ setup(
             'src/python_grid_utils.cpp',
         ],
             language='c++',
-            libraries=[
-                'mapnik',
-                'mapnik-wkt',
-                'mapnik-json',
-            ] + get_boost_library_names(),
             extra_compile_args=extra_comp_args,
             extra_link_args=linkflags,
         )
