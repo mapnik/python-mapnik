@@ -52,9 +52,10 @@ before_install:
    fi;
  - psql -c 'create database template_postgis;' -U postgres
  - psql -c 'create extension postgis;' -d template_postgis -U postgres
- - pip install --user nose
- - pip install --user wheel
- - pip install --user twine
+ - pip install --upgrade --user nose
+ - pip install --upgrade --user wheel
+ - pip install --upgrade --user twine
+ - pip install --upgrade --user setuptools
  - python --version
 
 install:
