@@ -47,6 +47,7 @@ before_install:
      export LDSHARED=$(python -c "import os;from distutils import sysconfig;print sysconfig.get_config_var('LDSHARED').replace('cc ','clang++-3.5 ')");
      export PYTHONPATH=$(pwd)/mason_packages/.link/lib/python2.7/site-packages;
    else
+     sudo easy_install pip;
      brew rm postgis --force;
      brew install postgis --force;
      pg_ctl -w start -l postgres.log --pgdata /usr/local/var/postgres;
