@@ -17,6 +17,9 @@ env:
   global:
     - secure: "CqhZDPctJcpXGPpmIPK5usD/O+2HYawW3434oDufVS9uG/+C7aHzKzi8cuZ7n/REHqJMzy7gJfp6DiyF2QowpnN1L2W0FSJ9VOgj4JQF2Wsupo6gJkq6/CW2Fa35PhQHsv29bfyqtIq+R5SBVAieBe/Lh2P144RwRliGRopGQ68="
     - secure: "idk4fdU49i546Zs6Fxha14H05eRJ1G/D6NPRaie8M8o+xySnEqf+TyA9/HU8QH7cFvroSLuHJ1U7TmwnR+sXy4XBlIfHLi4u2MN+l/q014GG7T2E2xYcTauqjB4ldToRsDQwe5Dq0gZCMsHLPspWPjL9twfp+Ds7qgcFhTsct0s="
+    - BOOST_PYTHON_LIB="boost_python"
+    - BOOST_SYSTEM_LIB="boost_system"
+    - BOOST_THREAD_LIB="boost_thread"
 
 addons:
   postgresql: "9.4"
