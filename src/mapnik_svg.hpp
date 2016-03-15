@@ -27,6 +27,11 @@
 #include <mapnik/symbolizer.hpp>
 #include <mapnik/value_error.hpp>
 
+#pragma GCC diagnostic push
+#include <mapnik/warning_ignore.hpp>
+#include <boost/python.hpp>
+#pragma GCC diagnostic pop
+
 namespace mapnik {
 using namespace boost::python;
 

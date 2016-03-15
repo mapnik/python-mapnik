@@ -21,24 +21,16 @@
  *****************************************************************************/
 
 #include <mapnik/config.hpp>
-
-// boost
 #include "boost_std_shared_shim.hpp"
+
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic ignored "-Wunused-local-typedef"
-#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-#pragma GCC diagnostic ignored "-Wshadow"
-#pragma GCC diagnostic ignored "-Wshorten-64-to-32"
-
-
+#include <mapnik/warning_ignore.hpp>
 #include <boost/python.hpp>
+#include <boost/noncopyable.hpp>
 #include <boost/python/def.hpp>
 #include <boost/python/exception_translator.hpp>
 #include <boost/python/manage_new_object.hpp>
 #include <boost/python/iterator.hpp>
-#include <boost/noncopyable.hpp>
-#include <boost/version.hpp>
 #pragma GCC diagnostic pop
 
 // mapnik

@@ -22,10 +22,13 @@
 #ifndef MAPNIK_PYTHON_BINDING_ENUMERATION_INCLUDED
 #define MAPNIK_PYTHON_BINDING_ENUMERATION_INCLUDED
 
+#pragma GCC diagnostic push
+#include <mapnik/warning_ignore.hpp>
 #include <boost/python/converter/registered.hpp>  // for registered
 #include <boost/python/enum.hpp>        // for enum_
 #include <boost/python/implicit.hpp>    // for implicitly_convertible
 #include <boost/python/to_python_converter.hpp>
+#pragma GCC diagnostic pop
 
 namespace mapnik {
 

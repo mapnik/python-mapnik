@@ -22,8 +22,12 @@
 #ifndef MAPNIK_THREADS_HPP
 #define MAPNIK_THREADS_HPP
 
+#pragma GCC diagnostic push
+#include <mapnik/warning_ignore.hpp>
 #include <boost/thread/tss.hpp>
 #include <Python.h>
+#pragma GCC diagnostic pop
+
 
 namespace mapnik {
 class python_thread

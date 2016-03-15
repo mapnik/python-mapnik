@@ -20,10 +20,13 @@
  *
  *****************************************************************************/
 
+#pragma GCC diagnostic push
+#include <mapnik/warning_ignore.hpp>
 #include <boost/optional/optional.hpp>
 #include <boost/python.hpp>
 
 #include <mapnik/util/noncopyable.hpp>
+#pragma GCC diagnostic pop
 
 // boost::optional<T> to/from converter from John Wiegley
 

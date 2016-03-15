@@ -22,12 +22,14 @@
 #ifndef MAPNIK_PYTHON_BINDING_GRID_UTILS_INCLUDED
 #define MAPNIK_PYTHON_BINDING_GRID_UTILS_INCLUDED
 
-// boost
-#include <boost/python.hpp>
-
 // mapnik
 #include <mapnik/map.hpp>
 #include <mapnik/grid/grid.hpp>
+
+#pragma GCC diagnostic push
+#include <mapnik/warning_ignore.hpp>
+#include <boost/python.hpp>
+#pragma GCC diagnostic pop
 
 namespace mapnik {
 

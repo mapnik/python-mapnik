@@ -25,9 +25,12 @@
 // mapnik
 #include <mapnik/value.hpp>
 #include <mapnik/util/variant.hpp>
-// boost
+
+#pragma GCC diagnostic push
+#include <mapnik/warning_ignore.hpp>
 #include <boost/python.hpp>
 #include <boost/implicit_cast.hpp>
+#pragma GCC diagnostic pop
 
 namespace boost { namespace python {
 
