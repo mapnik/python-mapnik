@@ -14,7 +14,7 @@ matrix:
     - os: linux
       sudo: false
       compiler: ": clang-release"
-      env: JOBS=8 CXX="ccache clang++-3.5 -Qunused-arguments" CC="clang-3.5"
+      env: JOBS=8 CXX="ccache clang++-3.5 -Qunused-arguments" CC="ccache clang++-3.5 -Qunused-arguments"
       addons:
         apt:
           sources: [ 'ubuntu-toolchain-r-test', 'llvm-toolchain-precise-3.5' ]
