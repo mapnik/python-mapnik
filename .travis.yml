@@ -40,12 +40,12 @@ env:
 
 before_install:
  - export PYTHONUSERBASE=$(pwd)/mason_packages/.link
+ - export PYTHONPATH=$(pwd)/mason_packages/.link/lib/python2.7/site-packages;
  - export PATH=$(pwd)/mason_packages/.link/bin:${PYTHONUSERBASE}/bin:${PATH}
  - export MASON_BUILD=true
  - export COMMIT_MESSAGE=$(git show -s --format=%B $TRAVIS_COMMIT | tr -d '\n')
  - if [[ $(uname -s) == 'Linux' ]]; then
      export LDSHARED=$(python -c "import os;from distutils import sysconfig;print sysconfig.get_config_var('LDSHARED').replace('cc ','clang++-3.5 ')");
-     export PYTHONPATH=$(pwd)/mason_packages/.link/lib/python2.7/site-packages;
    else
      sudo easy_install pip;
      brew rm postgis --force;
@@ -53,7 +53,6 @@ before_install:
      pg_ctl -w start -l postgres.log --pgdata /usr/local/var/postgres;
      createuser -s postgres;
      export LDSHARED=$(python -c "import os;from distutils import sysconfig;print sysconfig.get_config_var('LDSHARED').replace('cc ','clang++ ')");
-     export PYTHONPATH=$(pwd)/mason_packages/.link/lib/python/site-packages;
    fi;
  - psql -c 'create database template_postgis;' -U postgres
  - psql -c 'create extension postgis;' -d template_postgis -U postgres
