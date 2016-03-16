@@ -139,7 +139,8 @@ if mason_build:
         else:
             base_f = 'libmapnik.so.3.0'
         f = os.path.join(lib_path, base_f)
-        os.makedirs(os.path.join('mapnik', 'lib'))
+        if not os.path.exists(os.path.join('mapnik', 'lib')):
+            os.makedirs(os.path.join('mapnik', 'lib'))
         shutil.copyfile(f, os.path.join('mapnik', 'lib', base_f))
     except shutil.Error:
         pass
