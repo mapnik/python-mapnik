@@ -216,7 +216,7 @@ if mason_build:
     for f in proj_files:
         try:
             shutil.copyfile(f, os.path.join(
-                'mapnik', 'plugins', 'proj', os.path.basename(f)))
+                'mapnik', share_dir, 'proj', os.path.basename(f)))
         except shutil.Error:
             pass
 
