@@ -63,7 +63,8 @@ before_install:
  - python --version
 
 install:
- - python setup.py install --prefix $(pwd)/mason_packages/.link
+ - mkdir -p ${PYTHONPATH}
+ - python setup.py install --prefix ${PYTHONUSERBASE}
 
 before_script:
  - python test/run_tests.py -q
