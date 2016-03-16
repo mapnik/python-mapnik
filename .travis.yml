@@ -40,7 +40,7 @@ env:
 
 before_install:
  - export PYTHONUSERBASE=$(pwd)/mason_packages/.link
- - export PYTHONPATH=$(pwd)/mason_packages/.link/lib/python2.7/site-packages;
+ - export PYTHONPATH=$(pwd)/mason_packages/.link/lib/python2.7/site-packages
  - export PATH=$(pwd)/mason_packages/.link/bin:${PYTHONUSERBASE}/bin:${PATH}
  - export MASON_BUILD=true
  - export COMMIT_MESSAGE=$(git show -s --format=%B $TRAVIS_COMMIT | tr -d '\n')

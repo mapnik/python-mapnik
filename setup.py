@@ -195,8 +195,11 @@ if mason_build:
         if not os.path.exists(share_path):
             os.makedirs(share_path)
 
-    icu_path = 'mason_packages/.link/share/icu/'
-    for f in glob.glob(icu_path+'*/*dat'):
+    icu_path = 'mason_packages/.link/share/icu/*/*.dat'
+    icu_files = glob.glob(icu_path)
+    if len(icu_files) != 1:
+        raise Exception("Failed to find icu dat file at "+ icu_path)
+    for f in icu_files:
         shutil.copyfile(f, os.path.join(
             'mapnik', share_dir, 'icu', os.path.basename(f)))
 
