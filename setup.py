@@ -6,6 +6,7 @@ import re
 import shutil
 import subprocess
 import sys
+import glob
 from distutils import sysconfig
 from ctypes.util import find_library
 
@@ -185,51 +186,33 @@ if create_paths:
     f_paths.close()
 
 
-if not mason_build:
-    icu_path = check_output([mapnik_config, '--icu-data'])
-else:
-    icu_path = 'mason_packages/.link/share/icu/'
-if icu_path:
-    icu_files = os.listdir(icu_path)
-    icu_files = [os.path.join(icu_path, f) for f in icu_files]
-    if not os.path.exists(os.path.join('mapnik', 'plugins', 'icu')):
-        os.makedirs(os.path.join('mapnik', 'plugins', 'icu'))
-    for f in icu_files:
-        try:
-            shutil.copyfile(f, os.path.join(
-                'mapnik', 'plugins', 'icu', os.path.basename(f)))
-        except shutil.Error:
-            pass
+if mason_build:
 
-if not mason_build:
-    gdal_path = check_output([mapnik_config, '--gdal-data'])
-else:
+    share_dir = 'share'
+
+    for dep in ['icu','gdal','proj']:
+        share_path = os.path.join('mapnik', share_dir, dep)
+        if not os.path.exists(share_path):
+            os.makedirs(share_path)
+
+    icu_path = 'mason_packages/.link/share/icu/'
+    for f in glob.glob(icu_path+'*/*dat'):
+        shutil.copyfile(f, os.path.join(
+            'mapnik', share_dir, 'icu', os.path.basename(f)))
+
     gdal_path = 'mason_packages/.link/share/gdal/'
-    if os.path.exists('mason_packages/.link/share/gdal/gdal/'):
-        gdal_path = 'mason_packages/.link/share/gdal/gdal/'
-if gdal_path:
     gdal_files = os.listdir(gdal_path)
     gdal_files = [os.path.join(gdal_path, f) for f in gdal_files]
-    if not os.path.exists(os.path.join('mapnik', 'plugins', 'gdal')):
-        os.makedirs(os.path.join('mapnik', 'plugins', 'gdal'))
     for f in gdal_files:
         try:
             shutil.copyfile(f, os.path.join(
-                'mapnik', 'plugins', 'gdal', os.path.basename(f)))
+                'mapnik', share_dir, 'gdal', os.path.basename(f)))
         except shutil.Error:
             pass
 
-if not mason_build:
-    proj_path = check_output([mapnik_config, '--proj-lib'])
-else:
     proj_path = 'mason_packages/.link/share/proj/'
-    if os.path.exists('mason_packages/.link/share/proj/proj/'):
-        proj_path = 'mason_packages/.link/share/proj/proj/'
-if proj_path:
     proj_files = os.listdir(proj_path)
     proj_files = [os.path.join(proj_path, f) for f in proj_files]
-    if not os.path.exists(os.path.join('mapnik', 'plugins', 'proj')):
-        os.makedirs(os.path.join('mapnik', 'plugins', 'proj'))
     for f in proj_files:
         try:
             shutil.copyfile(f, os.path.join(
