@@ -254,13 +254,13 @@ setup(
     author_email="flippmoke@gmail.com",
     description="Python bindings for Mapnik",
     license="GNU LESSER GENERAL PUBLIC LICENSE",
-    keywords="mapnik mapbox mapping carteography",
+    keywords="mapnik mapbox mapping cartography",
     url="http://mapnik.org/",
     tests_require=[
         'nose',
     ],
     package_data={
-        'mapnik': ['libmapnik.*', 'plugins/*/*'],
+        'mapnik': ['libmapnik.*', 'plugins/*/*', 'share/*/*'],
     },
     test_suite='nose.collector',
     cmdclass={
