@@ -112,6 +112,7 @@ else:
 linkflags = []
 lib_path = os.path.join(check_output([mapnik_config, '--prefix']),'lib')
 linkflags.extend(check_output([mapnik_config, '--ldflags']).split(' '))
+linkflags.extend(check_output([mapnik_config, '--dep-libs']).split(' '))
 linkflags.extend([
 '-lmapnik',
 '-lmapnik-wkt',
