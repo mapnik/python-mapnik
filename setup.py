@@ -243,7 +243,7 @@ if sys.platform == 'darwin':
 else:
     linkflags.append('-lrt')
     linkflags.append('-Wl,-z,origin')
-    linkflags.append('-Wl,-rpath=$ORIGIN')
+    linkflags.append('-Wl,-rpath=$ORIGIN/../lib')
 
 if os.environ.get("CC", False) == False:
     os.environ["CC"] = check_output([mapnik_config, '--cxx'])
