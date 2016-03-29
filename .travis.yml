@@ -49,6 +49,7 @@ before_install:
    else
      sudo easy_install pip;
      brew info postgres;
+     rm -rf $(brew --prefix)/postgres && initdb $(brew --prefix)/postgres -E utf8
      pg_ctl -w start -l postgres.log --pgdata $(brew --prefix)/var/postgres;
      cat postgres.log;
      createuser -s postgres;
