@@ -83,3 +83,8 @@ script:
     export DISTS='dist/*';
     $(pwd)/mason_packages/.link/bin/twine upload -u $PYPI_USER -p $PYPI_PASSWORD $DISTS ;
    fi;
+
+
+notifications:
+  slack:
+    secure: dZhYCFXTvn6zna7GhagCUcInfhoUf/AMkTpJKPnJgaGnS3DlfbnMsSU73J4hs46wCOFII3AfYUOI/SUEBZ15lkJHfBsCku0a5a2M8g5ddxKFoIM8gosH3dLjeGJ5Ou8zNQGyzokXidKfHC+Gh4UVGyn+aeXxglRmRkUeaP+GD1k=
