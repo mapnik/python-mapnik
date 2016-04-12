@@ -19,10 +19,11 @@ matrix:
         apt:
           sources: [ 'ubuntu-toolchain-r-test', 'llvm-toolchain-precise-3.5' ]
           packages: [ 'clang-3.5' ]
-    - os: osx
-      osx_image: xcode7.3 # upgrades clang from 6 -> 7
-      compiler: clang
-      env: JOBS=4
+    # disabled until I have time to fix https://github.com/mapnik/python-mapnik/issues/95
+    #- os: osx
+    #  osx_image: xcode7.3 # upgrades clang from 6 -> 7
+    #  compiler: clang
+    #  env: JOBS=4
 
 cache:
   directories:
