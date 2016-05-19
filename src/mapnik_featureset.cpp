@@ -86,5 +86,4 @@ void export_featureset()
                       "<mapnik.Feature object at 0x105e64140>\n"
             )
         ;
-    register_ptr_to_python<std::shared_ptr<mapnik::Featureset> >();
 }

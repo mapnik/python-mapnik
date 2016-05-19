@@ -230,5 +230,4 @@ void export_feature()
         .def("from_geojson",from_geojson_impl)
         .staticmethod("from_geojson")
         ;
-    register_ptr_to_python<std::shared_ptr<mapnik::feature_impl> >();
 }
