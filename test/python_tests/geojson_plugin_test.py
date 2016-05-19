@@ -32,7 +32,7 @@ if 'geojson' in mapnik.DatasourceCache.plugin_names():
             type='geojson',
             file='../data/json/escaped.geojson')
         f = ds.features_at_point(ds.envelope().center()).features[0]
-        eq_(len(ds.fields()), 7)
+        eq_(len(ds.fields()), 11)
         desc = ds.describe()
         eq_(desc['geometry_type'], mapnik.DataGeometryType.Point)
 
@@ -49,7 +49,7 @@ if 'geojson' in mapnik.DatasourceCache.plugin_names():
             type='geojson',
             file='../data/json/escaped.geojson')
         f = ds.all_features()[0]
-        eq_(len(ds.fields()), 7)
+        eq_(len(ds.fields()), 11)
 
         desc = ds.describe()
         eq_(desc['geometry_type'], mapnik.DataGeometryType.Point)
@@ -69,7 +69,7 @@ if 'geojson' in mapnik.DatasourceCache.plugin_names():
             file='../data/json/escaped.geojson',
             cache_features=False)
         f = ds.features_at_point(ds.envelope().center()).features[0]
-        eq_(len(ds.fields()), 7)
+        eq_(len(ds.fields()), 11)
         desc = ds.describe()
         eq_(desc['geometry_type'], mapnik.DataGeometryType.Point)
 
@@ -86,7 +86,7 @@ if 'geojson' in mapnik.DatasourceCache.plugin_names():
             type='geojson',
             file='../data/json/escaped.geojson')
         f = ds.all_features()[0]
-        eq_(len(ds.fields()), 7)
+        eq_(len(ds.fields()), 11)
 
         desc = ds.describe()
         eq_(desc['geometry_type'], mapnik.DataGeometryType.Point)
@@ -118,7 +118,7 @@ if 'geojson' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.Datasource(
             type='geojson',
             file='../data/json/escaped.geojson')
-        eq_(len(ds.fields()), 7)
+        eq_(len(ds.fields()), 11)
         # TODO - this sorting is messed up
         #eq_(ds.fields(),['name', 'int', 'double', 'description', 'boolean', 'NOM_FR'])
         #eq_(ds.field_types(),['str', 'int', 'float', 'str', 'bool', 'str'])

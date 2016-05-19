@@ -19,11 +19,11 @@ def setup():
 if 'topojson' in mapnik.DatasourceCache.plugin_names():
 
     def test_topojson_init():
-        # topojson tests/data/json/escaped.geojson -o tests/data/json/escaped.topojson --properties
+        # topojson tests/data/json/escaped.geojson -o tests/data/topojson/escaped.topojson --properties
         # topojson version 1.4.2
         ds = mapnik.Datasource(
             type='topojson',
-            file='../data/json/escaped.topojson')
+            file='../data/topojson/escaped.topojson')
         e = ds.envelope()
         assert_almost_equal(e.minx, -81.705583, places=7)
         assert_almost_equal(e.miny, 41.480573, places=6)
@@ -33,9 +33,9 @@ if 'topojson' in mapnik.DatasourceCache.plugin_names():
     def test_topojson_properties():
         ds = mapnik.Datasource(
             type='topojson',
-            file='../data/json/escaped.topojson')
+            file='../data/topojson/escaped.topojson')
         f = ds.features_at_point(ds.envelope().center()).features[0]
-        eq_(len(ds.fields()), 7)
+        eq_(len(ds.fields()), 11)
         desc = ds.describe()
         eq_(desc['geometry_type'], mapnik.DataGeometryType.Point)
 
@@ -50,9 +50,9 @@ if 'topojson' in mapnik.DatasourceCache.plugin_names():
 
         ds = mapnik.Datasource(
             type='topojson',
-            file='../data/json/escaped.topojson')
+            file='../data/topojson/escaped.topojson')
         f = ds.all_features()[0]
-        eq_(len(ds.fields()), 7)
+        eq_(len(ds.fields()), 11)
 
         desc = ds.describe()
         eq_(desc['geometry_type'], mapnik.DataGeometryType.Point)
@@ -70,10 +70,10 @@ if 'topojson' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.Datasource(
             type='topojson',
             inline=open(
-                '../data/json/escaped.topojson',
+                '../data/topojson/escaped.topojson',
                 'r').read())
         f = ds.all_features()[0]
-        eq_(len(ds.fields()), 7)
+        eq_(len(ds.fields()), 11)
 
         desc = ds.describe()
         eq_(desc['geometry_type'], mapnik.DataGeometryType.Point)
@@ -91,13 +91,15 @@ if 'topojson' in mapnik.DatasourceCache.plugin_names():
     def test_that_nonexistant_query_field_throws(**kwargs):
         ds = mapnik.Datasource(
             type='topojson',
-            file='../data/json/escaped.topojson')
-        eq_(len(ds.fields()), 7)
+            file='../data/topojson/escaped.topojson')
+        eq_(len(ds.fields()), 11)
         # TODO - this sorting is messed up
         eq_(ds.fields(), ['name', 'int', 'description',
-                          'spaces', 'double', 'boolean', 'NOM_FR'])
+                          'spaces', 'double', 'boolean', 'NOM_FR',
+                          'object', 'array', 'empty_array', 'empty_object'])
         eq_(ds.field_types(), ['str', 'int',
-                               'str', 'str', 'float', 'bool', 'str'])
+                               'str', 'str', 'float', 'bool', 'str',
+                               'str', 'str', 'str', 'str'])
 # TODO - should topojson plugin throw like others?
 #        query = mapnik.Query(ds.envelope())
 #        for fld in ds.fields():
