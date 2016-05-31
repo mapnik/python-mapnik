@@ -142,8 +142,13 @@ void clear_cache()
 #if defined(HAVE_PYCAIRO)
 #include <boost/python/type_id.hpp>
 #include <boost/python/converter/registry.hpp>
+#if PY_MAJOR_VERSION >= 3
+#include <py3cairo.h>
+#else
 #include <pycairo.h>
 static Pycairo_CAPI_t *Pycairo_CAPI;
+#endif
+
 static void *extract_surface(PyObject* op)
 {
     if (PyObject_TypeCheck(op, const_cast<PyTypeObject*>(Pycairo_CAPI->Surface_Type)))

@@ -43,7 +43,11 @@
 #if defined(HAVE_CAIRO) && defined(HAVE_PYCAIRO)
 #include <mapnik/cairo/cairo_context.hpp>
 #include <mapnik/cairo/cairo_image_util.hpp>
+#if PY_MAJOR_VERSION >= 3
+#include <py3cairo.h>
+#else
 #include <pycairo.h>
+#endif
 #include <cairo.h>
 #endif
 
