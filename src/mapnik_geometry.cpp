@@ -168,15 +168,15 @@ void geometry_correct_impl(mapnik::geometry::geometry<double> & geom)
     mapnik::geometry::correct(geom);
 }
 
-void polygon_set_exterior_impl(mapnik::geometry::polygon<double> & poly, mapnik::geometry::linear_ring<double> const& ring)
-{
-    poly.exterior_ring = ring; // copy
-}
+//void polygon_set_exterior_impl(mapnik::geometry::polygon<double> & poly, mapnik::geometry::linear_ring<double> const& ring)
+//{
+//    poly.exterior_ring = ring; // copy
+//}
 
-void polygon_add_hole_impl(mapnik::geometry::polygon<double> & poly, mapnik::geometry::linear_ring<double> const& ring)
-{
-    poly.interior_rings.push_back(ring); // copy
-}
+//void polygon_add_hole_impl(mapnik::geometry::polygon<double> & poly, mapnik::geometry::linear_ring<double> const& ring)
+//{
+//    poly.interior_rings.push_back(ring); // copy
+//}
 
 mapnik::geometry::point<double> geometry_centroid_impl(mapnik::geometry::geometry<double> const& geom)
 {
@@ -230,7 +230,7 @@ void export_geometry()
 
     class_<line_string<double> >("LineString", init<>(
                       "Constructs a new LineString object\n"))
-        .def("add_coord", &line_string<double>::add_coord, "Adds coord")
+        //.def("add_coord", &line_string<double>::emplace_back, "Adds coord")
 #if BOOST_VERSION >= 105800
         .def("is_valid", &geometry_is_valid_impl)
         .def("is_simple", &geometry_is_simple_impl)
@@ -242,14 +242,14 @@ void export_geometry()
 
     class_<linear_ring<double> >("LinearRing", init<>(
                             "Constructs a new LinearRtring object\n"))
-        .def("add_coord", &linear_ring<double>::add_coord, "Adds coord")
+        //.def("add_coord", &linear_ring<double>::push_back, "Adds coord")
         ;
 
     class_<polygon<double> >("Polygon", init<>(
                         "Constructs a new Polygon object\n"))
-        .add_property("exterior_ring", &polygon<double>::exterior_ring , "Exterior ring")
-        .def("add_hole", &polygon_add_hole_impl, "Add interior ring")
-        .def("num_rings", polygon_set_exterior_impl, "Number of rings (at least 1)")
+        // .add_property("exterior_ring", &polygon<double>::exterior_ring , "Exterior ring")
+        //.def("add_hole", &polygon_add_hole_impl, "Add interior ring")
+        //.def("num_rings", &size, "Number of rings (at least 1)")
 #if BOOST_VERSION >= 105800
         .def("is_valid", &geometry_is_valid_impl)
         .def("is_simple", &geometry_is_simple_impl)
