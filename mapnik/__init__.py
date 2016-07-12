@@ -278,7 +278,7 @@ class _Geometry(Geometry, _injector):
 
 class _Datasource(Datasource, _injector):
 
-    def featureset(self, fields=None, variables={}):
+    def featureset(self, fields = None, variables = {}):
         query = Query(self.envelope())
         query.set_variables(variables)
         attributes = fields or self.fields()
@@ -286,8 +286,12 @@ class _Datasource(Datasource, _injector):
             query.add_property_name(fld)
         return self.features(query)
 
+    def __iter__(self, fields = None, variables = {}):
+        return self.featureset(fields, variables)
+    # backward caps helper
     def all_features(self, fields=None, variables={}):
-        return self.featureset(fields, variables).features
+        return self.__iter__(fields, variables)
+
 
 class _Color(Color, _injector):
 

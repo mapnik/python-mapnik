@@ -116,7 +116,6 @@ linkflags.extend(check_output([mapnik_config, '--libs']).split(' '))
 linkflags.extend(check_output([mapnik_config, '--ldflags']).split(' '))
 linkflags.extend(check_output([mapnik_config, '--dep-libs']).split(' '))
 linkflags.extend([
-'-lmapnik',
 '-lmapnik-wkt',
 '-lmapnik-json',
 ] + ['-l%s' % i for i in get_boost_library_names()])
@@ -231,17 +230,19 @@ extra_comp_args = check_output([mapnik_config, '--cflags']).split(' ')
 if os.environ.get("PYCAIRO", "false") == "true":
     try:
         extra_comp_args.append('-DHAVE_PYCAIRO')
-        extra_comp_args.extend(check_output(["pkg-config", '--cflags', 'pycairo']).strip().split(' '))
-        linkflags.extend(check_output(["pkg-config", '--libs', 'pycairo']).strip().split(' '))
+        print("-I%s/include/pycairo".format(sys.exec_prefix))
+        extra_comp_args.append("-I{0}/include/pycairo".format(sys.exec_prefix))
+        #extra_comp_args.extend(check_output(["pkg-config", '--cflags', 'pycairo']).strip().split(' '))
+        #linkflags.extend(check_output(["pkg-config", '--libs', 'pycairo']).strip().split(' '))
     except:
         raise Exception("Failed to find compiler options for pycairo")
 
 if sys.platform == 'darwin':
-    extra_comp_args.append('-mmacosx-version-min=10.8')
+    extra_comp_args.append('-mmacosx-version-min=10.11')
     # silence warning coming from boost python macros which
     # would is hard to silence via pragma
     extra_comp_args.append('-Wno-parentheses-equality')
-    linkflags.append('-mmacosx-version-min=10.8')
+    linkflags.append('-mmacosx-version-min=10.11')
 else:
     linkflags.append('-lrt')
     linkflags.append('-Wl,-z,origin')
