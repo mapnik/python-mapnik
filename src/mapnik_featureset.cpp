@@ -36,21 +36,6 @@
 namespace {
 using namespace boost::python;
 
-inline list features(mapnik::featureset_ptr const& itr)
-{
-    list l;
-    while (true)
-    {
-        mapnik::feature_ptr fp = itr->next();
-        if (!fp)
-        {
-            break;
-        }
-        l.append(fp);
-    }
-    return l;
-}
-
 inline object pass_through(object const& o) { return o; }
 
 inline mapnik::feature_ptr next(mapnik::featureset_ptr const& itr)
@@ -70,20 +55,12 @@ inline mapnik::feature_ptr next(mapnik::featureset_ptr const& itr)
 void export_featureset()
 {
     using namespace boost::python;
-    class_<mapnik::Featureset,std::shared_ptr<mapnik::Featureset>,
-        boost::noncopyable>("Featureset",no_init)
-        .def("__iter__",pass_through)
-        .def("next",next)
-        .add_property("features",features,
-                      "The list of features.\n"
-                      "\n"
-                      "Usage:\n"
-                      ">>> m.query_map_point(0, 10, 10)\n"
-                      "<mapnik._mapnik.Featureset object at 0x1004d2938>\n"
-                      ">>> fs = m.query_map_point(0, 10, 10)\n"
-                      ">>> for f in fs.features:\n"
-                      ">>>     print f\n"
-                      "<mapnik.Feature object at 0x105e64140>\n"
-            )
+    // Featureset implements Python iterator interface
+    class_<mapnik::Featureset, std::shared_ptr<mapnik::Featureset>,
+           boost::noncopyable>("Featureset", no_init)
+        .def("__iter__", pass_through)
+        .def("__next__", next)
+        // Python2 support
+        .def("next", next)
         ;
 }
