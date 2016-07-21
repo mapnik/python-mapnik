@@ -45,7 +45,8 @@ before_install:
  - export PATH=$(pwd)/mason_packages/.link/bin:${PYTHONUSERBASE}/bin:${PATH}
  - export MASON_BUILD=true
  - export COMMIT_MESSAGE=$(git show -s --format=%B $TRAVIS_COMMIT | tr -d '\n')
- - if [[ $(uname -s) == 'Linux' ]]; then
+ - |
+   if [[ $(uname -s) == 'Linux' ]]; then
      mason install clang 3.8.0
      export PATH=$(mason prefix clang 3.8.0)/bin:${PATH}
      which clang++
