@@ -1,20 +1,7 @@
 #!/usr/bin/env bash
 
-MASON_VERSION="694d08c"
-
-function setup_mason() {
-    if [[ ! -d ./.mason ]]; then
-        git clone https://github.com/mapbox/mason.git ./.mason
-        (cd ./.mason && git checkout ${MASON_VERSION})
-    else
-        echo "Updating to latest mason"
-        (cd ./.mason && git fetch && git checkout ${MASON_VERSION})
-    fi
-    export MASON_DIR=$(pwd)/.mason
-    export PATH=$(pwd)/.mason:$PATH
-    export CXX=${CXX:-clang++}
-    export CC=${CC:-clang}
-}
+set -eu
+set -o pipefail
 
 function install() {
     MASON_PLATFORM_ID=$(mason env MASON_PLATFORM_ID)
@@ -64,6 +51,7 @@ function setup_runtime_settings() {
 }
 
 function main() {
+    source scripts/setup_mason.sh
     setup_mason
     install_mason_deps
     setup_runtime_settings
@@ -73,3 +61,6 @@ function main() {
 }
 
 main
+
+set +eu
+set +o pipefail
