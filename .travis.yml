@@ -48,9 +48,9 @@ before_install:
  - |
    if [[ $(uname -s) == 'Linux' ]]; then
      mason install clang 3.8.0
-     export PATH=$(mason prefix clang 3.8.0)/bin:${PATH}
+     ./.mason/mason install clang 3.8.0
+     export PATH=$(./.mason/mason prefix clang 3.8.0)/bin:${PATH}
      which clang++
-     export LLVM_COV="$(mason prefix clang 3.8.0)/bin/llvm-cov"
    else
      sudo easy_install pip;
      brew info postgres;
