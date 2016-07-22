@@ -47,7 +47,7 @@ struct color_pickle_suite : boost::python::pickle_suite
 void export_color ()
 {
     using namespace boost::python;
-    class_<color>("Color", init<int,int,int,int>(
+    class_<color>("Color_Base", init<int,int,int,int>(
                       ( arg("r"), arg("g"), arg("b"), arg("a") ),
                       "Creates a new color from its RGB components\n"
                       "and an alpha value.\n"

@@ -106,7 +106,7 @@ box2d<double> box2d_deepcopy(box2d<double> & obj, boost::python::dict const&)
 void export_envelope()
 {
     using namespace boost::python;
-    class_<box2d<double> >("Box2d",
+    class_<box2d<double> >("Box2d_Base",
                            // class docstring is in mapnik/__init__.py, class _Coord
                            init<double,double,double,double>(
                                (arg("minx"),arg("miny"),arg("maxx"),arg("maxy")),

@@ -103,12 +103,12 @@ def Filter(*args, **kwargs):
     return Expression(*args, **kwargs)
 
 
-class Envelope(Box2d):
+class Envelope(Box2d_Base):
 
     def __init__(self, *args, **kwargs):
         warnings.warn("'Envelope' is deprecated and will be removed in Mapnik 3.x, use 'Box2d' instead",
                       DeprecationWarning, 2)
-        Box2d.__init__(self, *args, **kwargs)
+        Box2d_Base.__init__(self, *args, **kwargs)
 
 
 class _Coord(Coord, _injector()):
@@ -186,7 +186,7 @@ class _Coord(Coord, _injector()):
         return inverse_(self, projection)
 
 
-class _Box2d(Box2d, _injector()):
+class Box2d(Box2d_Base):#, _injector()):
     """
     Represents a spatial envelope (i.e. bounding box).
 
@@ -294,7 +294,7 @@ class _Datasource(Datasource, _injector()):
         return self.__iter__(fields, variables)
 
 
-class _Color(Color, _injector()):
+class Color(Color_Base):#, _injector()):
 
     def __repr__(self):
         return "Color(R=%d,G=%d,B=%d,A=%d)" % (self.r, self.g, self.b, self.a)

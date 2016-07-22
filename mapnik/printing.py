@@ -21,7 +21,7 @@ import math
 import os
 import tempfile
 
-from . import (Box2d, Coord, Feature, Geometry, Layer, Map, Projection, Style,
+from . import (Box2d_Base, Coord, Feature, Geometry, Layer, Map, Projection, Style,
                render)
 
 try:
