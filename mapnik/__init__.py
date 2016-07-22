@@ -93,7 +93,8 @@ class _MapnikMetaclass(BoostPythonMetaclass):
 
 # metaclass injector compatible with both python 2 and 3
 # http://mikewatkins.ca/2008/11/29/python-2-and-3-metaclasses/
-_injector = _MapnikMetaclass('_injector', (object, ), {})
+def _injector() :
+    return _MapnikMetaclass('_injector', (object, ), {})
 
 
 def Filter(*args, **kwargs):
@@ -110,7 +111,7 @@ class Envelope(Box2d):
         Box2d.__init__(self, *args, **kwargs)
 
 
-class _Coord(Coord, _injector):
+class _Coord(Coord, _injector()):
     """
     Represents a point with two coordinates (either lon/lat or x/y).
 
@@ -185,7 +186,7 @@ class _Coord(Coord, _injector):
         return inverse_(self, projection)
 
 
-class _Box2d(Box2d, _injector):
+class _Box2d(Box2d, _injector()):
     """
     Represents a spatial envelope (i.e. bounding box).
 
@@ -240,7 +241,7 @@ class _Box2d(Box2d, _injector):
         return inverse_(self, projection)
 
 
-class _Projection(Projection, _injector):
+class _Projection(Projection, _injector()):
 
     def __repr__(self):
         return "Projection('%s')" % self.params()
@@ -268,15 +269,15 @@ class _Projection(Projection, _injector):
         return inverse_(obj, self)
 
 
-class _Feature(Feature, _injector):
+class _Feature(Feature, _injector()):
     __geo_interface__ = property(lambda self: json.loads(self.to_geojson()))
 
 
-class _Geometry(Geometry, _injector):
+class _Geometry(Geometry, _injector()):
     __geo_interface__ = property(lambda self: json.loads(self.to_geojson()))
 
 
-class _Datasource(Datasource, _injector):
+class _Datasource(Datasource, _injector()):
 
     def featureset(self, fields = None, variables = {}):
         query = Query(self.envelope())
@@ -293,13 +294,13 @@ class _Datasource(Datasource, _injector):
         return self.__iter__(fields, variables)
 
 
-class _Color(Color, _injector):
+class _Color(Color, _injector()):
 
     def __repr__(self):
         return "Color(R=%d,G=%d,B=%d,A=%d)" % (self.r, self.g, self.b, self.a)
 
 
-class _SymbolizerBase(SymbolizerBase, _injector):
+class _SymbolizerBase(SymbolizerBase, _injector()):
     # back compatibility
 
     @property
@@ -325,7 +326,7 @@ def _add_symbol_method_to_symbolizers(vars=globals()):
                 symbol = symbol_for_cls
             else:
                 symbol = symbol_for_subcls
-            type('dummy', (obj, _injector), {'symbol': symbol})
+            type('dummy', (obj, _injector()), {'symbol': symbol})
 _add_symbol_method_to_symbolizers()
 
 
@@ -806,7 +807,7 @@ class PythonDatasource(object):
         return itertools.imap(make_it, features, itertools.count(1))
 
 
-class _TextSymbolizer(TextSymbolizer, _injector):
+class _TextSymbolizer(TextSymbolizer, _injector()):
 
     @property
     def name(self):
