@@ -29,7 +29,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         eq_(im.tostring('png32'),
             expected_im.tostring('png32'),
             'failed comparing actual (%s) and expected (%s)' % (actual,
-                                                                'tests/python_tests/' + expected))
+                                                                'test/python_tests/' + expected))
 
     def test_marker_ellipse_render2():
         m = mapnik.Map(256, 256)
