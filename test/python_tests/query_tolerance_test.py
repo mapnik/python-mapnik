@@ -32,16 +32,16 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
         eq_(tol, 0.046875)
         # check point really exists
         x, y = 2.0, 4.0
-        features = _map.query_point(0, x, y).features
-        eq_(len(features), 1)
+        features = _map.query_point(0, x, y)
+        eq_(len(list(features)), 1)
         # check inside tolerance limit
         x = 2.0 + tol * 0.9
-        features = _map.query_point(0, x, y).features
-        eq_(len(features), 1)
+        features = _map.query_point(0, x, y)
+        eq_(len(list(features)), 1)
         # check outside tolerance limit
         x = 2.0 + tol * 1.1
-        features = _map.query_point(0, x, y).features
-        eq_(len(features), 0)
+        features = _map.query_point(0, x, y)
+        eq_(len(list(features)), 0)
 
 if __name__ == "__main__":
     setup()

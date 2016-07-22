@@ -31,7 +31,7 @@ if 'geojson' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.Datasource(
             type='geojson',
             file='../data/json/escaped.geojson')
-        f = ds.features_at_point(ds.envelope().center()).features[0]
+        f = list(ds.features_at_point(ds.envelope().center()))[0]
         eq_(len(ds.fields()), 11)
         desc = ds.describe()
         eq_(desc['geometry_type'], mapnik.DataGeometryType.Point)
@@ -48,7 +48,7 @@ if 'geojson' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.Datasource(
             type='geojson',
             file='../data/json/escaped.geojson')
-        f = ds.all_features()[0]
+        f = list(ds.all_features())[0]
         eq_(len(ds.fields()), 11)
 
         desc = ds.describe()
@@ -68,7 +68,7 @@ if 'geojson' in mapnik.DatasourceCache.plugin_names():
             type='geojson',
             file='../data/json/escaped.geojson',
             cache_features=False)
-        f = ds.features_at_point(ds.envelope().center()).features[0]
+        f = list(ds.features_at_point(ds.envelope().center()))[0]
         eq_(len(ds.fields()), 11)
         desc = ds.describe()
         eq_(desc['geometry_type'], mapnik.DataGeometryType.Point)
@@ -85,7 +85,7 @@ if 'geojson' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.Datasource(
             type='geojson',
             file='../data/json/escaped.geojson')
-        f = ds.all_features()[0]
+        f = list(ds.all_features())[0]
         eq_(len(ds.fields()), 11)
 
         desc = ds.describe()
@@ -108,7 +108,7 @@ if 'geojson' in mapnik.DatasourceCache.plugin_names():
             type='geojson',
             inline='{ "type":"FeatureCollection", "features": [ { "type":"Feature", "properties":{"name":"test"}, "geometry": { "type":"LineString","coordinates":[[0,0],[10,10]] } } ]}')
         eq_(len(ds.fields()), 1)
-        f = ds.all_features()[0]
+        f = list(ds.all_features())[0]
         desc = ds.describe()
         eq_(desc['geometry_type'], mapnik.DataGeometryType.LineString)
         eq_(f['name'], u'test')
@@ -134,7 +134,7 @@ if 'geojson' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.Datasource(
             type='geojson',
             file='../data/json/feature_collection_level_properties.json')
-        f = ds.all_features()[0]
+        f = list(ds.all_features())[0]
 
         desc = ds.describe()
         eq_(desc['geometry_type'], mapnik.DataGeometryType.Point)

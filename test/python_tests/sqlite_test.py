@@ -288,7 +288,7 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
              'int',
              'int',
              'int'])
-        eq_(len(ds.all_features()), 100)
+        eq_(len(list(ds.all_features())), 100)
 
     test_attachdb_with_sql_join_count.requires_data = True
 
@@ -363,7 +363,7 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
              'int',
              'int',
              'int'])
-        eq_(len(ds.all_features()), 192)
+        eq_(len(list(ds.all_features())), 192)
 
     test_attachdb_with_sql_join_count2.requires_data = True
 
@@ -436,7 +436,7 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
              'int',
              'int',
              'int'])
-        eq_(len(ds.all_features()), 192)
+        eq_(len(list(ds.all_features())), 192)
 
     test_attachdb_with_sql_join_count3.requires_data = True
 
@@ -509,7 +509,7 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
              'int',
              'int',
              'int'])
-        eq_(len(ds.all_features()), 1)
+        eq_(len(list(ds.all_features())), 1)
 
     test_attachdb_with_sql_join_count4.requires_data = True
 
@@ -550,7 +550,7 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
              'int',
              'float',
              'float'])
-        eq_(len(ds.all_features()), 0)
+        eq_(len(list(ds.all_features())), 0)
 
     test_attachdb_with_sql_join_count5.requires_data = True
 
@@ -769,7 +769,7 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         eq_(len(ds.fields()), 1)
         eq_(ds.fields(), ['alias'])
         eq_(ds.field_types(), ['str'])
-        fs = ds.all_features()
+        fs = list(ds.all_features())
         eq_(len(fs), 1)
         feat = fs[0]
         eq_(feat.id(), 0)  # should be 1?

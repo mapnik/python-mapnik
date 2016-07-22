@@ -20,7 +20,7 @@ def test_add_feature():
     featureset = md.features_at_point(mapnik.Coord(2, 3))
     retrieved = []
 
-    for feat in featureset.features:
+    for feat in featureset:
         retrieved.append(feat)
 
     eq_(len(retrieved), 1)
@@ -29,7 +29,7 @@ def test_add_feature():
 
     featureset = md.features_at_point(mapnik.Coord(20, 30))
     retrieved = []
-    for feat in featureset.features:
+    for feat in featureset:
         retrieved.append(feat)
     eq_(len(retrieved), 0)
 

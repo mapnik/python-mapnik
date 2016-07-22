@@ -120,7 +120,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
             'geo_longitude': -70,
             'geo_latitude': 40}
         eq_(feat.attributes, attr)
-        eq_(len(ds.all_features()), 2)
+        eq_(len(list(ds.all_features())), 2)
         desc = ds.describe()
         eq_(desc['geometry_type'], mapnik.DataGeometryType.Point)
         eq_(desc['name'], 'csv')
@@ -131,7 +131,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         ds = get_csv_ds('blank_rows.csv')
         eq_(ds.fields(), ['x', 'y', 'name'])
         eq_(ds.field_types(), ['int', 'int', 'str'])
-        eq_(len(ds.all_features()), 2)
+        eq_(len(list(ds.all_features())), 2)
         desc = ds.describe()
         eq_(desc['geometry_type'], mapnik.DataGeometryType.Point)
         eq_(desc['name'], 'csv')
@@ -159,7 +159,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
             'date': u'1971-01-01',
             'integer': 40}
         first = True
-        for feat in fs.features:
+        for feat in fs:
             if first:
                 first = False
                 eq_(feat.attributes, attr)
@@ -175,7 +175,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
     def test_slashes(**kwargs):
         ds = get_csv_ds('has_attributes_with_slashes.csv')
         eq_(len(ds.fields()), 3)
-        fs = ds.all_features()
+        fs = list(ds.all_features())
         eq_(fs[0].attributes, {'x': 0, 'y': 0, 'name': u'a/a'})
         eq_(fs[1].attributes, {'x': 1, 'y': 4, 'name': u'b/b'})
         eq_(fs[2].attributes, {'x': 10, 'y': 2.5, 'name': u'c/c'})
@@ -190,7 +190,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         eq_(len(ds.fields()), 1)
         eq_(ds.fields(), ['type'])
         eq_(ds.field_types(), ['str'])
-        fs = ds.all_features()
+        fs = list(ds.all_features())
         # eq_(len(fs[0].geometries()),1)
         eq_(fs[0].geometry.type(), mapnik.GeometryType.Point)
         # eq_(len(fs[1].geometries()),1)
@@ -243,7 +243,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         ds = get_csv_ds('points.csv')
         eq_(len(ds.fields()), 6)
         eq_(ds.fields(), ['lat', 'long', 'name', 'nr', 'color', 'placements'])
-        fs = ds.all_features()
+        fs = list(ds.all_features())
         eq_(fs[0]['placements'], "N,S,E,W,SW,10,5")
         eq_(fs[1]['placements'], "N,S,E,W,SW,10,5")
         eq_(fs[2]['placements'], "N,S,E,W,SW,10,5")
@@ -258,7 +258,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
     def test_reading_windows_newlines(**kwargs):
         ds = get_csv_ds('windows_newlines.csv')
         eq_(len(ds.fields()), 3)
-        feats = ds.all_features()
+        feats = list(ds.all_features())
         eq_(len(feats), 1)
         fs = ds.featureset()
         feat = fs.next()
@@ -274,7 +274,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
     def test_reading_mac_newlines(**kwargs):
         ds = get_csv_ds('mac_newlines.csv')
         eq_(len(ds.fields()), 3)
-        feats = ds.all_features()
+        feats = list(ds.all_features())
         eq_(len(feats), 1)
         fs = ds.featureset()
         feat = fs.next()
@@ -290,7 +290,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
     def check_newlines(filename):
         ds = get_csv_ds(filename)
         eq_(len(ds.fields()), 3)
-        feats = ds.all_features()
+        feats = list(ds.all_features())
         eq_(len(feats), 1)
         fs = ds.featureset()
         feat = fs.next()
@@ -457,7 +457,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         eq_(len(ds.fields()), 1)
         eq_(ds.fields(), ['type'])
         eq_(ds.field_types(), ['str'])
-        fs = ds.all_features()
+        fs = list(ds.all_features())
         # eq_(len(fs[0].geometries()),1)
         eq_(fs[0].geometry.type(), mapnik.GeometryType.Point)
         # eq_(len(fs[1].geometries()),1)
@@ -497,8 +497,8 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         eq_(len(ds.fields()), 0)
         eq_(ds.fields(), [])
         eq_(ds.field_types(), [])
-        fs = ds.featureset()
-        eq_(fs, None)
+        fs = list(ds.featureset())
+        eq_(len(fs), 0)
         desc = ds.describe()
         eq_(desc['geometry_type'], None)
 
@@ -526,7 +526,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         eq_(feat['id'], 2)
         desc = ds.describe()
         eq_(desc['geometry_type'], mapnik.DataGeometryType.Point)
-        eq_(len(ds.all_features()), 2)
+        eq_(len(list(ds.all_features())), 2)
 
     def test_dynamically_defining_headers1(**kwargs):
         ds = mapnik.Datasource(type='csv',
@@ -543,7 +543,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         eq_(feat['name'], 'data_name')
         desc = ds.describe()
         eq_(desc['geometry_type'], mapnik.DataGeometryType.Point)
-        eq_(len(ds.all_features()), 2)
+        eq_(len(list(ds.all_features())), 2)
 
     def test_dynamically_defining_headers2(**kwargs):
         ds = mapnik.Datasource(type='csv',
@@ -560,7 +560,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         eq_(feat['name'], 'data_name')
         desc = ds.describe()
         eq_(desc['geometry_type'], mapnik.DataGeometryType.Point)
-        eq_(len(ds.all_features()), 1)
+        eq_(len(list(ds.all_features())), 1)
 
     def test_dynamically_defining_headers3(**kwargs):
         ds = mapnik.Datasource(type='csv',
@@ -577,7 +577,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         eq_(feat['name'], 'data_name')
         desc = ds.describe()
         eq_(desc['geometry_type'], mapnik.DataGeometryType.Point)
-        eq_(len(ds.all_features()), 1)
+        eq_(len(list(ds.all_features())), 1)
 
     def test_that_64bit_int_fields_work(**kwargs):
         ds = get_csv_ds('64bit_int.csv')
@@ -592,7 +592,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         eq_(feat['bigint'], 0x7FFFFFFFFFFFFFFF)
         desc = ds.describe()
         eq_(desc['geometry_type'], mapnik.DataGeometryType.Point)
-        eq_(len(ds.all_features()), 2)
+        eq_(len(list(ds.all_features())), 2)
 
     def test_various_number_types(**kwargs):
         ds = get_csv_ds('number_types.csv')
@@ -616,7 +616,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         eq_(feat['floats'], 1.234e+16)
         desc = ds.describe()
         eq_(desc['geometry_type'], mapnik.DataGeometryType.Point)
-        eq_(len(ds.all_features()), 8)
+        eq_(len(list(ds.all_features())), 8)
 
     def test_manually_supplied_extent(**kwargs):
         csv_string = '''

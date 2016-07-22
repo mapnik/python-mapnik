@@ -35,7 +35,7 @@ if 'shape' in plugins and 'ogr' in plugins:
         fs1 = ds1.featureset()
         fs2 = ds2.featureset()
         count = 0
-        for feat1, feat2 in zip(fs1.features, fs2.features):
+        for feat1, feat2 in zip(fs1, fs2):
             count += 1
             eq_(feat1.attributes, feat2.attributes)
             # TODO - revisit this: https://github.com/mapnik/mapnik/issues/1093

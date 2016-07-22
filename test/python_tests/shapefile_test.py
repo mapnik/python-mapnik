@@ -31,7 +31,7 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
     # Shapefile properties
     def test_shapefile_properties():
         s = mapnik.Shapefile(file='../data/shp/boundaries', encoding='latin1')
-        f = s.features_at_point(s.envelope().center()).features[0]
+        f = list(s.features_at_point(s.envelope().center()))[0]
 
         eq_(f['CGNS_FID'], u'6f733341ba2011d892e2080020a0f4c9')
         eq_(f['COUNTRY'], u'CAN')
@@ -78,7 +78,7 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
         query = mapnik.Query(ds.envelope())
         for fld in ds.fields():
             query.add_property_name(fld)
-        feat = ds.all_features()[0]
+        feat = list(ds.all_features())[0]
         eq_(feat.id(), 1)
         eq_(feat['LONG'], '0')
         eq_(feat['LAT'], '0')
@@ -94,7 +94,7 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
         eq_(len(ds.fields()), 2)
         eq_(ds.fields(), ['id', 'name'])
         eq_(ds.field_types(), ['int', 'str'])
-        eq_(len(ds.all_features()), 3)
+        eq_(len(list(ds.all_features())), 3)
 
     # ogr2ogr tests/data/shp/3dpoint/ogr_zfield.shp
     # tests/data/shp/3dpoint/qgis.shp -zfield id
@@ -103,14 +103,14 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
         eq_(len(ds.fields()), 2)
         eq_(ds.fields(), ['id', 'name'])
         eq_(ds.field_types(), ['int', 'str'])
-        eq_(len(ds.all_features()), 3)
+        eq_(len(list(ds.all_features())), 3)
 
     def test_shapefile_multipoint_from_qgis():
         ds = mapnik.Shapefile(file='../data/shp/points/qgis_multi.shp')
         eq_(len(ds.fields()), 2)
         eq_(ds.fields(), ['id', 'name'])
         eq_(ds.field_types(), ['int', 'str'])
-        eq_(len(ds.all_features()), 1)
+        eq_(len(list(ds.all_features())), 1)
 
     # pointzm from arcinfo
     def test_shapefile_point_zm_from_arcgis():
@@ -126,7 +126,7 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
              'Website'])
         eq_(ds.field_types(), ['str', 'str',
                                'str', 'float', 'float', 'str', 'str'])
-        eq_(len(ds.all_features()), 17)
+        eq_(len(list(ds.all_features())), 17)
 
     # copy of the above with ogr2ogr that makes m record 14 instead of 18
     def test_shapefile_point_zm_from_ogr():
@@ -142,7 +142,7 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
              'Website'])
         eq_(ds.field_types(), ['str', 'str',
                                'str', 'float', 'float', 'str', 'str'])
-        eq_(len(ds.all_features()), 17)
+        eq_(len(list(ds.all_features())), 17)
 
 if __name__ == "__main__":
     setup()

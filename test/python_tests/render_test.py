@@ -194,7 +194,7 @@ def test_render_points():
             'mapnik-render-points-%s.svg' %
             projdescr)
         mapnik.render_to_file(m, svg_file)
-        num_points_present = len(ds.all_features())
+        num_points_present = len(list(ds.all_features()))
         with open(svg_file, 'r') as f:
             svg = f.read()
         num_points_rendered = svg.count('<image ')

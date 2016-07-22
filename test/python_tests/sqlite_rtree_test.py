@@ -64,18 +64,18 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         conn.close()
 
         ds = mapnik.SQLite(file=test_db, table=table)
-        fs = ds.all_features()
+        fs = list(ds.all_features())
         del ds
         eq_(len(fs), TOTAL)
         os.unlink(index)
         ds = mapnik.SQLite(file=test_db, table=table, use_spatial_index=False)
-        fs = ds.all_features()
+        fs = list(ds.all_features())
         del ds
         eq_(len(fs), TOTAL)
         eq_(os.path.exists(index), False)
 
         ds = mapnik.SQLite(file=test_db, table=table, use_spatial_index=True)
-        fs = ds.all_features()
+        fs = list(ds.all_features())
         # TODO - this loop is not releasing something
         # because it causes the unlink below to fail on windows
         # as the file is still open

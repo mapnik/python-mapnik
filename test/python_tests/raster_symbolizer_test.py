@@ -85,7 +85,7 @@ def test_dataraster_query_point():
 
         x, y = 556113.0, 4381428.0  # center of extent of raster
         _map.zoom_all()
-        features = _map.query_point(0, x, y).features
+        features = list(_map.query_point(0, x, y))
         assert len(features) == 1
         feat = features[0]
         center = feat.envelope().center()
@@ -97,12 +97,12 @@ def test_dataraster_query_point():
         current_box = _map.envelope()
         current_box.expand_to_include(-427417, 4477517)
         _map.zoom_to_box(current_box)
-        features = _map.query_point(0, -427417, 4477517).features
-        assert len(features) == 0
+        features = _map.query_point(0, -427417, 4477517)
+        assert len(list(features)) == 0
 
         # point inside raster extent with nodata
-        features = _map.query_point(0, 126850, 4596050).features
-        assert len(features) == 0
+        features = _map.query_point(0, 126850, 4596050)
+        assert len(list(features)) == 0
 
 
 def test_load_save_map():

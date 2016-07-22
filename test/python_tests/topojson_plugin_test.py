@@ -34,7 +34,7 @@ if 'topojson' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.Datasource(
             type='topojson',
             file='../data/topojson/escaped.topojson')
-        f = ds.features_at_point(ds.envelope().center()).features[0]
+        f = list(ds.features_at_point(ds.envelope().center()))[0]
         eq_(len(ds.fields()), 11)
         desc = ds.describe()
         eq_(desc['geometry_type'], mapnik.DataGeometryType.Point)
@@ -51,7 +51,7 @@ if 'topojson' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.Datasource(
             type='topojson',
             file='../data/topojson/escaped.topojson')
-        f = ds.all_features()[0]
+        f = list(ds.all_features())[0]
         eq_(len(ds.fields()), 11)
 
         desc = ds.describe()
@@ -72,7 +72,7 @@ if 'topojson' in mapnik.DatasourceCache.plugin_names():
             inline=open(
                 '../data/topojson/escaped.topojson',
                 'r').read())
-        f = ds.all_features()[0]
+        f = list(ds.all_features())[0]
         eq_(len(ds.fields()), 11)
 
         desc = ds.describe()

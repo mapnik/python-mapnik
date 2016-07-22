@@ -57,7 +57,7 @@ def test_vrt_referring_to_missing_files():
         # *** run the function ***
         try:
             # Should RuntimeError here
-            _map.query_point(0, x, y).features
+            list(_map.query_point(0, x, y))
         finally:
             # restore file descriptors so I can print the results
             os.dup2(save[0], 1)
@@ -83,7 +83,7 @@ def test_total_feature_count_shp():
     if 'shape' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.Shapefile(file='../data/shp/poly.shp')
         features = ds.all_features()
-        num_feats = len(features)
+        num_feats = len(list(features))
         eq_(num_feats, 10)
 
 
@@ -96,7 +96,7 @@ def test_total_feature_count_json():
         eq_(desc['type'], mapnik.DataType.Vector)
         eq_(desc['encoding'], 'utf-8')
         features = ds.all_features()
-        num_feats = len(features)
+        num_feats = len(list(features))
         eq_(num_feats, 5)
 
 
@@ -111,7 +111,7 @@ def test_sqlite_reading():
         eq_(desc['type'], mapnik.DataType.Vector)
         eq_(desc['encoding'], 'utf-8')
         features = ds.all_features()
-        num_feats = len(features)
+        num_feats = len(list(features))
         eq_(num_feats, 245)
 
 
@@ -121,7 +121,7 @@ def test_reading_json_from_string():
     if 'ogr' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.Ogr(file=json, layer_by_index=0)
         features = ds.all_features()
-        num_feats = len(features)
+        num_feats = len(list(features))
         eq_(num_feats, 5)
 
 
@@ -140,7 +140,7 @@ def test_feature_envelope():
 def test_feature_attributes():
     if 'shape' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.Shapefile(file='../data/shp/poly.shp')
-        features = ds.all_features()
+        features = list(ds.all_features())
         feat = features[0]
         attrs = {'PRFEDEA': u'35043411', 'EAS_ID': 168, 'AREA': 215229.266}
         eq_(feat.attributes, attrs)
@@ -153,7 +153,7 @@ def test_ogr_layer_by_sql():
         ds = mapnik.Ogr(file='../data/shp/poly.shp',
                         layer_by_sql='SELECT * FROM poly WHERE EAS_ID = 168')
         features = ds.all_features()
-        num_feats = len(features)
+        num_feats = len(list(features))
         eq_(num_feats, 1)
 
 
@@ -174,7 +174,7 @@ def test_hit_grid():
             for x in xrange(0, 256, 4):
                 featureset = m.query_map_point(0, x, y)
                 added = False
-                for feature in featureset.features:
+                for feature in featureset:
                     fg.append(feature[join_field])
                     added = True
                 if not added:
