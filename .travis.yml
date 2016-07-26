@@ -12,7 +12,10 @@ matrix:
     - os: linux
       sudo: false
       compiler: ": clang"
-      env: JOBS=8 CXX="ccache clang++-3.8 -Qunused-arguments" CC="clang-3.8"
+      # note: only using ccache for CC is intentional here to
+      # workaround an odd bug in distutils that manifests when only `ccache` is used to link
+      # because distutils also has a bug whereby CC is used to compile instead of CXX, this works :)
+      env: JOBS=8 CXX="clang++-3.8 -Qunused-arguments" CC="ccache clang-3.8"
       addons:
         apt:
           sources: [ 'ubuntu-toolchain-r-test']
