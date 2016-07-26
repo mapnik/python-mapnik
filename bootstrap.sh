@@ -30,8 +30,11 @@ function install_mason_deps() {
     wait
     install webp 0.4.2 libwebp &
     install gdal 1.11.2 libgdal &
-    install boost 1.59.0 &
-    install boost_liball 1.59.0 &
+    install boost 1.61.0 &
+    install boost_libsystem 1.61.0 &
+    install boost_libfilesystem 1.61.0 &
+    install boost_libprogram_options 1.61.0 &
+    install boost_libregex 1.61.0 &
     install freetype 2.6 libfreetype &
     install harfbuzz 0.9.41 libharfbuzz &
     wait
