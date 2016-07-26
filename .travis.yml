@@ -16,7 +16,7 @@ matrix:
       addons:
         apt:
           sources: [ 'ubuntu-toolchain-r-test']
-          packages: [ libstdc++-5-dev']
+          packages: [ 'libstdc++-5-dev']
     # disabled until I have time to fix https://github.com/mapnik/python-mapnik/issues/95
     #- os: osx
     #  osx_image: xcode7.3 # upgrades clang from 6 -> 7
