@@ -19,7 +19,7 @@ matrix:
       addons:
         apt:
           sources: [ 'ubuntu-toolchain-r-test']
-          packages: [ 'libstdc++-5-dev']
+          packages: [ 'libstdc++-5-dev', 'gdb', 'apport']
     # disabled until I have time to fix https://github.com/mapnik/python-mapnik/issues/95
     #- os: osx
     #  osx_image: xcode7.3 # upgrades clang from 6 -> 7
@@ -84,7 +84,11 @@ install:
  - python setup.py install --prefix ${PYTHONUSERBASE}
 
 before_script:
- - python test/run_tests.py -q
+ - ulimit -c unlimited -S
+ - RESULT=0
+ - python test/run_tests.py || RESULT=$?
+ - for i in $(find ./ -maxdepth 1 -name 'core*' -print); do gdb $(which python) $i -ex "thread apply all bt" -ex "set pagination 0" -batch; done;
+ - if [[ ${RESULT} != 0 ]]; then exit $RESULT; fi
 
 script:
  - python test/visual.py -q
