@@ -9,7 +9,7 @@ from nose.tools import eq_, raises
 
 import mapnik
 
-from .utilities import execution_path, run_all
+from .utilities import execution_path, run_all, datasources_available
 
 PYTHON3 = sys.version_info[0] == 3
 
@@ -126,18 +126,15 @@ def get_paired_images(w, h, mapfile):
 
 
 def test_render_from_serialization():
-    try:
-        im, im2 = get_paired_images(
-            100, 100, '../data/good_maps/building_symbolizer.xml')
+    xmlfile = '../data/good_maps/building_symbolizer.xml'
+    if datasources_available(xmlfile):
+        im, im2 = get_paired_images(100, 100, xmlfile)
         eq_(im.tostring('png32'), im2.tostring('png32'))
 
-        im, im2 = get_paired_images(
-            100, 100, '../data/good_maps/polygon_symbolizer.xml')
+    xmlfile = '../data/good_maps/polygon_symbolizer.xml'
+    if datasources_available(xmlfile):
+        im, im2 = get_paired_images(100, 100, xmlfile)
         eq_(im.tostring('png32'), im2.tostring('png32'))
-    except RuntimeError as e:
-        # only test datasources that we have installed
-        if not 'Could not create datasource' in str(e):
-            raise RuntimeError(e)
 
 
 def test_render_points():
