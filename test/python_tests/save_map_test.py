@@ -5,6 +5,7 @@ import os
 import tempfile
 
 from nose.tools import eq_
+from nose.plugins.skip import SkipTest
 
 import mapnik
 
@@ -70,6 +71,9 @@ def compare_map(xml):
 
 
 def test_compare_map():
+    if not os.path.exists('../data/good_maps/'):
+        raise SkipTest
+
     good_maps = glob.glob("../data/good_maps/*.xml")
     good_maps = [os.path.normpath(p) for p in good_maps]
     # remove one map that round trips CDATA differently, but this is okay
@@ -85,6 +89,9 @@ def test_compare_map():
 
 
 def test_compare_map_deprecations():
+    if not os.path.exists('../data/deprecated_maps/'):
+        raise SkipTest
+
     dep = glob.glob("../data/deprecated_maps/*.xml")
     dep = [os.path.normpath(p) for p in dep]
     for m in dep:

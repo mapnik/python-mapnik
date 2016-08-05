@@ -4,6 +4,7 @@
 import os
 
 from nose.tools import assert_almost_equal, eq_, raises
+from nose.plugins.skip import SkipTest
 
 import mapnik
 
@@ -19,6 +20,9 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
 
     # Shapefile initialization
     def test_shapefile_init():
+        if not os.path.exists('../data/shp/boundaries'):
+            raise SkipTest
+
         s = mapnik.Shapefile(file='../data/shp/boundaries')
 
         e = s.envelope()
@@ -30,6 +34,9 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
 
     # Shapefile properties
     def test_shapefile_properties():
+        if not os.path.exists('../data/shp/boundaries'):
+            raise SkipTest
+
         s = mapnik.Shapefile(file='../data/shp/boundaries', encoding='latin1')
         f = list(s.features_at_point(s.envelope().center()))[0]
 
@@ -45,6 +52,9 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
 
     @raises(RuntimeError)
     def test_that_nonexistant_query_field_throws(**kwargs):
+        if not os.path.exists('../data/shp/world_merc'):
+            raise SkipTest
+
         ds = mapnik.Shapefile(file='../data/shp/world_merc')
         eq_(len(ds.fields()), 11)
         eq_(ds.fields(), ['FIPS', 'ISO2', 'ISO3', 'UN', 'NAME',
@@ -69,6 +79,9 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
         ds.features(query)
 
     def test_dbf_logical_field_is_boolean():
+        if not os.path.exists('../data/shp/long_lat'):
+            raise SkipTest
+
         ds = mapnik.Shapefile(file='../data/shp/long_lat')
         eq_(len(ds.fields()), 7)
         eq_(ds.fields(), ['LONG', 'LAT', 'LOGICAL_TR',
@@ -90,6 +103,9 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
 
     # created by hand in qgis 1.8.0
     def test_shapefile_point2d_from_qgis():
+        if not os.path.exists('../data/shp/points/qgis.shp'):
+            raise SkipTest
+
         ds = mapnik.Shapefile(file='../data/shp/points/qgis.shp')
         eq_(len(ds.fields()), 2)
         eq_(ds.fields(), ['id', 'name'])
@@ -99,6 +115,9 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
     # ogr2ogr tests/data/shp/3dpoint/ogr_zfield.shp
     # tests/data/shp/3dpoint/qgis.shp -zfield id
     def test_shapefile_point_z_from_qgis():
+        if not os.path.exists('../data/shp/points/ogr_zfield.shp'):
+            raise SkipTest
+
         ds = mapnik.Shapefile(file='../data/shp/points/ogr_zfield.shp')
         eq_(len(ds.fields()), 2)
         eq_(ds.fields(), ['id', 'name'])
@@ -106,6 +125,9 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
         eq_(len(list(ds.all_features())), 3)
 
     def test_shapefile_multipoint_from_qgis():
+        if not os.path.exists('../data/shp/points/qgis_multi.shp'):
+            raise SkipTest
+
         ds = mapnik.Shapefile(file='../data/shp/points/qgis_multi.shp')
         eq_(len(ds.fields()), 2)
         eq_(ds.fields(), ['id', 'name'])
@@ -114,6 +136,9 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
 
     # pointzm from arcinfo
     def test_shapefile_point_zm_from_arcgis():
+        if not os.path.exists('../data/shp/points/poi.shp'):
+            raise SkipTest
+
         ds = mapnik.Shapefile(file='../data/shp/points/poi.shp')
         eq_(len(ds.fields()), 7)
         eq_(ds.fields(),
@@ -130,6 +155,9 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
 
     # copy of the above with ogr2ogr that makes m record 14 instead of 18
     def test_shapefile_point_zm_from_ogr():
+        if not os.path.exists('../data/shp/points/poi_ogr.shp'):
+            raise SkipTest
+
         ds = mapnik.Shapefile(file='../data/shp/points/poi_ogr.shp')
         eq_(len(ds.fields()), 7)
         eq_(ds.fields(),

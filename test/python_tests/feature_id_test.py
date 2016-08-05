@@ -3,6 +3,7 @@
 import os
 
 from nose.tools import eq_
+from nose.plugins.skip import SkipTest
 
 import mapnik
 
@@ -21,6 +22,9 @@ def setup():
 
 
 def compare_shape_between_mapnik_and_ogr(shapefile, query=None):
+    if not os.path.exists(shapefile):
+        raise SkipTest
+
     plugins = mapnik.DatasourceCache.plugin_names()
     if 'shape' in plugins and 'ogr' in plugins:
         ds1 = mapnik.Ogr(file=shapefile, layer_by_index=0)
@@ -49,6 +53,9 @@ def test_shapefile_polygon_featureset_id():
 
 
 def test_shapefile_polygon_feature_query_id():
+    if not os.path.exists('../data/shp/world_merc.shp'):
+        raise SkipTest
+
     bbox = (15523428.2632, 4110477.6323, -11218494.8310, 7495720.7404)
     query = mapnik.Query(mapnik.Box2d(*bbox))
     if 'ogr' in mapnik.DatasourceCache.plugin_names():

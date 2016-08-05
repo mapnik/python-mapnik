@@ -4,6 +4,7 @@
 import os
 
 from nose.tools import eq_
+from nose.plugins.skip import SkipTest
 
 import mapnik
 
@@ -17,6 +18,9 @@ def setup():
 
 
 def test_arbitrary_parameters_attached_to_map():
+    if not os.path.exists('../data/good_maps/extra_arbitary_map_parameters.xml'):
+        raise SkipTest
+
     m = mapnik.Map(256, 256)
     mapnik.load_map(m, '../data/good_maps/extra_arbitary_map_parameters.xml')
     eq_(len(m.parameters), 5)

@@ -3,6 +3,7 @@
 import os
 
 from nose.tools import assert_almost_equal, eq_, raises
+from nose.plugins.skip import SkipTest
 
 import mapnik
 
@@ -43,6 +44,9 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
     # map has never been zoomed (even with data)
     @raises(RuntimeError)
     def test_map_query_throw4():
+        if not os.path.exists('../data/good_maps/agg_poly_gamma_map.xml'):
+            raise SkipTest
+
         m = mapnik.Map(256, 256)
         mapnik.load_map(m, '../data/good_maps/agg_poly_gamma_map.xml')
         m.query_point(0, 0, 0)
@@ -50,12 +54,18 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
     # invalid coords in general (do not intersect)
     @raises(RuntimeError)
     def test_map_query_throw5():
+        if not os.path.exists('../data/good_maps/agg_poly_gamma_map.xml'):
+            raise SkipTest
+
         m = mapnik.Map(256, 256)
         mapnik.load_map(m, '../data/good_maps/agg_poly_gamma_map.xml')
         m.zoom_all()
         m.query_point(0, 9999999999999999, 9999999999999999)
 
     def test_map_query_works1():
+        if not os.path.exists('../data/good_maps/wgs842merc_reprojection.xml'):
+            raise SkipTest
+
         m = mapnik.Map(256, 256)
         mapnik.load_map(m, '../data/good_maps/wgs842merc_reprojection.xml')
         merc_bounds = mapnik.Box2d(-20037508.34, -
@@ -68,6 +78,9 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
         eq_(feat.attributes['NAME_FORMA'], u'United States of America')
 
     def test_map_query_works2():
+        if not os.path.exists('../data/good_maps/merc2wgs84_reprojection.xml'):
+            raise SkipTest
+
         m = mapnik.Map(256, 256)
         mapnik.load_map(m, '../data/good_maps/merc2wgs84_reprojection.xml')
         wgs84_bounds = mapnik.Box2d(-179.999999975, -
@@ -87,6 +100,9 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
         eq_(feat.attributes['NAME'], u'United States')
 
     def test_map_query_in_pixels_works1():
+        if not os.path.exists('../data/good_maps/wgs842merc_reprojection.xml'):
+            raise SkipTest
+
         m = mapnik.Map(256, 256)
         mapnik.load_map(m, '../data/good_maps/wgs842merc_reprojection.xml')
         merc_bounds = mapnik.Box2d(-20037508.34, -
@@ -98,6 +114,9 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
         eq_(feat.attributes['NAME_FORMA'], u'United States of America')
 
     def test_map_query_in_pixels_works2():
+        if not os.path.exists('../data/good_maps/merc2wgs84_reprojection.xml'):
+            raise SkipTest
+
         m = mapnik.Map(256, 256)
         mapnik.load_map(m, '../data/good_maps/merc2wgs84_reprojection.xml')
         wgs84_bounds = mapnik.Box2d(-179.999999975, -

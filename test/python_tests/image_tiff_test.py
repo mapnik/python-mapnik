@@ -5,6 +5,7 @@ import hashlib
 import os
 
 from nose.tools import assert_not_equal, eq_
+from nose.plugins.skip import SkipTest
 
 import mapnik
 
@@ -208,6 +209,9 @@ def test_tiff_round_trip_tiled():
 
 
 def test_tiff_rgb8_compare():
+    if not os.path.exists('../data/tiff/ndvi_256x256_rgb8_striped.tif'):
+        raise SkipTest
+
     filepath1 = '../data/tiff/ndvi_256x256_rgb8_striped.tif'
     filepath2 = '/tmp/mapnik-tiff-rgb8.tiff'
     im = mapnik.Image.open(filepath1)
@@ -223,6 +227,9 @@ def test_tiff_rgb8_compare():
 
 
 def test_tiff_rgba8_compare_scanline():
+    if not os.path.exists('../data/tiff/ndvi_256x256_rgba8_striped.tif'):
+        raise SkipTest
+
     filepath1 = '../data/tiff/ndvi_256x256_rgba8_striped.tif'
     filepath2 = '/tmp/mapnik-tiff-rgba8-scanline.tiff'
     im = mapnik.Image.open(filepath1)
@@ -239,6 +246,9 @@ def test_tiff_rgba8_compare_scanline():
 
 
 def test_tiff_rgba8_compare_stripped():
+    if not os.path.exists('../data/tiff/ndvi_256x256_rgba8_striped.tif'):
+        raise SkipTest
+
     filepath1 = '../data/tiff/ndvi_256x256_rgba8_striped.tif'
     filepath2 = '/tmp/mapnik-tiff-rgba8-stripped.tiff'
     im = mapnik.Image.open(filepath1)
@@ -255,6 +265,9 @@ def test_tiff_rgba8_compare_stripped():
 
 
 def test_tiff_rgba8_compare_tiled():
+    if not os.path.exists('../data/tiff/ndvi_256x256_rgba8_striped.tif'):
+        raise SkipTest
+
     filepath1 = '../data/tiff/ndvi_256x256_rgba8_striped.tif'
     filepath2 = '/tmp/mapnik-tiff-rgba8-stripped.tiff'
     im = mapnik.Image.open(filepath1)
@@ -271,6 +284,9 @@ def test_tiff_rgba8_compare_tiled():
 
 
 def test_tiff_gray8_compare_scanline():
+    if not os.path.exists('../data/tiff/ndvi_256x256_gray8_striped.tif'):
+        raise SkipTest
+
     filepath1 = '../data/tiff/ndvi_256x256_gray8_striped.tif'
     filepath2 = '/tmp/mapnik-tiff-gray8-scanline.tiff'
     im = mapnik.Image.open(filepath1)
@@ -287,6 +303,9 @@ def test_tiff_gray8_compare_scanline():
 
 
 def test_tiff_gray8_compare_stripped():
+    if not os.path.exists('../data/tiff/ndvi_256x256_gray8_striped.tif'):
+        raise SkipTest
+
     filepath1 = '../data/tiff/ndvi_256x256_gray8_striped.tif'
     filepath2 = '/tmp/mapnik-tiff-gray8-stripped.tiff'
     im = mapnik.Image.open(filepath1)
@@ -303,6 +322,9 @@ def test_tiff_gray8_compare_stripped():
 
 
 def test_tiff_gray8_compare_tiled():
+    if not os.path.exists('../data/tiff/ndvi_256x256_gray8_striped.tif'):
+        raise SkipTest
+
     filepath1 = '../data/tiff/ndvi_256x256_gray8_striped.tif'
     filepath2 = '/tmp/mapnik-tiff-gray8-tiled.tiff'
     im = mapnik.Image.open(filepath1)
@@ -319,6 +341,9 @@ def test_tiff_gray8_compare_tiled():
 
 
 def test_tiff_gray16_compare_scanline():
+    if not os.path.exists('../data/tiff/ndvi_256x256_gray16_striped.tif'):
+        raise SkipTest
+
     filepath1 = '../data/tiff/ndvi_256x256_gray16_striped.tif'
     filepath2 = '/tmp/mapnik-tiff-gray16-scanline.tiff'
     im = mapnik.Image.open(filepath1)
@@ -335,6 +360,9 @@ def test_tiff_gray16_compare_scanline():
 
 
 def test_tiff_gray16_compare_stripped():
+    if not os.path.exists('../data/tiff/ndvi_256x256_gray16_striped.tif'):
+        raise SkipTest
+
     filepath1 = '../data/tiff/ndvi_256x256_gray16_striped.tif'
     filepath2 = '/tmp/mapnik-tiff-gray16-stripped.tiff'
     im = mapnik.Image.open(filepath1)
@@ -351,6 +379,9 @@ def test_tiff_gray16_compare_stripped():
 
 
 def test_tiff_gray16_compare_tiled():
+    if not os.path.exists('../data/tiff/ndvi_256x256_gray16_striped.tif'):
+        raise SkipTest
+
     filepath1 = '../data/tiff/ndvi_256x256_gray16_striped.tif'
     filepath2 = '/tmp/mapnik-tiff-gray16-tiled.tiff'
     im = mapnik.Image.open(filepath1)
@@ -367,6 +398,9 @@ def test_tiff_gray16_compare_tiled():
 
 
 def test_tiff_gray32f_compare_scanline():
+    if not os.path.exists('../data/tiff/ndvi_256x256_gray32f_striped.tif'):
+        raise SkipTest
+
     filepath1 = '../data/tiff/ndvi_256x256_gray32f_striped.tif'
     filepath2 = '/tmp/mapnik-tiff-gray32f-scanline.tiff'
     im = mapnik.Image.open(filepath1)
@@ -383,6 +417,9 @@ def test_tiff_gray32f_compare_scanline():
 
 
 def test_tiff_gray32f_compare_stripped():
+    if not os.path.exists('../data/tiff/ndvi_256x256_gray32f_striped.tif'):
+        raise SkipTest
+
     filepath1 = '../data/tiff/ndvi_256x256_gray32f_striped.tif'
     filepath2 = '/tmp/mapnik-tiff-gray32f-stripped.tiff'
     im = mapnik.Image.open(filepath1)
@@ -399,6 +436,9 @@ def test_tiff_gray32f_compare_stripped():
 
 
 def test_tiff_gray32f_compare_tiled():
+    if not os.path.exists('../data/tiff/ndvi_256x256_gray32f_striped.tif'):
+        raise SkipTest
+
     filepath1 = '../data/tiff/ndvi_256x256_gray32f_striped.tif'
     filepath2 = '/tmp/mapnik-tiff-gray32f-tiled.tiff'
     im = mapnik.Image.open(filepath1)

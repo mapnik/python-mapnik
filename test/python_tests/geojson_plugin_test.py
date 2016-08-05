@@ -4,6 +4,7 @@
 import os
 
 from nose.tools import assert_almost_equal, eq_
+from nose.plugins.skip import SkipTest
 
 import mapnik
 
@@ -18,6 +19,9 @@ def setup():
 if 'geojson' in mapnik.DatasourceCache.plugin_names():
 
     def test_geojson_init():
+        if not os.path.exists('../data/json/escaped.geojson'):
+            raise SkipTest
+
         ds = mapnik.Datasource(
             type='geojson',
             file='../data/json/escaped.geojson')
@@ -28,6 +32,9 @@ if 'geojson' in mapnik.DatasourceCache.plugin_names():
         assert_almost_equal(e.maxy, 41.480573, places=3)
 
     def test_geojson_properties():
+        if not os.path.exists('../data/json/escaped.geojson'):
+            raise SkipTest
+
         ds = mapnik.Datasource(
             type='geojson',
             file='../data/json/escaped.geojson')
@@ -64,6 +71,9 @@ if 'geojson' in mapnik.DatasourceCache.plugin_names():
         eq_(f['NOM_FR'], u'Québec')
 
     def test_large_geojson_properties():
+        if not os.path.exists('../data/json/escaped.geojson'):
+            raise SkipTest
+
         ds = mapnik.Datasource(
             type='geojson',
             file='../data/json/escaped.geojson',
@@ -115,6 +125,9 @@ if 'geojson' in mapnik.DatasourceCache.plugin_names():
 
 #    @raises(RuntimeError)
     def test_that_nonexistant_query_field_throws(**kwargs):
+        if not os.path.exists('../data/json/escaped.geojson'):
+            raise SkipTest
+
         ds = mapnik.Datasource(
             type='geojson',
             file='../data/json/escaped.geojson')
@@ -131,6 +144,9 @@ if 'geojson' in mapnik.DatasourceCache.plugin_names():
 #        fs = ds.features(query)
 
     def test_parsing_feature_collection_with_top_level_properties():
+        if not os.path.exists('../data/json/feature_collection_level_properties.json'):
+            raise SkipTest
+
         ds = mapnik.Datasource(
             type='geojson',
             file='../data/json/feature_collection_level_properties.json')

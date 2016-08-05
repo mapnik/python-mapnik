@@ -5,6 +5,7 @@ import os
 import sys
 
 from nose.tools import assert_almost_equal, eq_, raises
+from nose.plugins.skip import SkipTest
 
 import mapnik
 
@@ -370,6 +371,9 @@ def test_png_round_trip():
 
 
 def test_image_open_from_string():
+    if not os.path.exists('../data/images/dummy.png'):
+        raise SkipTest
+
     filepath = '../data/images/dummy.png'
     im1 = mapnik.Image.open(filepath)
     with open(filepath, READ_FLAGS) as f:

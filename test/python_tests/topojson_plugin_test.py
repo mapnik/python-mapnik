@@ -5,6 +5,7 @@ from __future__ import absolute_import, print_function
 import os
 
 from nose.tools import assert_almost_equal, eq_
+from nose.plugins.skip import SkipTest
 
 import mapnik
 
@@ -19,6 +20,9 @@ def setup():
 if 'topojson' in mapnik.DatasourceCache.plugin_names():
 
     def test_topojson_init():
+        if not os.path.exists('../data/topojson/escaped.topojson'):
+            raise SkipTest
+
         # topojson tests/data/json/escaped.geojson -o tests/data/topojson/escaped.topojson --properties
         # topojson version 1.4.2
         ds = mapnik.Datasource(
@@ -31,6 +35,9 @@ if 'topojson' in mapnik.DatasourceCache.plugin_names():
         assert_almost_equal(e.maxy, 41.480573, places=3)
 
     def test_topojson_properties():
+        if not os.path.exists('../data/topojson/escaped.topojson'):
+            raise SkipTest
+
         ds = mapnik.Datasource(
             type='topojson',
             file='../data/topojson/escaped.topojson')
@@ -67,6 +74,9 @@ if 'topojson' in mapnik.DatasourceCache.plugin_names():
         eq_(f['NOM_FR'], u'Québec')
 
     def test_geojson_from_in_memory_string():
+        if not os.path.exists('../data/topojson/escaped.topojson'):
+            raise SkipTest
+
         ds = mapnik.Datasource(
             type='topojson',
             inline=open(
@@ -89,6 +99,9 @@ if 'topojson' in mapnik.DatasourceCache.plugin_names():
 
 #    @raises(RuntimeError)
     def test_that_nonexistant_query_field_throws(**kwargs):
+        if not os.path.exists('../data/topojson/escaped.topojson'):
+            raise SkipTest
+
         ds = mapnik.Datasource(
             type='topojson',
             file='../data/topojson/escaped.topojson')

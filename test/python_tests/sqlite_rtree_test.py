@@ -5,6 +5,7 @@ import sys
 import threading
 
 from nose.tools import eq_
+from nose.plugins.skip import SkipTest
 
 import mapnik
 
@@ -30,6 +31,9 @@ def create_ds(test_db, table):
 if 'sqlite' in mapnik.DatasourceCache.plugin_names():
 
     def test_rtree_creation():
+        if not os.path.exists('../data/sqlite/world.sqlite'):
+            raise SkipTest
+
         test_db = '../data/sqlite/world.sqlite'
         index = test_db + '.index'
         table = 'world_merc'

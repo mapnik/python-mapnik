@@ -4,6 +4,7 @@
 import os
 
 from nose.tools import assert_almost_equal, eq_, raises
+from nose.plugins.skip import SkipTest
 
 import mapnik
 
@@ -24,6 +25,9 @@ if 'ogr' in mapnik.DatasourceCache.plugin_names():
 
     # Shapefile initialization
     def test_shapefile_init():
+        if not os.path.exists('../data/shp/boundaries.shp'):
+            raise SkipTest
+
         ds = mapnik.Ogr(file='../data/shp/boundaries.shp', layer_by_index=0)
         e = ds.envelope()
         assert_almost_equal(e.minx, -11121.6896651, places=7)
@@ -36,6 +40,9 @@ if 'ogr' in mapnik.DatasourceCache.plugin_names():
 
     # Shapefile properties
     def test_shapefile_properties():
+        if not os.path.exists('../data/shp/boundaries.shp'):
+            raise SkipTest
+
         ds = mapnik.Ogr(file='../data/shp/boundaries.shp', layer_by_index=0)
         f = list(ds.features_at_point(ds.envelope().center(), 0.001))[0]
         eq_(ds.geometry_type(), mapnik.DataGeometryType.Polygon)
@@ -56,6 +63,9 @@ if 'ogr' in mapnik.DatasourceCache.plugin_names():
 
     @raises(RuntimeError)
     def test_that_nonexistant_query_field_throws(**kwargs):
+        if not os.path.exists('../data/shp/world_merc.shp'):
+            raise SkipTest
+
         ds = mapnik.Ogr(file='../data/shp/world_merc.shp', layer_by_index=0)
         eq_(len(ds.fields()), 11)
         eq_(ds.fields(), ['FIPS', 'ISO2', 'ISO3', 'UN', 'NAME',
@@ -87,6 +97,9 @@ if 'ogr' in mapnik.DatasourceCache.plugin_names():
 
     # OGR plugin extent parameter
     def test_ogr_extent_parameter():
+        if not os.path.exists('../data/shp/world_merc.shp'):
+            raise SkipTest
+
         ds = mapnik.Ogr(
             file='../data/shp/world_merc.shp',
             layer_by_index=0,
@@ -101,6 +114,9 @@ if 'ogr' in mapnik.DatasourceCache.plugin_names():
         eq_('+proj=merc' in meta['proj4'], True)
 
     def test_ogr_reading_gpx_waypoint():
+        if not os.path.exists('../data/gpx/empty.gpx'):
+            raise SkipTest
+
         ds = mapnik.Ogr(file='../data/gpx/empty.gpx', layer='waypoints')
         e = ds.envelope()
         eq_(e.minx, -122)
@@ -112,6 +128,9 @@ if 'ogr' in mapnik.DatasourceCache.plugin_names():
         eq_('+proj=longlat' in meta['proj4'], True)
 
     def test_ogr_empty_data_should_not_throw():
+        if not os.path.exists('../data/gpx/empty.gpx'):
+            raise SkipTest
+
         default_logging_severity = mapnik.logger.get_severity()
         mapnik.logger.set_severity(getattr(mapnik.severity_type, "None"))
         # use logger to silence expected warnings
@@ -134,6 +153,9 @@ if 'ogr' in mapnik.DatasourceCache.plugin_names():
     #    eq_(len(fs),1)
 
     def test_geometry_type():
+        if not os.path.exists('../data/csv/wkt.csv'):
+            raise SkipTest
+
         ds = mapnik.Ogr(file='../data/csv/wkt.csv', layer_by_index=0)
         e = ds.envelope()
         assert_almost_equal(e.minx, 1.0, places=1)

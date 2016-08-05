@@ -7,6 +7,7 @@ import glob
 import os
 
 from nose.tools import eq_, raises
+from nose.plugins.skip import SkipTest
 
 import mapnik
 
@@ -31,10 +32,16 @@ def teardown():
 if 'csv' in mapnik.DatasourceCache.plugin_names():
 
     def get_csv_ds(filename):
+        if not os.path.exists('../data/csv/'):
+            raise SkipTest
+
         return mapnik.Datasource(
             type='csv', file=os.path.join('../data/csv/', filename))
 
     def test_broken_files(visual=False):
+        if not os.path.exists('../data/csv/'):
+            raise SkipTest
+
         broken = glob.glob("../data/csv/fails/*.*")
         broken.extend(glob.glob("../data/csv/warns/*.*"))
 
@@ -50,6 +57,9 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
                     print('\x1b[1;32m✓ \x1b[0m', csv)
 
     def test_good_files(visual=False):
+        if not os.path.exists('../data/csv/'):
+            raise SkipTest
+
         good_files = glob.glob("../data/csv/*.*")
         good_files.extend(glob.glob("../data/csv/warns/*.*"))
         ignorable = os.path.join('..', 'data', 'csv', 'long_lat.vrt')
@@ -508,6 +518,9 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         get_csv_ds('more_column_values_than_headers.csv')
 
     def test_that_feature_id_only_incremented_for_valid_rows(**kwargs):
+        if not os.path.exists(os.path.join('../data/csv/warns', 'feature_id_counting.csv')):
+            raise SkipTest
+
         ds = mapnik.Datasource(type='csv',
                                file=os.path.join('../data/csv/warns', 'feature_id_counting.csv'))
         eq_(len(ds.fields()), 3)
@@ -529,6 +542,9 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         eq_(len(list(ds.all_features())), 2)
 
     def test_dynamically_defining_headers1(**kwargs):
+        if not os.path.exists(os.path.join('../data/csv/fails', 'needs_headers_two_lines.csv')):
+            raise SkipTest
+
         ds = mapnik.Datasource(type='csv',
                                file=os.path.join(
                                    '../data/csv/fails', 'needs_headers_two_lines.csv'),
@@ -546,6 +562,9 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         eq_(len(list(ds.all_features())), 2)
 
     def test_dynamically_defining_headers2(**kwargs):
+        if not os.path.exists(os.path.join('../data/csv/fails', 'needs_headers_one_line.csv')):
+            raise SkipTest
+
         ds = mapnik.Datasource(type='csv',
                                file=os.path.join(
                                    '../data/csv/fails', 'needs_headers_one_line.csv'),
@@ -563,6 +582,9 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         eq_(len(list(ds.all_features())), 1)
 
     def test_dynamically_defining_headers3(**kwargs):
+        if not os.path.exists(os.path.join('../data/csv/fails', 'needs_headers_one_line_no_newline.csv')):
+            raise SkipTest
+
         ds = mapnik.Datasource(type='csv',
                                file=os.path.join(
                                    '../data/csv/fails', 'needs_headers_one_line_no_newline.csv'),

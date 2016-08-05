@@ -3,6 +3,7 @@
 import os
 
 from nose.tools import eq_
+from nose.plugins.skip import SkipTest
 
 import mapnik
 
@@ -16,6 +17,9 @@ def setup():
 
 if 'shape' in mapnik.DatasourceCache.plugin_names():
     def test_query_tolerance():
+        if not os.path.exists('../data/shp/arrows.shp'):
+            raise SkipTest
+
         srs = '+init=epsg:4326'
         lyr = mapnik.Layer('test')
         ds = mapnik.Shapefile(file='../data/shp/arrows.shp')

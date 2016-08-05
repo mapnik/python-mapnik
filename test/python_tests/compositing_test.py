@@ -5,6 +5,7 @@ from __future__ import print_function
 import os
 
 from nose.tools import eq_
+from nose.plugins.skip import SkipTest
 
 import mapnik
 
@@ -182,6 +183,9 @@ def test_pre_multiply_status_of_map2():
 
 if 'shape' in mapnik.DatasourceCache.plugin_names():
     def test_style_level_comp_op():
+        if not os.path.exists('../data/good_maps/style_level_comp_op.xml'):
+            raise SkipTest
+
         m = mapnik.Map(256, 256)
         mapnik.load_map(m, '../data/good_maps/style_level_comp_op.xml')
         m.zoom_all()
@@ -218,6 +222,9 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
         eq_(len(fails), 0, '\n' + '\n'.join(fails))
 
     def test_style_level_opacity():
+        if not os.path.exists('../data/good_maps/style_level_opacity_and_blur.xml'):
+            raise SkipTest
+
         m = mapnik.Map(512, 512)
         mapnik.load_map(
             m, '../data/good_maps/style_level_opacity_and_blur.xml')
@@ -235,6 +242,9 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
 
 
 def test_rounding_and_color_expectations():
+    if not os.path.exists('../data/images/stripes_pattern.png'):
+        raise SkipTest
+
     m = mapnik.Map(1, 1)
     m.background = mapnik.Color('rgba(255,255,255,.4999999)')
     im = mapnik.Image(m.width, m.height)
@@ -260,6 +270,9 @@ def test_rounding_and_color_expectations():
 
 
 def test_background_image_and_background_color():
+    if not os.path.exists('../data/images/stripes_pattern.png'):
+        raise SkipTest
+
     m = mapnik.Map(8, 8)
     m.background = mapnik.Color('rgba(255,255,255,.5)')
     m.background_image = '../data/images/stripes_pattern.png'
@@ -269,6 +282,9 @@ def test_background_image_and_background_color():
 
 
 def test_background_image_with_alpha_and_background_color():
+    if not os.path.exists('../data/images/yellow_half_trans.png'):
+        raise SkipTest
+
     m = mapnik.Map(10, 10)
     m.background = mapnik.Color('rgba(255,255,255,.5)')
     m.background_image = '../data/images/yellow_half_trans.png'
@@ -278,6 +294,9 @@ def test_background_image_with_alpha_and_background_color():
 
 
 def test_background_image_with_alpha_and_background_color_against_composited_control():
+    if not os.path.exists('../data/images/yellow_half_trans.png'):
+        raise SkipTest
+
     m = mapnik.Map(10, 10)
     m.background = mapnik.Color('rgba(255,255,255,.5)')
     m.background_image = '../data/images/yellow_half_trans.png'

@@ -6,6 +6,7 @@ import sys
 import tempfile
 
 from nose.tools import eq_, raises
+from nose.plugins.skip import SkipTest
 
 import mapnik
 
@@ -126,6 +127,9 @@ def get_paired_images(w, h, mapfile):
 
 
 def test_render_from_serialization():
+    if not os.path.exists('../data/good_maps/building_symbolizer.xml') or not os.path.exists('../data/good_maps/polygon_symbolizer.xml'):
+        raise SkipTest
+
     try:
         im, im2 = get_paired_images(
             100, 100, '../data/good_maps/building_symbolizer.xml')
@@ -263,6 +267,9 @@ def test_render_with_detector():
 if 'shape' in mapnik.DatasourceCache.plugin_names():
 
     def test_render_with_scale_factor():
+        if not os.path.exists('../data/good_maps/marker-text-line.xml'):
+            raise SkipTest
+
         m = mapnik.Map(256, 256)
         mapnik.load_map(m, '../data/good_maps/marker-text-line.xml')
         m.zoom_all()
