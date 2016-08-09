@@ -259,7 +259,7 @@ void export_geometry()
         .def("to_wkt",&to_wkt_impl)
         ;
 
-    class_<geometry<double>, std::shared_ptr<geometry<double> >, boost::noncopyable>("Geometry",no_init)
+    class_<geometry<double>, boost::noncopyable>("Geometry",no_init)
         .def("envelope",&geometry_envelope_impl)
         .def("from_geojson", from_geojson_impl)
         .def("from_wkt", from_wkt_impl)
@@ -282,5 +282,6 @@ void export_geometry()
         //.def("to_svg",&to_svg)
         // TODO add other geometry_type methods
         ;
+
     register_ptr_to_python<std::shared_ptr<geometry<double>> >();
 }
