@@ -63,4 +63,5 @@ void export_featureset()
         // Python2 support
         .def("next", next)
         ;
+    register_ptr_to_python<std::shared_ptr<mapnik::Featureset> >();
 }

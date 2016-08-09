@@ -282,4 +282,5 @@ void export_geometry()
         //.def("to_svg",&to_svg)
         // TODO add other geometry_type methods
         ;
+    register_ptr_to_python<std::shared_ptr<geometry<double>> >();
 }

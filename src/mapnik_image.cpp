@@ -467,5 +467,6 @@ void export_image()
         .staticmethod("from_cairo")
 #endif
         ;
+    register_ptr_to_python<std::shared_ptr<image_any> >();
 
 }
