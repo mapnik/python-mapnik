@@ -92,14 +92,15 @@ before_script:
 
 script:
  - python test/visual.py -q
- - if [[ ${COMMIT_MESSAGE} =~ "[publish]" ]]; then
-    python setup.py bdist_wheel;
-    if [[ $(uname -s) == 'Linux' ]]; then
-        export PRE_DISTS='dist/*.whl';
-        rename 's/linux_x86_64/any/;' $PRE_DISTS;
-    fi
-    export DISTS='dist/*';
-    $(pwd)/mason_packages/.link/bin/twine upload -u $PYPI_USER -p $PYPI_PASSWORD $DISTS ;
+ - |
+   if [[ ${COMMIT_MESSAGE} =~ "[publish]" ]]; then
+     python setup.py bdist_wheel
+     if [[ $(uname -s) == 'Linux' ]]; then
+        export PRE_DISTS='dist/*.whl'
+        rename 's/linux_x86_64/any/;' $PRE_DISTS
+     fi
+     export DISTS='dist/*'
+     $(pwd)/mason_packages/.link/bin/twine upload -u $PYPI_USER -p $PYPI_PASSWORD $DISTS
    fi
 
 
