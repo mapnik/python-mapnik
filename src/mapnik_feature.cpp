@@ -211,7 +211,8 @@ void export_feature()
         .def("push", &context_type::push)
         ;
 
-    class_<mapnik::feature_impl, boost::noncopyable>("Feature",init<context_ptr,mapnik::value_integer>("Default ctor."))
+    class_<mapnik::feature_impl,std::shared_ptr<mapnik::feature_impl>,
+        boost::noncopyable>("Feature",init<context_ptr,mapnik::value_integer>("Default ctor."))
         .def("id",&mapnik::feature_impl::id)
         .add_property("geometry",
                       make_function(&mapnik::feature_impl::get_geometry,return_value_policy<reference_existing_object>()),

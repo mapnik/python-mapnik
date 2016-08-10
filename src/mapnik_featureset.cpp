@@ -56,7 +56,8 @@ void export_featureset()
 {
     using namespace boost::python;
     // Featureset implements Python iterator interface
-    class_<mapnik::Featureset, boost::noncopyable>("Featureset", no_init)
+    class_<mapnik::Featureset, std::shared_ptr<mapnik::Featureset>,
+           boost::noncopyable>("Featureset", no_init)
         .def("__iter__", pass_through)
         .def("__next__", next)
         // Python2 support

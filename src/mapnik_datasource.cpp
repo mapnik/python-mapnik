@@ -180,8 +180,8 @@ void export_datasource()
         .value("Collection",mapnik::datasource_geometry_t::Collection)
         ;
 
-    class_<datasource,
-           boost::noncopyable>("Datasource",no_init)
+    class_<datasource,std::shared_ptr<datasource>,
+        boost::noncopyable>("Datasource",no_init)
         .def("type",&datasource::type)
         .def("geometry_type",&datasource::get_geometry_type)
         .def("describe",&describe)
@@ -195,7 +195,6 @@ void export_datasource()
              "These vary depending on the type of data source.")
         .def(self == self)
         ;
-
     register_ptr_to_python<std::shared_ptr<datasource> >();
 
     def("CreateDatasource",&create_datasource);

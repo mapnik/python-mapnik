@@ -389,7 +389,7 @@ void export_image()
         .value("gray64f", mapnik::image_dtype_gray64f)
         ;
 
-    class_<image_any, boost::noncopyable >("Image","This class represents a image.",init<int,int>())
+    class_<image_any,std::shared_ptr<image_any>, boost::noncopyable >("Image","This class represents a image.",init<int,int>())
         .def(init<int,int,mapnik::image_dtype>())
         .def(init<int,int,mapnik::image_dtype,bool>())
         .def(init<int,int,mapnik::image_dtype,bool,bool>())
