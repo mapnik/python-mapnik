@@ -1068,6 +1068,13 @@ BOOST_PYTHON_MODULE(_mapnik)
     python_optional<mapnik::text_transform_e>();
     register_ptr_to_python<mapnik::expression_ptr>();
     register_ptr_to_python<mapnik::path_expression_ptr>();
+#if BOOST_VERSION == 106000 // ref #104
+    register_ptr_to_python<std::shared_ptr<mapnik::geometry::geometry<double> > >();
+    register_ptr_to_python<std::shared_ptr<mapnik::datasource> >();
+    register_ptr_to_python<std::shared_ptr<mapnik::feature_impl> >();
+    register_ptr_to_python<std::shared_ptr<mapnik::Featureset> >();
+    register_ptr_to_python<std::shared_ptr<mapnik::image_any> >();
+#endif
     to_python_converter<mapnik::value_holder,mapnik_param_to_python>();
     to_python_converter<mapnik::value,mapnik_value_to_python>();
     to_python_converter<mapnik::enumeration_wrapper,mapnik_enumeration_wrapper_to_python>();

@@ -195,7 +195,6 @@ void export_datasource()
              "These vary depending on the type of data source.")
         .def(self == self)
         ;
-    register_ptr_to_python<std::shared_ptr<datasource> >();
 
     def("CreateDatasource",&create_datasource);
 
