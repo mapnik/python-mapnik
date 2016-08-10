@@ -296,7 +296,7 @@ void export_layer()
         .add_property("minimum_scale_denominator",
                       &layer::minimum_scale_denominator,
                       &layer::set_minimum_scale_denominator,
-                      "Get/Set the minimum scale demoninator of the layer.\n"
+                      "Get/Set the minimum scale denominator of the layer.\n"
                       "\n"
                       "Usage:\n"
                       ">>> from mapnik import Layer\n"
