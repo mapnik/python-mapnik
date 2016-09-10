@@ -729,7 +729,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
                             max_size=20,
                             geometry_field='geom')
         fs = ds.all_features()
-        eq_(len(fs), 8)
+        eq_(len(list(fs)), 8)
 
         meta = ds.describe()
         eq_(meta['srid'], 4326)
@@ -967,7 +967,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         failed = False
         try:
             fs = ds_bad.featureset()
-            for feature in fs.features:
+            for feature in fs:
                 pass
         except RuntimeError as e:
             assert 'invalid input syntax for integer' in str(e)
@@ -978,7 +978,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         # Should be ok
         fs = ds_good.featureset()
         count = 0
-        for feature in fs.features:
+        for feature in fs:
             count += 1
         eq_(count, 8)
 
