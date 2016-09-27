@@ -230,7 +230,7 @@ extra_comp_args = check_output([mapnik_config, '--cflags']).split(' ')
 if os.environ.get("PYCAIRO", "false") == "true":
     try:
         extra_comp_args.append('-DHAVE_PYCAIRO')
-        print("-I%s/include/pycairo".format(sys.exec_prefix))
+        print("-I{0}/include/pycairo".format(sys.exec_prefix))
         extra_comp_args.append("-I{0}/include/pycairo".format(sys.exec_prefix))
         #extra_comp_args.extend(check_output(["pkg-config", '--cflags', 'pycairo']).strip().split(' '))
         #linkflags.extend(check_output(["pkg-config", '--libs', 'pycairo']).strip().split(' '))
