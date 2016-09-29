@@ -21,8 +21,8 @@ import math
 import os
 import tempfile
 
-from . import (Box2d, Coord, Feature, Geometry, Layer, Map, Projection, Style,
-               render)
+from . import Box2d, Coord, Geometry, Layer, Map, Projection, Style, render
+import mapnik
 
 try:
     import cairo
@@ -474,7 +474,7 @@ class PDFPrinter:
                 bbox = pyPdf.generic.ArrayObject()
 
                 for x in self.map_box:
-                    bbox.append(pyPdf.generic.FloatObject(str(x)))
+                    bbox.append(pyPdf.generic.FloatObject(str(m2pt(x))))
                 vp[pyPdf.generic.NameObject('/BBox')] = bbox
                 vp[pyPdf.generic.NameObject('/Measure')] = measure
 
@@ -1062,7 +1062,7 @@ class PDFPrinter:
                 # check through the features to find which combinations of styles are active
                 # for each unique combination add a legend entry
                 for f in l.datasource.all_features():
-                    if f.num_geometries() > 0:
+                    if f.geometry.is_valid:
                         active_rules = []
                         rule_text = ""
                         for s in l.styles:
@@ -1124,16 +1124,13 @@ class PDFPrinter:
                                     lestyle.rules.append(lerule)
                             lemap.append_style(s, lestyle)
 
-                        ds = MemoryDatasource()
+                        ds = mapnik.MemoryDatasource()
                         if f is None:
                             ds = l.datasource
                             layer_srs = l.srs
                         elif f.envelope().width() == 0:
-                            ds.add_feature(
-                                Feature(
-                                    f.id(),
-                                    Geometry2d.from_wkt("POINT(0 0)"),
-                                    **f.attributes))
+                            f.geometry = Geometry.from_wkt('POINT (0 0)')
+                            ds.add_feature(f)
                             lemap.zoom_to_box(Box2d(-1, -1, 1, 1))
                             layer_srs = m.srs
                         else:
