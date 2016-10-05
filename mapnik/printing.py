@@ -36,7 +36,7 @@ except ImportError:
     HAS_PYPDF2 = False
 
 
-class centering:
+class Centering(object):
 
     """
     Style of centering to use with the map.
@@ -58,7 +58,7 @@ class centering:
     both = 5
 
 
-class resolutions:
+class Resolutions(object):
 
     """Some predefined resolutions in DPI"""
 
@@ -68,7 +68,7 @@ class resolutions:
     dpi600 = 600
 
 
-class PDFPrinter:
+class PDFPrinter(object):
 
     """
     Main class for creating PDF print outs. Basic usage is along the lines of
@@ -88,9 +88,9 @@ class PDFPrinter:
                  box=None,
                  percent_box=None,
                  scale_function=default_scale,
-                 resolution=resolutions.dpi72,
+                 resolution=Resolutions.dpi72,
                  preserve_aspect=True,
-                 centering=centering.constrained_axis,
+                 centering=Centering.constrained_axis,
                  is_latlon=False,
                  use_ocg_layers=False):
         """
@@ -240,10 +240,10 @@ class PDFPrinter:
         """Returns whether the map has an horizontal centering or not."""
         is_map_size_constrained = self._is_map_size_constrained(m)
 
-        if (self._centering == centering.both or
-                self._centering == centering.horizontal or
-                (self._centering == centering.constrained_axis and is_map_size_constrained) or
-                (self._centering == centering.unconstrained_axis and not is_map_size_constrained)):
+        if (self._centering == Centering.both or
+                self._centering == Centering.horizontal or
+                (self._centering == Centering.constrained_axis and is_map_size_constrained) or
+                (self._centering == Centering.unconstrained_axis and not is_map_size_constrained)):
             return True
         else:
             return False
@@ -252,10 +252,10 @@ class PDFPrinter:
         """Returns whether the map has a vertical centering or not."""
         is_map_size_constrained = self._is_map_size_constrained(m)
 
-        if (self._centering == centering.both or
-                self._centering == centering.vertical or
-                (self._centering == centering.constrained_axis and not is_map_size_constrained) or
-                (self._centering == centering.unconstrained_axis and is_map_size_constrained)):
+        if (self._centering == Centering.both or
+                self._centering == Centering.vertical or
+                (self._centering == Centering.constrained_axis and not is_map_size_constrained) or
+                (self._centering == Centering.unconstrained_axis and is_map_size_constrained)):
             return True
         else:
             return False
@@ -785,407 +785,535 @@ class PDFPrinter:
         Renders a legend for the Map object. A legend is a collection of legend items, i.e., a minified
         representation of the layer's map along with the layer's title.
 
-        first_value_x = (
-            math.floor(
-                m.envelope().minx / div_size) + 1) * div_size
-        first_value_x_percent = (
-            first_value_x - m.envelope().minx) / m.envelope().width()
-        self._render_scale_axis(
-            first_value_x,
-            first_value_x_percent,
-            self.map_box.minx,
-            self.map_box.maxx,
-            page_div_size,
-            div_size,
-            self.map_box.miny,
-            self.map_box.maxy,
-            True)
+        Args:
+            m: a Map object to render the legend for
+            ctx: a cairo context to render the legend to. If this is None then automatically create a context
+                and choose the best location for the legend.
+            width: width of area available to render legend in (in meters)
+            columns: number of columns available in legend box
+            attribution: additional text that will be rendered in gray under the layer name. keyed by layer name
+            legend_item_box_size:  two tuple with width and height of legend item box size in meters
 
-        first_value_y = (
-            math.floor(
-                m.envelope().miny / div_size) + 1) * div_size
-        first_value_y_percent = (
-            first_value_y - m.envelope().miny) / m.envelope().height()
-        self._render_scale_axis(
-            first_value_y,
-            first_value_y_percent,
-            self.map_box.miny,
-            self.map_box.maxy,
-            page_div_size,
-            div_size,
-            self.map_box.minx,
-            self.map_box.maxx,
-            False)
-
-        if self._use_ocg_layers:
-            self._s.show_page()
-            self._layer_names.append("Coordinate Grid Overlay")
-
-    def _get_sensible_scalebar_size(self, m, width=-1):
-        # aim for about 8 divisions across the map
-        # also make sure we can fit the bar with in page area width if
-        # specified
-        div_size = sequence_scale(m.envelope().width() / 8, [1, 2, 5])
-        page_div_size = self.map_box.width() * div_size / m.envelope().width()
-        while width > 0 and page_div_size > width:
-            div_size /= 2
-            page_div_size /= 2
-        return (div_size, page_div_size)
-
-    def _render_box(self, ctx, x, y, w, h, text=None,
-                    stroke_color=(0, 0, 0), fill_color=(0, 0, 0)):
-        ctx.set_line_width(1)
-        ctx.set_source_rgb(*fill_color)
-        ctx.rectangle(x, y, w, h)
-        ctx.fill()
-
-        ctx.set_source_rgb(*stroke_color)
-        ctx.rectangle(x, y, w, h)
-        ctx.stroke()
-
-        if text:
-            ctx.move_to(x + 1, y)
-            self.write_text(
-                ctx, text, fill_color=[
-                    1 - z for z in fill_color], size=h - 2)
-
-    def _render_scale_axis(self, first, first_percent, start, end,
-                           page_div_size, div_size, boundary_start, boundary_end, is_x_axis):
-        prev = start
-        text = None
-        fill = (0, 0, 0)
-        border_size = 8
-        value = first_percent * (end - start) + start
-        label_value = first - div_size
-        if self._is_latlon and label_value < -180:
-            label_value += 360
-
-        ctx = cairo.Context(self._s)
-
-        if not is_x_axis:
-            ctx.translate(
-                m2pt(
-                    self.map_box.center().x), m2pt(
-                    self.map_box.center().y))
-            ctx.rotate(-math.pi / 2)
-            ctx.translate(-m2pt(self.map_box.center().y), -
-                          m2pt(self.map_box.center().x))
-
-        while value < end:
-            ctx.move_to(m2pt(value), m2pt(boundary_start))
-            ctx.line_to(m2pt(value), m2pt(boundary_end))
-            ctx.set_source_rgb(0.5, 0.5, 0.5)
-            ctx.set_line_width(1)
-            ctx.stroke()
-
-            for bar in (m2pt(boundary_start) - border_size,
-                        m2pt(boundary_end)):
-                self._render_box(
-                    ctx,
-                    m2pt(prev),
-                    bar,
-                    m2pt(
-                        value -
-                        prev),
-                    border_size,
-                    text,
-                    fill_color=fill)
-
-            prev = value
-            value += page_div_size
-            fill = [1 - z for z in fill]
-            label_value += div_size
-            if self._is_latlon and label_value > 180:
-                label_value -= 360
-            text = "%d" % label_value
-        else:
-            for bar in (m2pt(boundary_start) - border_size,
-                        m2pt(boundary_end)):
-                self._render_box(
-                    ctx, m2pt(prev), bar, m2pt(
-                        end - prev), border_size, fill_color=fill)
-
-    def render_scale(self, m, ctx=None, width=0.05):
-        """ m: map to render scale for
-        ctx: A cairo context to render the scale to. If this is None (the default) then
-            automatically create a context and choose the best location for the scale bar.
-        width: Width of area available to render scale bar in (in m)
-
-        will return the size of the rendered scale block in pts
+        Returns:
+            The size of the rendered block in points.
         """
-
-        (w, h) = (0, 0)
-
-        # don't render scale if we are lat lon
-        # dont report scale if we have warped the aspect ratio
-        if self._preserve_aspect and not self._is_latlon:
-            bar_size = 8.0
-            box_count = 3
+        render_box = Rectangle()
+        if self._surface:
             if ctx is None:
-                ctx = cairo.Context(self._s)
-                (tx, ty) = self._get_meta_info_corner(
-                    (self.map_box.width(), self.map_box.height()), m)
-                ctx.translate(tx, ty)
-
-            (div_size, page_div_size) = self._get_sensible_scalebar_size(
-                m, width / box_count)
-
-            div_unit = "m"
-            if div_size > 1000:
-                div_size /= 1000
-                div_unit = "km"
-
-            text = "0%s" % div_unit
-            ctx.save()
-            if width > 0:
-                ctx.translate(m2pt(width - box_count * page_div_size) / 2, 0)
-            for ii in range(box_count):
-                fill = (ii % 2,) * 3
-                self._render_box(
-                    ctx,
-                    m2pt(
-                        ii *
-                        page_div_size),
-                    h,
-                    m2pt(page_div_size),
-                    bar_size,
-                    text,
-                    fill_color=fill)
-                fill = [1 - z for z in fill]
-                text = "%g%s" % ((ii + 1) * div_size, div_unit)
-            # else:
-            #    self._render_box(ctx, m2pt(box_count*page_div_size), h, m2pt(page_div_size), bar_size, text, fill_color=(1,1,1), stroke_color=(1,1,1))
-            w = (box_count) * page_div_size
-            h += bar_size
-            ctx.restore()
-
-            if width > 0:
-                box_width = m2pt(width)
-            else:
-                box_width = None
-
-            font_size = 6
-            ctx.move_to(0, h)
-            if HAS_PANGOCAIRO_MODULE:
-                alignment = pango.ALIGN_CENTER
-            else:
-                alignment = None
-
-            text_ext = self.write_text(
-                ctx,
-                "Scale 1:%d" %
-                self.scale,
-                box_width=box_width,
-                size=font_size,
-                alignment=alignment)
-            h += text_ext[3] + 2
-
-        return (w, h)
-
-    def render_legend(self, m, page_break=False, ctx=None, collumns=1, width=None, height=None,
-                      item_per_rule=False, attribution={}, legend_item_box_size=(0.015, 0.0075)):
-        """ m: map to render legend for
-        ctx: A cairo context to render the legend to. If this is None (the default) then
-            automatically create a context and choose the best location for the legend.
-        width: Width of area available to render legend in (in m)
-        page_break: move to next page if legend overflows this one
-        collumns: number of columns available in legend box
-        attribution: additional text that will be rendered in gray under the layer name. keyed by layer name
-        legend_item_box_size:  two tuple with width and height of legend item box size in meters
-
-        will return the size of the rendered block in pts
-        """
-
-        (w, h) = (0, 0)
-        if self._s:
-            if ctx is None:
-                ctx = cairo.Context(self._s)
-                (tx, ty) = self._get_meta_info_corner(
-                    (self.map_box.width(), self.map_box.height()), m)
+                ctx = cairo.Context(self._surface)
+                (tx, ty) = self._get_meta_info_corner((self.map_box.width(), self.map_box.height()), m)
                 ctx.translate(m2pt(tx), m2pt(ty))
                 width = self._pagesize[0] - 2 * tx
                 height = self._pagesize[1] - self._margin - ty
 
-            x = 0
-            y = 0
+            column_width = None
             if width:
-                cwidth = width / collumns
-                w = m2pt(width)
-            else:
-                cwidth = None
-            current_collumn = 0
+                column_width = width / columns
+                render_box.width = m2pt(width)
 
-            processed_layers = []
-            for l in reversed(m.layers):
-                have_layer_header = False
-                added_styles = {}
-                layer_title = l.name
-                if layer_title in processed_layers:
+            # TODO: refactor that to reduce the number of arguments?
+            (render_box.width, render_box.height) = self._render_legend_items(m, ctx, render_box, column_width, height,
+                columns, attribution, legend_item_box_size)
+
+        return (render_box.width, render_box.height)
+
+    def _render_legend_items(self, m, ctx, render_box, column_width, height, columns=2, attribution=None, legend_item_box_size=(0.015, 0.0075)):
+        """Renders the legend items for the map."""
+        current_column = 0
+        processed_layers = []
+        for layer in reversed(m.layers):
+            have_layer_header = False
+            layer_title = layer.name
+            if layer_title in processed_layers:
+                continue
+            processed_layers.append(layer_title)
+
+            added_styles = self._get_unique_added_styles(m, layer)
+            legend_items = sorted(added_styles.keys())
+            for li in legend_items:
+                (f, rule_text) = added_styles[li]
+
+                legend_map_size = (int(m2pt(legend_item_box_size[0])), int(m2pt(legend_item_box_size[1])))
+                lemap = self._create_legend_item_map(m, layer, f, legend_map_size)
+
+                item_size = legend_map_size[1]
+                if not have_layer_header:
+                    item_size += 8
+
+                # if we get to the bottom of the page, start a new column
+                # if we get to the max number of columns, start a new page
+                if render_box.y + item_size > m2pt(height):
+                    current_column += 1
+                    render_box.y = 0
+                    if current_column >= columns:
+                        self._surface.show_page()
+                        render_box.x = 0
+                        current_column = 0
+
+                self._render_legend_item_map(
+                    lemap, legend_map_size, ctx, render_box.x, render_box.y, current_column, column_width)
+
+                ctx.move_to(
+                    render_box.x + legend_map_size[0] + m2pt(current_column * column_width) + 2, render_box.y)
+
+                legend_entry_size = self._render_legend_item_text(
+                    ctx, legend_map_size, legend_item_box_size, column_width, layer_title, attribution)
+
+                vertical_spacing = 5
+                render_box.y += legend_entry_size + vertical_spacing
+                if render_box.y > render_box.height:
+                    render_box.height = render_box.y
+
+        return (render_box.width, render_box.height)
+
+    def _get_unique_added_styles(self, m, layer):
+        """
+        Go through the features to find which combinations of styles are active.
+        For each unique combination add a legend entry.
+        """
+        added_styles = {}
+        for f in layer.datasource.all_features():
+            if f.geometry:
+                active_rules = []
+                rule_text = ""
+                for s in layer.styles:
+                    st = m.find_style(s)
+                    for r in st.rules:
+                        if self._is_rule_within_map_scale_limits(m, f, r):
+                            active_rules.append((s, r.name))
+                            rule_text = self._get_rule_text(r, rule_text)
+
+                active_rules = tuple(active_rules)
+                if active_rules in added_styles:
                     continue
-                processed_layers.append(layer_title)
 
-                # check through the features to find which combinations of styles are active
-                # for each unique combination add a legend entry
-                for f in l.datasource.all_features():
-                    if f.num_geometries() > 0:
-                        active_rules = []
-                        rule_text = ""
-                        for s in l.styles:
-                            st = m.find_style(s)
-                            for r in st.rules:
-                                # we need to do the scale test here as well so we don't
-                                # add unused scale rules to the legend
-                                # description
-                                if ((not r.filter) or r.filter.evaluate(f) == '1') and \
-                                        r.min_scale <= m.scale_denominator() and m.scale_denominator() < r.max_scale:
-                                    active_rules.append((s, r.name))
-                                    if r.filter and str(r.filter) != "true":
-                                        if len(rule_text) > 0:
-                                            rule_text += " AND "
-                                        if r.name:
-                                            rule_text += r.name
-                                        else:
-                                            rule_text += str(r.filter)
-                        active_rules = tuple(active_rules)
-                        if active_rules in added_styles:
-                            continue
+                added_styles[active_rules] = (f, rule_text)
+                break
+            else:
+                added_styles[layer] = (None, None)
 
-                        added_styles[active_rules] = (f, rule_text)
-                        if not item_per_rule:
-                            break
-                    else:
-                        added_styles[l] = (None, None)
+        return added_styles
 
-                legend_items = sorted(added_styles.keys())
-                for li in legend_items:
-                    if True:
-                        (f, rule_text) = added_styles[li]
+    def _is_rule_within_map_scale_limits(self, m, feature, rule):
+        """Returns whether the rule is within the map scale limits or not."""
+        if ((not rule.filter) or rule.filter.evaluate(feature) == '1') and \
+            rule.min_scale <= m.scale_denominator() and m.scale_denominator() < rule.max_scale:
+            return True
+        else:
+            return False
 
-                        legend_map_size = (int(m2pt(legend_item_box_size[0])), int(
-                            m2pt(legend_item_box_size[1])))
-                        lemap = Map(
-                            legend_map_size[0],
-                            legend_map_size[1],
-                            srs=m.srs)
-                        if m.background:
-                            lemap.background = m.background
-                        # the buffer is needed to ensure that text labels that overflow the edge of the
-                        # map still render for the legend
-                        lemap.buffer_size = 1000
-                        for s in l.styles:
-                            sty = m.find_style(s)
-                            lestyle = Style()
-                            for r in sty.rules:
-                                for sym in r.symbols:
-                                    try:
-                                        sym.avoid_edges = False
-                                    except:
-                                        print(
-                                            "**** Cant set avoid edges for rule", r.name)
-                                if r.min_scale <= m.scale_denominator() and m.scale_denominator() < r.max_scale:
-                                    lerule = r
-                                    lerule.min_scale = 0
-                                    lerule.max_scale = float("inf")
-                                    lestyle.rules.append(lerule)
-                            lemap.append_style(s, lestyle)
+    def _create_legend_item_map(self, m, layer, f, legend_map_size):
+        """Creates the legend map, i.e., a minified version of the layer map, and returns it."""
+        legend_map = Map(legend_map_size[0], legend_map_size[1], srs=m.srs)
+        if m.background:
+            legend_map.background = m.background
+        # the buffer is needed to ensure that text labels that overflow the edge of the
+        # map still render for the legend
+        legend_map.buffer_size = 1000
+        for layer_style in layer.styles:
+            lestyle = self._get_layer_style_valid_rules(m, layer_style)
+            legend_map.append_style(layer_style, lestyle)
 
-                        ds = MemoryDatasource()
-                        if f is None:
-                            ds = l.datasource
-                            layer_srs = l.srs
-                        elif f.envelope().width() == 0:
-                            ds.add_feature(
-                                Feature(
-                                    f.id(),
-                                    Geometry2d.from_wkt("POINT(0 0)"),
-                                    **f.attributes))
-                            lemap.zoom_to_box(Box2d(-1, -1, 1, 1))
-                            layer_srs = m.srs
-                        else:
-                            ds.add_feature(f)
-                            layer_srs = l.srs
+        ds = mapnik.MemoryDatasource()
+        if f is None:
+            ds = layer.datasource
+            layer_srs = layer.srs
+        elif f.envelope().width() == 0:
+            f.geometry = Geometry.from_wkt('POINT (0 0)')
+            ds.add_feature(f)
+            legend_map.zoom_to_box(Box2d(-1, -1, 1, 1))
+            layer_srs = m.srs
+        else:
+            ds.add_feature(f)
+            layer_srs = layer.srs
 
-                        lelayer = Layer("LegendLayer", layer_srs)
-                        lelayer.datasource = ds
-                        for s in l.styles:
-                            lelayer.styles.append(s)
-                        lemap.layers.append(lelayer)
+        lelayer = Layer("LegendLayer", layer_srs)
+        lelayer.datasource = ds
+        for layer_style in layer.styles:
+            lelayer.styles.append(layer_style)
+        legend_map.layers.append(lelayer)
 
-                        if f is None or f.envelope().width() != 0:
-                            lemap.zoom_all()
-                            lemap.zoom(1.1)
+        if f is None or f.envelope().width() != 0:
+            legend_map.zoom_all()
+            legend_map.zoom(1.1)
 
-                        item_size = legend_map_size[1]
-                        if not have_layer_header:
-                            item_size += 8
+        return legend_map
 
-                        if y + item_size > m2pt(height):
-                            current_collumn += 1
-                            y = 0
-                            if current_collumn >= collumns:
-                                if page_break:
-                                    self._s.show_page()
-                                    x = 0
-                                    current_collumn = 0
-                                else:
-                                    break
+    def _get_layer_style_valid_rules(self, m, layer_style):
+        """Filters out the layer style rules that are not valid for the Map and returns the style."""
+        style = m.find_style(layer_style)
+        legend_style = Style()
+        for r in style.rules:
+            for sym in r.symbols:
+                try:
+                    sym.avoid_edges = False
+                except:
+                    print(
+                        "**** Cant set avoid edges for rule", r.name)
+            if r.min_scale <= m.scale_denominator() and m.scale_denominator() < r.max_scale:
+                legend_rule = r
+                legend_rule.min_scale = 0
+                legend_rule.max_scale = float("inf")
+                legend_style.rules.append(legend_rule)
 
-                        if not have_layer_header and item_per_rule:
-                            ctx.move_to(x + m2pt(current_collumn * cwidth), y)
-                            e = self.write_text(ctx, l.name, m2pt(cwidth), 8)
-                            y += e[3] + 2
-                            have_layer_header = True
-                        ctx.save()
-                        ctx.translate(x + m2pt(current_collumn * cwidth), y)
-                        # extra save around map render as it sets up a clip box
-                        # and doesn't clear it
-                        ctx.save()
-                        render(lemap, ctx)
-                        ctx.restore()
+        return legend_style
 
-                        ctx.rectangle(0, 0, *legend_map_size)
-                        ctx.set_source_rgb(0.5, 0.5, 0.5)
-                        ctx.set_line_width(1)
-                        ctx.stroke()
-                        ctx.restore()
+    def _render_legend_item_map(self, lemap, legend_map_size, ctx, x, y, current_column, column_width):
+        """Renders the legend item map."""
+        ctx.save()
+        ctx.translate(x + m2pt(current_column * column_width), y)
 
-                        ctx.move_to(
-                            x +
-                            legend_map_size[0] +
-                            m2pt(
-                                current_collumn *
-                                cwidth) +
-                            2,
-                            y)
-                        legend_entry_size = legend_map_size[1]
-                        legend_text_size = 0
-                        if not item_per_rule:
-                            rule_text = layer_title
-                        if rule_text:
-                            e = self.write_text(
-                                ctx, rule_text, m2pt(
-                                    cwidth - legend_item_box_size[0] - 0.005), 6)
-                            legend_text_size += e[3]
-                            ctx.rel_move_to(0, e[3])
-                        if layer_title in attribution:
-                            e = self.write_text(
-                                ctx,
-                                attribution[layer_title],
-                                m2pt(
-                                    cwidth -
-                                    legend_item_box_size[0] -
-                                    0.005),
-                                6,
-                                fill_color=(
-                                    0.5,
-                                    0.5,
-                                    0.5))
-                            legend_text_size += e[3]
+        # extra save around map render as it sets up a clip box and doesn't clear it
+        ctx.save()
+        render(lemap, ctx)
+        ctx.restore()
 
-                        if legend_text_size > legend_entry_size:
-                            legend_entry_size = legend_text_size
+        ctx.rectangle(0, 0, *legend_map_size)
+        ctx.set_source_rgb(0.5, 0.5, 0.5)
+        ctx.set_line_width(1)
+        ctx.stroke()
+        ctx.restore()
 
-                        y += legend_entry_size + 2
-                        if y > h:
-                            h = y
-        return (w, h)
+    def _render_legend_item_text(self, ctx, legend_map_size, legend_item_box_size, column_width, layer_title, attribution=None):
+        """
+        Renders the legend item text next to the legend item box.
+
+        Returns:
+            The size of the legend entry size, i.e., the legend box height or
+            the legend text height depending on which one takes more vertical
+            space.
+        """
+        legend_entry_size = legend_map_size[1]
+
+        legend_text_size = 0
+        rule_text = layer_title
+        if rule_text:
+            e = self.write_text(ctx, rule_text, m2pt(column_width - legend_item_box_size[0] - 0.005), 6)
+            legend_text_size += e[3]
+            ctx.rel_move_to(0, e[3])
+        if attribution:
+            if layer_title in attribution:
+                e = self.write_text(
+                        ctx,
+                        attribution[layer_title],
+                        m2pt(column_width - legend_item_box_size[0] - 0.005),
+                        6,
+                        fill_color=(0.5, 0.5, 0.5)
+                    )
+                legend_text_size += e[3]
+
+        if legend_text_size > legend_entry_size:
+            legend_entry_size = legend_text_size
+
+        return legend_entry_size
+
+    def _get_rule_text(self, rule, rule_text):
+        """Returns the rule text."""
+        if rule.filter and str(rule.filter) != "true":
+            if len(rule_text) > 0:
+                rule_text += " AND "
+            if rule.name:
+                rule_text += rule.name
+            else:
+                rule_text += str(rule.filter)
+
+        return rule_text
+
+    def finish(self):
+        """
+        Finishes the cairo surface and converts PDF pages to PDF layers if
+        _use_ocg_layers was set to True.
+        """
+        if self._surface:
+            self._surface.finish()
+            self._surface = None
+
+        if self._use_ocg_layers:
+            self.convert_pdf_pages_to_layers(
+                self._filename,
+                layer_names=self._layer_names +
+                ["Legend and Information"],
+                reverse_all_but_last=True)
+
+    def convert_pdf_pages_to_layers(
+        self, filename, output_name=None, layer_names=None, reverse_all_but_last=True):
+        """
+        Takes a multi pages PDF as input and converts each page to a layer in a single page PDF.
+
+        Note:
+            requires PyPDF2 to be available
+
+        Args:
+            layer_names should be a sequence of the user visible names of the layers, if not given
+            or if shorter than num pages generic names will be given to the unnamed layers
+
+            if output_name is not provided a temporary file will be used for the conversion which
+            will then be copied back over the source file.
+        """
+        if not HAS_PYPDF2:
+            raise Exception("PyPDF2 not available; PyPDF2 required to convert pdf pages to layers")
+
+        infile = file(filename, 'rb')
+        if output_name:
+            outfile = file(output_name, 'wb')
+        else:
+            (outfd, tmp_file_abs_path) = tempfile.mkstemp(dir=os.path.dirname(filename))
+            outfile = os.fdopen(outfd, 'wb')
+
+        file_reader = PdfFileReader(infile)
+        file_writer = PdfFileWriter()
+
+        template_page_size = file_reader.pages[0].mediaBox
+        output_pdf = file_writer.addBlankPage(
+            width=template_page_size.getWidth(),
+            height=template_page_size.getHeight())
+
+        content_key = NameObject('/Contents')
+        output_pdf[content_key] = ArrayObject()
+
+        resource_key = NameObject('/Resources')
+        output_pdf[resource_key] = DictionaryObject()
+
+        (properties, ocgs) = self._make_ocg_layers(file_reader, file_writer, output_pdf, layer_names)
+
+        properties_key = NameObject('/Properties')
+        output_pdf[resource_key][properties_key] = file_writer._addObject(properties)
+
+        ocproperties = DictionaryObject()
+        ocproperties[NameObject('/OCGs')] = ocgs
+
+        default_view = self._get_pdf_default_view(ocgs, reverse_all_but_last)
+        ocproperties[NameObject('/D')] = file_writer._addObject(default_view)
+
+        file_writer._root_object[NameObject('/OCProperties')] = file_writer._addObject(ocproperties)
+
+        file_writer.write(outfile)
+        outfile.close()
+        infile.close()
+
+        if not output_name:
+            os.rename(tmp_file_abs_path, filename)
+
+    def _make_ocg_layers(self, file_reader, file_writer, output_pdf, layer_names=None):
+        """
+        Makes the OCGs layers.
+
+        Returns:
+            properties: a dictionary mapping the OCG layer name and the OCG layer property list
+            ocgs: an array containing the OCG layers
+        """
+        properties = DictionaryObject()
+        ocgs = ArrayObject()
+
+        for (idx, page) in enumerate(file_reader.pages):
+            # first start an OCG for the layer
+            ocg_name = NameObject('/oc%d' % idx)
+            ocgs_start = DecodedStreamObject()
+            ocgs_start._data = "/OC %s BDC\n" % ocg_name
+            ocg_end = DecodedStreamObject()
+            ocg_end._data = "EMC\n"
+
+            if isinstance(page['/Contents'], ArrayObject):
+                page[NameObject('/Contents')].insert(0, ocgs_start)
+                page[NameObject('/Contents')].append(ocg_end)
+            else:
+                page[NameObject(
+                    '/Contents')] = ArrayObject((ocgs_start, page['/Contents'], ocg_end))
+
+            output_pdf.mergePage(page)
+
+            ocg = DictionaryObject()
+            ocg[NameObject('/Type')] = NameObject('/OCG')
+
+            if layer_names and len(layer_names) > idx:
+                ocg[NameObject('/Name')] = TextStringObject(layer_names[idx])
+            else:
+                ocg[NameObject('/Name')] = TextStringObject('Layer %d' % (idx + 1))
+
+            indirect_ocg = file_writer._addObject(ocg)
+            properties[ocg_name] = indirect_ocg
+            ocgs.append(indirect_ocg)
+
+        return (properties, ocgs)
+
+    def _get_pdf_default_view(self, ocgs, reverse_all_but_last=True):
+        """
+        Returns the D configuration dictionary of the PDF.
+
+        The D configuration dictionary specifies the initial state of the optional content
+        groups when a PDF is first opened.
+        """
+        default_view = DictionaryObject()
+        default_view[NameObject('/Name')] = TextStringObject('Default')
+        default_view[NameObject('/BaseState ')] = NameObject('/ON ')
+        default_view[NameObject('/ON')] = ocgs
+        default_view[NameObject('/OFF')] = ArrayObject()
+
+        if reverse_all_but_last:
+            default_view[NameObject('/Order')] = ArrayObject(reversed(ocgs[:-1]))
+            default_view[NameObject('/Order')].append(ocgs[-1])
+        else:
+            default_view[NameObject('/Order')] = ArrayObject(reversed(ocgs))
+
+        return default_view
+
+    def add_geospatial_pdf_header(self, m, filename, epsg=None, wkt=None):
+        """
+        Adds geospatial PDF information to the PDF file as per:
+            Adobe® Supplement to the ISO 32000 PDF specification
+            BaseVersion: 1.7
+            ExtensionLevel: 3
+            (June 2008)
+
+        Notes:
+            The epsg code or the wkt text of the projection must be provided.
+            Must be called *after* the page has had .finish() called.
+        """
+        if HAS_PYPDF2 and (epsg or wkt):
+            infile = file(filename, 'rb')
+            (outfd, tmp_file_abs_path) = tempfile.mkstemp(dir=os.path.dirname(filename))
+            outfile = os.fdopen(outfd, 'wb')
+
+            file_reader = PdfFileReader(infile)
+            file_writer = PdfFileWriter()
+
+            # preserve OCProperties at document root if we have one
+            if file_reader.trailer['/Root'].has_key(NameObject('/OCProperties')):
+                file_writer._root_object[NameObject('/OCProperties')] = file_reader.trailer[
+                    '/Root'].getObject()[NameObject('/OCProperties')]
+
+            for page in file_reader.pages:
+                gcs = DictionaryObject()
+                gcs[NameObject('/Type')] = NameObject('/PROJCS')
+
+                if epsg:
+                    gcs[NameObject('/EPSG')] = NumberObject(int(epsg))
+                if wkt:
+                    gcs[NameObject('/WKT')] = TextStringObject(wkt)
+
+                measure = self._get_pdf_measure(m, gcs)
+                page[NameObject('/VP')] = self._get_pdf_vp(measure)
+
+                file_writer.addPage(page)
+
+            file_writer.write(outfile)
+            infile = None
+            outfile.close()
+            os.rename(tmp_file_abs_path, filename)
+
+    def _get_pdf_measure(self, m, gcs):
+        """
+        Returns the PDF Measure dictionary.
+
+        The Measure dictionary is used in the viewport array
+        and specifies the scale and units that apply to the output map.
+        """
+        measure = DictionaryObject()
+        measure[NameObject('/Type')] = NameObject('/Measure')
+        measure[NameObject('/Subtype')] = NameObject('/GEO')
+        measure[NameObject('/GCS')] = gcs
+
+        bounds = self._get_pdf_bounds()
+        measure[NameObject('/Bounds')] = bounds
+        measure[NameObject('/LPTS')] = bounds
+
+        measure[NameObject('/GPTS')] = self._get_pdf_gpts(m)
+
+        return measure
+
+    def _get_pdf_bounds(self):
+        """
+        Returns the PDF BOUNDS array.
+
+        The PDF's bounds array is equivalent to the map's neatline, i.e.,
+        the border delineating the extent of geographic data on the output map.
+        """
+        bounds = ArrayObject()
+
+        # PDF specification's default for bounds (full unit square)
+        bounds_default = (0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0)
+
+        for x in bounds_default:
+            bounds.append(FloatObject(str(x)))
+
+        return bounds
+
+    def _get_pdf_gpts(self, m):
+        """
+        Returns the GPTS array object containing the four corners of the
+        map envelope in map projection.
+
+        The GPTS entry is an array of numbers, taken pairwise, defining
+        points as latitude and longitude.
+        """
+        gpts = ArrayObject()
+
+        proj = Projection(m.srs)
+        env = m.envelope()
+        for x in ((env.minx, env.miny), (env.minx, env.maxy),
+                  (env.maxx, env.maxy), (env.maxx, env.miny)):
+            latlon_corner = proj.inverse(Coord(*x))
+            # these are in lat,lon order according to the specification
+            gpts.append(FloatObject(str(latlon_corner.y)))
+            gpts.append(FloatObject(str(latlon_corner.x)))
+
+        return gpts
+
+    def _get_pdf_vp(self, measure):
+        """
+        Returns the PDF's VP array.
+
+        The VP entry is an array of viewport dictionaries. A viewport is basiscally
+        a rectangular region on the PDF page. The only required entry is the BBox which
+        specifies the location of the viewport on the page.
+        """
+        viewport = DictionaryObject()
+        viewport[NameObject('/Type')] = NameObject('/Viewport')
+
+        bbox = ArrayObject()
+        for x in self.map_box:
+            # FIXME: this should be converted from meters to points
+            bbox.append(FloatObject(str(x)))
+
+        viewport[NameObject('/BBox')] = bbox
+        viewport[NameObject('/Measure')] = measure
+
+        vp_array = ArrayObject()
+        vp_array.append(viewport)
+
+        return vp_array
+
+    def get_width(self):
+        """Returns page's width."""
+        return self._pagesize[0]
+
+    def get_height(self):
+        """Returns page's height."""
+        return self._pagesize[1]
+
+    def get_margin(self):
+        """Returns page's margin."""
+        return self._margin
+
+    def get_cairo_context(self):
+        """
+        Allows access to the cairo Context so that extra 'bits'
+        can be rendered to the page directly.
+        """
+        return cairo.Context(self._surface)
+
+
+class Rectangle(object):
+
+    def __init__(self, x=0, y=0, width=0, height=0):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+
+    def __repr__(self):
+        return "({}, {}, {}, {})".format(self.x, self.y, self.width, self.height)
+
+    def origin(self):
+        """Returns the top left corner coordinates in pdf points."""
+        return (self.x, self.y)
