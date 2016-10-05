@@ -143,150 +143,32 @@ class PDFPrinter:
 
         self.font_name = "DejaVu Sans"
 
-    def finish(self):
-        if self._s:
-            self._s.finish()
-            self._s = None
+    def render_map(self, m, filename):
+        """Renders the given map to filename."""
+        self._surface = cairo.PDFSurface(filename, m2pt(self._pagesize[0]), m2pt(self._pagesize[1]))
+        ctx = cairo.Context(self._surface)
 
-        if self._use_ocg_layers:
-            convert_pdf_pages_to_layers(
-                self._filename,
-                layer_names=self._layer_names +
-                ["Legend and Information"],
-                reverse_all_but_last=True)
+        # store the output filename so that we can post-process the PDF
+        self._filename = filename
 
-    def add_geospatial_pdf_header(self, m, filename, epsg=None, wkt=None):
-        """ Postprocessing step to add geospatial PDF information to PDF file as per
-        PDF standard 1.7 extension level 3 (also in draft PDF v2 standard at time of writing)
+        (eff_width, eff_height) = self._get_render_area_size()
+        (mapw, maph) = self._get_map_render_area_size(m, eff_width, eff_height)
 
-        one of either the epsg code or wkt text for the projection must be provided
+        # set the map pixel size so that raster elements render at specified resolution
+        m.resize(*self._get_map_pixel_size(mapw, maph))
 
-        Should be called *after* the page has had .finish() called"""
-        if HAS_PYPDF and (epsg or wkt):
-            infile = file(filename, 'rb')
-            (outfd, outfilename) = tempfile.mkstemp(
-                dir=os.path.dirname(filename))
-            outfile = os.fdopen(outfd, 'wb')
+        (tx, ty) = self._get_render_corner((mapw, maph), m)
+        self._render_layers_maps(m, ctx, tx, ty)
 
-            i = pyPdf.PdfFileReader(infile)
-            o = pyPdf.PdfFileWriter()
+        self.map_box = Box2d(tx, ty, tx + mapw, ty + maph)
 
-            # preserve OCProperties at document root if we have one
-            if pyPdf.generic.NameObject('/OCProperties') in i.trailer['/Root']:
-                o._root.getObject()[pyPdf.generic.NameObject('/OCProperties')] = i.trailer[
-                    '/Root'].getObject()[pyPdf.generic.NameObject('/OCProperties')]
-
-            for p in i.pages:
-                gcs = pyPdf.generic.DictionaryObject()
-                gcs[pyPdf.generic.NameObject(
-                    '/Type')] = pyPdf.generic.NameObject('/PROJCS')
-                if epsg:
-                    gcs[pyPdf.generic.NameObject(
-                        '/EPSG')] = pyPdf.generic.NumberObject(int(epsg))
-                if wkt:
-                    gcs[pyPdf.generic.NameObject(
-                        '/WKT')] = pyPdf.generic.TextStringObject(wkt)
-
-                measure = pyPdf.generic.DictionaryObject()
-                measure[pyPdf.generic.NameObject(
-                    '/Type')] = pyPdf.generic.NameObject('/Measure')
-                measure[pyPdf.generic.NameObject(
-                    '/Subtype')] = pyPdf.generic.NameObject('/GEO')
-                measure[pyPdf.generic.NameObject('/GCS')] = gcs
-                bounds = pyPdf.generic.ArrayObject()
-                for x in (0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0):
-                    bounds.append(pyPdf.generic.FloatObject(str(x)))
-                measure[pyPdf.generic.NameObject('/Bounds')] = bounds
-                measure[pyPdf.generic.NameObject('/LPTS')] = bounds
-                gpts = pyPdf.generic.ArrayObject()
-
-                proj = Projection(m.srs)
-                env = m.envelope()
-                for x in ((env.minx, env.miny), (env.minx, env.maxy),
-                          (env.maxx, env.maxy), (env.maxx, env.miny)):
-                    latlon_corner = proj.inverse(Coord(*x))
-                    # these are in lat,lon order according to the standard
-                    gpts.append(pyPdf.generic.FloatObject(
-                        str(latlon_corner.y)))
-                    gpts.append(pyPdf.generic.FloatObject(
-                        str(latlon_corner.x)))
-                measure[pyPdf.generic.NameObject('/GPTS')] = gpts
-
-                vp = pyPdf.generic.DictionaryObject()
-                vp[pyPdf.generic.NameObject(
-                    '/Type')] = pyPdf.generic.NameObject('/Viewport')
-                bbox = pyPdf.generic.ArrayObject()
-
-                for x in self.map_box:
-                    bbox.append(pyPdf.generic.FloatObject(str(x)))
-                vp[pyPdf.generic.NameObject('/BBox')] = bbox
-                vp[pyPdf.generic.NameObject('/Measure')] = measure
-
-                vpa = pyPdf.generic.ArrayObject()
-                vpa.append(vp)
-                p[pyPdf.generic.NameObject('/VP')] = vpa
-                o.addPage(p)
-
-            o.write(outfile)
-            infile = None
-            outfile.close()
-            os.rename(outfilename, filename)
-
-    def get_context(self):
-        """allow access so that extra 'bits' can be rendered to the page directly"""
-        return cairo.Context(self._s)
-
-    def get_width(self):
-        return self._pagesize[0]
-
-    def get_height(self):
-        return self._pagesize[1]
-
-    def get_margin(self):
-        return self._margin
-
-    def write_text(self, ctx, text, box_width=None, size=10,
-                   fill_color=(0.0, 0.0, 0.0), alignment=None):
-        if HAS_PANGOCAIRO_MODULE:
-            (attr, t, accel) = pango.parse_markup(text)
-            pctx = pangocairo.CairoContext(ctx)
-            l = pctx.create_layout()
-            l.set_attributes(attr)
-            fd = pango.FontDescription("%s %d" % (self.font_name, size))
-            l.set_font_description(fd)
-            if box_width:
-                l.set_width(int(box_width * pango.SCALE))
-            if alignment:
-                l.set_alignment(alignment)
-            pctx.update_layout(l)
-            l.set_text(t)
-            pctx.set_source_rgb(*fill_color)
-            pctx.show_layout(l)
-            return l.get_pixel_extents()[0]
-
-        else:
-            ctx.rel_move_to(0, size)
-            ctx.select_font_face(
-                self.font_name,
-                cairo.FONT_SLANT_NORMAL,
-                cairo.FONT_WEIGHT_NORMAL)
-            ctx.set_font_size(size)
-            ctx.show_text(text)
-            ctx.rel_move_to(0, size)
-            return (0, 0, len(text) * size, size)
-
-    def _get_context(self):
-        if HAS_PANGOCAIRO_MODULE:
-            return
-        elif HAS_PYCAIRO_MODULE:
-            return cairo.Context(self._s)
-        return None
+    def _get_render_area_size(self):
+        """Returns the width and height in meters of the page's render area."""
+        render_area = self._get_render_area()
+        return (render_area.width(), render_area.height())
 
     def _get_render_area(self):
-        """return a bounding box with the area of the page we are allowed to render out map to
-        in page coordinates (i.e. meters)
-        """
-        # take off our page margins
+        """Returns the page's area available for rendering. All dimensions are in meters."""
         render_area = Box2d(
             self._margin,
             self._margin,
@@ -295,128 +177,106 @@ class PDFPrinter:
             self._pagesize[1] -
             self._margin)
 
-        # then if user specified a box to render get intersection with that
+        # if the user specified a box to render to, we take the intersection
+        # of that box with the page area available
         if self._box:
             return render_area.intersect(self._box)
 
         return render_area
 
-    def _get_render_area_size(self):
-        """Get the width and height (in meters) of the area we can render the map to, returned as a tuple"""
-        render_area = self._get_render_area()
-        return (render_area.width(), render_area.height())
-
-    def _is_h_contrained(self, m):
-        """Test if the map size is constrained on the horizontal or vertical axes"""
-        available_area = self._get_render_area_size()
-        map_aspect = m.envelope().width() / m.envelope().height()
-        page_aspect = available_area[0] / available_area[1]
-
-        return map_aspect > page_aspect
-
-    def _get_meta_info_corner(self, render_size, m):
-        """Get the corner (in page coordinates) of a possibly
-        sensible place to render metadata such as a legend or scale"""
-        (x, y) = self._get_render_corner(render_size, m)
-        if self._is_h_contrained(m):
-            y += render_size[1] + 0.005
-            x = self._margin
-        else:
-            x += render_size[0] + 0.005
-            y = self._margin
-
-        return (x, y)
-
-    def _get_render_corner(self, render_size, m):
-        """Get the corner of the box we should render our map into"""
-        available_area = self._get_render_area()
-
-        x = available_area[0]
-        y = available_area[1]
-
-        h_is_contrained = self._is_h_contrained(m)
-
-        if (self._centering == centering.both or
-                self._centering == centering.horizontal or
-                (self._centering == centering.constrained and h_is_contrained) or
-                (self._centering == centering.unconstrained and not h_is_contrained)):
-            x += (available_area.width() - render_size[0]) / 2
-
-        if (self._centering == centering.both or
-                self._centering == centering.vertical or
-                (self._centering == centering.constrained and not h_is_contrained) or
-                (self._centering == centering.unconstrained and h_is_contrained)):
-            y += (available_area.height() - render_size[1]) / 2
-        return (x, y)
-
-    def _get_map_pixel_size(self, width_page_m, height_page_m):
-        """for a given map size in paper coordinates return a tuple of the map 'pixel' size we
-        should create at the defined resolution"""
-        return (int(m2px(width_page_m, self._resolution)),
-                int(m2px(height_page_m, self._resolution)))
-
-    def render_map(self, m, filename):
-        """Render the given map to filename"""
-
-        # store this for later so we can post process the PDF
-        self._filename = filename
-
-        # work out the best scale to render out map at given the available
-        # space
-        (eff_width, eff_height) = self._get_render_area_size()
-        map_aspect = m.envelope().width() / m.envelope().height()
-        page_aspect = eff_width / eff_height
-
-        scalex = m.envelope().width() / eff_width
-        scaley = m.envelope().height() / eff_height
-
-        scale = max(scalex, scaley)
-
-        rounded_mapscale = self._scale(scale)
-        scalefactor = scale / rounded_mapscale
+    def _get_map_render_area_size(self, m, eff_width, eff_height):
+        """
+        Returns the render area for the map, i.e., a width and height in meters.
+        Preserves the map aspect by default.
+        """
+        scalefactor = self._get_map_scalefactor(m, eff_width, eff_height)
         mapw = eff_width * scalefactor
         maph = eff_height * scalefactor
+
+        page_aspect = eff_width / eff_height
+        map_aspect = m.envelope().width() / m.envelope().height()
         if self._preserve_aspect:
             if map_aspect > page_aspect:
                 maph = mapw * (1 / map_aspect)
             else:
                 mapw = maph * map_aspect
 
-        # set the map size so that raster elements render at the correct
-        # resolution
-        m.resize(*self._get_map_pixel_size(mapw, maph))
-        # calculate the translation for the map starting point
-        (tx, ty) = self._get_render_corner((mapw, maph), m)
+        return (mapw, maph)
 
-        # create our cairo surface and context and then render the map into it
-        self._s = cairo.PDFSurface(
-            filename, m2pt(
-                self._pagesize[0]), m2pt(
-                self._pagesize[1]))
-        ctx = cairo.Context(self._s)
+    def _get_map_scalefactor(self, m ,eff_width, eff_height):
+        """Returns the map scale factor based on effective render area size in meters."""
+        scalex = m.envelope().width() / eff_width
+        scaley = m.envelope().height() / eff_height
+        scale = max(scalex, scaley)
+        rounded_mapscale = self._scale_function(scale)
+        self.rounded_mapscale = rounded_mapscale
+        scalefactor = scale / rounded_mapscale
 
-        for l in m.layers:
-            # extract the layer names for naming layers if we use OCG
-            self._layer_names.append(l.name)
+        return scalefactor
 
-            layer_map = Map(m.width, m.height, m.srs)
-            layer_map.layers.append(l)
-            for s in l.styles:
-                layer_map.append_style(s, m.find_style(s))
-            layer_map.zoom_to_box(m.envelope())
+    def _get_map_pixel_size(self, width_page_m, height_page_m):
+        """
+        For a given map size in page coordinates, returns a tuple of the map
+        'pixel' size based on the defined resolution.
+        """
+        return (int(m2px(width_page_m, self._resolution)),
+                int(m2px(height_page_m, self._resolution)))
 
-            def render_map():
-                ctx.save()
-                ctx.translate(m2pt(tx), m2pt(ty))
-                # cairo defaults to 72dpi
-                ctx.scale(72.0 / self._resolution, 72.0 / self._resolution)
-                render(layer_map, ctx)
-                ctx.restore()
+    def _get_render_corner(self, render_size, m):
+        """Returns the top left corner of the box we should render our map into."""
+        available_area = self._get_render_area()
 
-            # antimeridian
-            render_map()
-            if self._is_latlon and (
-                    m.envelope().minx < -180 or m.envelope().maxx > 180):
+        x = available_area[0]
+        y = available_area[1]
+
+        if self._has_horizontal_centering(m):
+            x += (available_area.width() - render_size[0]) / 2
+
+        if self._has_vertical_centering(m):
+            y += (available_area.height() - render_size[1]) / 2
+        return (x, y)
+
+    def _has_horizontal_centering(self, m):
+        """Returns whether the map has an horizontal centering or not."""
+        is_map_size_constrained = self._is_map_size_constrained(m)
+
+        if (self._centering == centering.both or
+                self._centering == centering.horizontal or
+                (self._centering == centering.constrained_axis and is_map_size_constrained) or
+                (self._centering == centering.unconstrained_axis and not is_map_size_constrained)):
+            return True
+        else:
+            return False
+
+    def _has_vertical_centering(self, m):
+        """Returns whether the map has a vertical centering or not."""
+        is_map_size_constrained = self._is_map_size_constrained(m)
+
+        if (self._centering == centering.both or
+                self._centering == centering.vertical or
+                (self._centering == centering.constrained_axis and not is_map_size_constrained) or
+                (self._centering == centering.unconstrained_axis and is_map_size_constrained)):
+            return True
+        else:
+            return False
+
+    def _is_map_size_constrained(self, m):
+        """Tests whether the map's size is constrained on the horizontal or vertical axes."""
+        available_area = self._get_render_area_size()
+        map_aspect = m.envelope().width() / m.envelope().height()
+        page_aspect = available_area[0] / available_area[1]
+
+        return map_aspect > page_aspect
+
+    def _render_layers_maps(self, m, ctx, tx, ty):
+        """Renders a layer as an individual map within a parent Map object."""
+        for layer in m.layers:
+            self._layer_names.append(layer.name)
+
+            layer_map = self._create_layer_map(m, layer)
+            self._render_layer_map(layer_map, ctx, tx, ty)
+
+            if self.map_spans_antimeridian(m):
                 old_env = m.envelope()
                 if m.envelope().minx < -180:
                     delta = 360
@@ -428,12 +288,12 @@ class PDFPrinter:
                         old_env.miny,
                         old_env.maxx + delta,
                         old_env.maxy))
-                render_map()
+                self._render_layer_map(layer_map, ctx, tx, ty)
                 # restore the original env
                 m.zoom_to_box(old_env)
 
             if self._use_ocg_layers:
-                self._s.show_page()
+                self._surface.show_page()
 
         self.scale = rounded_mapscale
         self.map_box = Box2d(tx, ty, tx + mapw, ty + maph)
