@@ -634,91 +634,102 @@ class PDFPrinter:
         return (x, y)
 
     def render_on_map_lat_lon_grid(self, m, dec_degrees=True):
+        # FIXME: buggy. does not get the top and right lines. see _render_lat_lon_axis also 
+
+        """Renders a lat lon grid on the map."""
         # don't render lat_lon grid if we are already in latlon
         if self._is_latlon:
             return
+
         p2 = Projection(m.srs)
-
         latlon_bounds = p2.inverse(m.envelope())
-        if p2.inverse(m.envelope().center()).x > latlon_bounds.maxx:
-            latlon_bounds = Box2d(
-                latlon_bounds.maxx,
-                latlon_bounds.miny,
-                latlon_bounds.minx + 360,
-                latlon_bounds.maxy)
 
-        if p2.inverse(m.envelope().center()).y > latlon_bounds.maxy:
-            latlon_bounds = Box2d(
-                latlon_bounds.miny,
-                latlon_bounds.maxy,
-                latlon_bounds.maxx,
-                latlon_bounds.miny + 360)
+        # TODO: comment
+        latlon_bounds = self._adjust_latlon_bounds(m, p2, latlon_bounds)
 
         latlon_mapwidth = latlon_bounds.width()
         # render an extra 20% so we generally won't miss the ends of lines
         latlon_buffer = 0.2 * latlon_mapwidth
         if dec_degrees:
+            # FIXME: what is the 7.0 magic number about?
             latlon_divsize = default_scale(latlon_mapwidth / 7.0)
         else:
+            # FIXME: what is the 7.0 magic number about?
             latlon_divsize = deg_min_sec_scale(latlon_mapwidth / 7.0)
         latlon_interpsize = latlon_mapwidth / m.width
 
-        self._render_lat_lon_axis(
+        # renders the horizontal lat lon axes
+        self._render_lat_lon_axes(
             m,
             p2,
-            latlon_bounds.minx,
-            latlon_bounds.maxx,
-            latlon_bounds.miny,
-            latlon_bounds.maxy,
+            latlon_bounds,
             latlon_buffer,
             latlon_interpsize,
             latlon_divsize,
             dec_degrees,
             True)
-        self._render_lat_lon_axis(
-            m,
+
+        # renders the vertical lat lon axes
+        self._render_lat_lon_axes(
+            m, 
             p2,
-            latlon_bounds.miny,
-            latlon_bounds.maxy,
-            latlon_bounds.minx,
-            latlon_bounds.maxx,
+            latlon_bounds,
             latlon_buffer,
             latlon_interpsize,
             latlon_divsize,
             dec_degrees,
             False)
 
-    def _render_lat_lon_axis(self, m, p2, x1, x2, y1, y2, latlon_buffer,
-                             latlon_interpsize, latlon_divsize, dec_degrees, is_x_axis):
-        ctx = cairo.Context(self._s)
-        ctx.set_source_rgb(1, 0, 0)
+    def _adjust_latlon_bounds(self, m, proj, latlon_bounds):
+        """
+        Ensures that the projected map envelope is within the lat lon bounds.
+        If it's not it shifts the lat lon bounds.
+
+        Returns:
+            The adjusted lat lon bounds box
+        """
+        if proj.inverse(m.envelope().center()).x > latlon_bounds.maxx:
+            latlon_bounds = Box2d(
+                latlon_bounds.maxx,
+                latlon_bounds.miny,
+                latlon_bounds.minx + 360,
+                latlon_bounds.maxy)
+        if proj.inverse(m.envelope().center()).y > latlon_bounds.maxy:
+            latlon_bounds = Box2d(
+                latlon_bounds.miny,
+                latlon_bounds.maxy,
+                latlon_bounds.maxx,
+                latlon_bounds.miny + 360)
+
+        return latlon_bounds
+
+    def _render_lat_lon_axes(self, m, p2, latlon_bounds, latlon_buffer,
+                             latlon_interpsize, latlon_divsize, dec_degrees, is_x_axis, stroke_color=(0.5, 0.5, 0.5)):
+        # FIXME: buggy. does not get the top and right lines. see render_on_map_lat_lon_grid also
+        """Renders the horizontal or vertical axes on the map depending on the is_x_axis parameter."""
+        ctx = cairo.Context(self._surface)
+        ctx.set_source_rgb(*stroke_color)
         ctx.set_line_width(1)
         latlon_labelsize = 6
 
         ctx.translate(m2pt(self.map_box.minx), m2pt(self.map_box.miny))
-        ctx.rectangle(
-            0, 0, m2pt(
-                self.map_box.width()), m2pt(
-                self.map_box.height()))
+        ctx.rectangle(0, 0, m2pt(self.map_box.width()), m2pt(self.map_box.height()))
         ctx.clip()
 
-        ctx.select_font_face(
-            "DejaVu",
-            cairo.FONT_SLANT_NORMAL,
-            cairo.FONT_WEIGHT_NORMAL)
+        ctx.select_font_face(self.font_name, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
         ctx.set_font_size(latlon_labelsize)
 
-        box_top = self.map_box.height()
-        if not is_x_axis:
-            ctx.translate(m2pt(self.map_box.width() / 2),
-                          m2pt(self.map_box.height() / 2))
+        if is_x_axis:
+            (x1, x2, y1, y2) = latlon_bounds.minx, latlon_bounds.maxx, latlon_bounds.miny, latlon_bounds.maxy
+            box_top = self.map_box.height()
+        else:
+            (x1, x2, y1, y2) = latlon_bounds.miny, latlon_bounds.maxy, latlon_bounds.minx, latlon_bounds.maxx
+            ctx.translate(m2pt(self.map_box.width() / 2), m2pt(self.map_box.height() / 2))
             ctx.rotate(-math.pi / 2)
-            ctx.translate(-m2pt(self.map_box.height() / 2), -
-                          m2pt(self.map_box.width() / 2))
+            ctx.translate(-m2pt(self.map_box.height() / 2), -m2pt(self.map_box.width() / 2))
             box_top = self.map_box.width()
 
-        for xvalue in round_grid_generator(
-                x1 - latlon_buffer, x2 + latlon_buffer, latlon_divsize):
+        for xvalue in self.round_grid_generator(x1 - latlon_buffer, x2 + latlon_buffer, latlon_divsize):
             yvalue = y1 - latlon_buffer
             start_cross = None
             end_cross = None
@@ -735,20 +746,18 @@ class PDFPrinter:
                     temp = m.view_transform().forward(p2.forward(Coord(yvalue, xvalue)))
                     end = Coord(m2pt(self.map_box.height()) - temp.y, temp.x)
 
-                ctx.move_to(start.x, start.y)
-                ctx.line_to(end.x, end.y)
-                ctx.stroke()
+                self._draw_line(ctx, start.x, start.y, end.x, end.y)
 
                 if cmp(start.y, 0) != cmp(end.y, 0):
                     start_cross = end.x
-                if cmp(start.y, m2pt(self.map_box.height())) != cmp(
-                        end.y, m2pt(self.map_box.height())):
+                if cmp(start.y, m2pt(self.map_box.height())) != cmp(end.y, m2pt(self.map_box.height())):
                     end_cross = end.x
 
             if dec_degrees:
                 line_text = "%g" % (xvalue)
             else:
-                line_text = format_deg_min_sec(xvalue)
+                line_text = self.format_deg_min_sec(xvalue)
+
             if start_cross:
                 ctx.move_to(start_cross + 2, latlon_labelsize)
                 ctx.show_text(line_text)
@@ -756,8 +765,25 @@ class PDFPrinter:
                 ctx.move_to(end_cross + 2, m2pt(box_top) - 2)
                 ctx.show_text(line_text)
 
-    def render_on_map_scale(self, m):
-        (div_size, page_div_size) = self._get_sensible_scalebar_size(m)
+    def round_grid_generator(self, first, last, step):
+        """Generator for lat lon grid values."""
+        val = (math.floor(first / step) + 1) * step
+        yield val
+        while val < last:
+            val += step
+            yield val
+
+    def format_deg_min_sec(self, value):
+        """Converts decimal degrees value to a degrees/minutes/seconds string."""
+        deg = math.floor(value)
+        min = math.floor((value - deg) / (1.0 / 60))
+        sec = int((value - deg * 1.0 / 60) / 1.0 / 3600)
+        return "%d°%d'%d\"" % (deg, min, sec)
+
+    def render_legend(self, m, ctx=None, columns=2, width=None, height=None, attribution=None, legend_item_box_size=(0.015, 0.0075)):
+        """
+        Renders a legend for the Map object. A legend is a collection of legend items, i.e., a minified
+        representation of the layer's map along with the layer's title.
 
         first_value_x = (
             math.floor(
