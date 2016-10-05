@@ -295,8 +295,343 @@ class PDFPrinter:
             if self._use_ocg_layers:
                 self._surface.show_page()
 
-        self.scale = rounded_mapscale
-        self.map_box = Box2d(tx, ty, tx + mapw, ty + maph)
+    def _create_layer_map(self, m, layer):
+        """
+        Instantiates and returns a Map object for the layer.
+        The layer Map has the parent Map dimensions.
+        """
+        layer_map = Map(m.width, m.height, m.srs)
+        layer_map.layers.append(layer)
+
+        for s in layer.styles:
+            layer_map.append_style(s, m.find_style(s))
+
+        layer_map.zoom_to_box(m.envelope())
+
+        return layer_map
+
+    def _render_layer_map(self, layer_map, ctx, tx, ty):
+        """Renders the layer map. Scales the cairo context to the specified resolution."""
+        ctx.save()
+        ctx.translate(m2pt(tx), m2pt(ty))
+        # cairo defaults to 72dpi
+        ctx.scale(72.0 / self._resolution, 72.0 / self._resolution)
+        render(layer_map, ctx)
+        ctx.restore()
+
+    def map_spans_antimeridian(self, m):
+        """Returns whether the map spans the antimeridian or not."""
+        if self._is_latlon and (m.envelope().minx < -180 or m.envelope().maxx > 180):
+            return True
+        else:
+            return False
+
+    def render_on_map_scale(self, m, grid_layer_name="Coordinates Grid Overlay"):
+        """Adds a grid overlay on the map."""
+        (div_size, page_div_size) = self._get_sensible_scalebar_size(m)
+
+        # render horizontal axes
+        (first_value_x, first_value_x_percent) = self._get_scale_axes_first_values(
+            div_size,
+            m.envelope().minx,
+            m.envelope().width())
+        self._render_scale_axes(
+            first_value_x,
+            first_value_x_percent,
+            page_div_size,
+            div_size,
+            True)
+
+        # render vertical axes
+        (first_value_y, first_value_y_percent) = self._get_scale_axes_first_values(
+            div_size,
+            m.envelope().miny,
+            m.envelope().height())
+        self._render_scale_axes(
+            first_value_y,
+            first_value_y_percent,
+            page_div_size,
+            div_size,
+            False)
+
+        if self._use_ocg_layers:
+            self._surface.show_page()
+            self._layer_names.append(grid_layer_name)
+
+    def _get_sensible_scalebar_size(self, m, num_divisions=8, width=-1):
+        """
+        Returns a sensible scalebar size based on the map envelope, the number of divisions expected
+        in the scalebar, and optionally the width of the containing box.
+        """
+        div_size = sequence_scale(m.envelope().width() / num_divisions, [1, 2, 5])
+
+        # ensures we can fit the bar within page area width if specified
+        page_div_size = self.map_box.width() * div_size / m.envelope().width()
+        while width > 0 and page_div_size > width:
+            div_size /= 2
+            page_div_size /= 2
+
+        return (div_size, page_div_size)
+
+    def _get_scale_axes_first_values(self, div_size, map_envelope_start, map_envelope_side_length):
+        """
+        Returns the first value and the first value percent - how far is that value on the map side length -
+        for the scale axes.
+        """
+        first_value = (math.floor(map_envelope_start / div_size) + 1) * div_size
+        first_value_percent = (first_value - map_envelope_start) / map_envelope_side_length
+
+        return (first_value, first_value_percent)
+
+    def _render_scale_axes(self, first, first_percent, page_div_size, div_size, is_x_axis):
+        """Renders the horizontal or vertical axes on the map depending on the is_x_axis parameter."""
+        ctx = cairo.Context(self._surface)
+
+        if is_x_axis:
+            (start, end, boundary_start, boundary_end) = self.map_box.minx, self.map_box.maxx, self.map_box.miny, self.map_box.maxy
+        else:
+            (start, end, boundary_start, boundary_end) = self.map_box.miny, self.map_box.maxy, self.map_box.minx, self.map_box.maxx
+
+            ctx.translate(m2pt(self.map_box.center().x), m2pt(self.map_box.center().y))
+            ctx.rotate(-math.pi / 2)
+            ctx.translate(-m2pt(self.map_box.center().y), -m2pt(self.map_box.center().x))
+
+        label_value = first - div_size
+        if self._is_latlon and label_value < -180:
+            label_value += 360
+
+        prev = start
+        text = None
+        black_rgb = (0.0, 0.0, 0.0)
+        fill_color = black_rgb
+        value = first_percent * (end - start) + start
+
+        while value < end:
+            self._draw_line(ctx, m2pt(value), m2pt(boundary_start), m2pt(value), m2pt(boundary_end))
+            self._render_scale_boxes(ctx, boundary_start, boundary_end, prev, value, text=text, fill_color=fill_color)
+
+            prev = value
+            value += page_div_size
+            fill_color = [1.0 - z for z in fill_color]
+            label_value += div_size
+            if self._is_latlon and label_value > 180:
+                label_value -= 360
+            text = "%d" % label_value
+        else:
+            # ensure that the last box gets drawn
+            self._render_scale_boxes(ctx, boundary_start, boundary_end, prev, end, fill_color=fill_color)
+
+    def _draw_line(self, ctx, start_x, start_y, end_x, end_y, stroke_color=(0.5, 0.5, 0.5), line_width=1):
+        """Draws a line from (start_x, start_y) to (end_x, end_y) on the specified cairo context."""
+        ctx.save()
+
+        ctx.move_to(start_x, start_y)
+        ctx.line_to(end_x, end_y)
+        ctx.set_source_rgb(*stroke_color)
+        ctx.set_line_width(line_width)
+        ctx.stroke()
+
+        ctx.restore()
+
+    def _render_scale_boxes(self, ctx, boundary_start, boundary_end, prev, value, text=None, border_size=8, fill_color=(0.0, 0.0, 0.0)):
+        """Renders the scale boxes at each end of the grid overlay."""
+        for bar in (m2pt(boundary_start) - border_size, m2pt(boundary_end)):
+            rectangle = Rectangle(m2pt(prev), bar, m2pt(value - prev), border_size)
+            self._render_box(ctx, rectangle, text, fill_color=fill_color)
+
+    def _render_box(self, ctx, rectangle, text=None, stroke_color=(0.0, 0.0, 0.0), fill_color=(0.0, 0.0, 0.0)):
+        """Renders a box with top left corner positioned at (x,y)."""
+        ctx.save()
+
+        line_width = 1
+
+        ctx.set_line_width(line_width)
+        ctx.set_source_rgb(*fill_color)
+        ctx.rectangle(rectangle.x, rectangle.y, rectangle.width, rectangle.height)
+        ctx.fill()
+
+        ctx.set_source_rgb(*stroke_color)
+        ctx.rectangle(rectangle.x, rectangle.y, rectangle.width, rectangle.height)
+        ctx.stroke()
+
+        if text:
+            ctx.move_to(rectangle.x + 1, rectangle.y)
+            self.write_text(ctx, text, fill_color=[1 - z for z in fill_color], size=rectangle.height - 2)
+
+        ctx.restore()
+
+    def write_text(self, ctx, text, box_width=None, size=10, fill_color=(0.0, 0.0, 0.0), alignment=None):
+        """
+        Writes the text to the specified context.
+
+        Returns:
+            A rectangle (x, y, width, height) representing the extents of the text drawn
+        """
+        if HAS_PANGOCAIRO_MODULE:
+            return self._write_text_pangocairo(ctx, text, box_width, size, fill_color, alignment)
+        else:
+            return self._write_text_cairo(ctx, text, box_width, size)
+
+    def _write_text_pangocairo(self, ctx, text, box_width=None, size=10, fill_color=(0.0, 0.0, 0.0), alignment=None):
+        """
+        Use a pango.Layout object to write text to the cairo Context specified as a parameter.
+
+        Returns:
+            A rectangle (x, y, width, height) representing the extents of the pango layout as drawn
+        """
+        (attr, t, accel) = pango.parse_markup(text)
+        pctx = pangocairo.CairoContext(ctx)
+
+        pango_layout = pctx.create_layout()
+        pango_layout.set_attributes(attr)
+
+        fd = pango.FontDescription("%s %d" % (self.font_name, size))
+        pango_layout.set_font_description(fd)
+
+        if box_width:
+            pango_layout.set_width(int(box_width * pango.SCALE))
+        if alignment:
+            pango_layout.set_alignment(alignment)
+        pctx.update_layout(pango_layout)
+
+        pango_layout.set_text(t)
+        pctx.set_source_rgb(*fill_color)
+        pctx.show_layout(pango_layout)
+
+        return pango_layout.get_pixel_extents()[0]
+
+    def _write_text_cairo(self, ctx, text, size=10):
+        """
+        Writes text to the cairo Context specified as a parameter.
+
+        Returns:
+            A rectangle (x, y, width, height) representing the extents of the text drawn
+        """
+        ctx.rel_move_to(0, size)
+        ctx.select_font_face(
+            self.font_name,
+            cairo.FONT_SLANT_NORMAL,
+            cairo.FONT_WEIGHT_NORMAL)
+        ctx.set_font_size(size)
+        ctx.show_text(text)
+
+        ctx.rel_move_to(0, size)
+
+        return (0, 0, len(text) * size, size)
+
+    def render_scale(self, m, ctx=None, width=0.05, num_divisions=3, bar_size=8.0, with_representative_fraction=True):
+        """
+        Renders two things:
+            - a scale bar
+            - a scale representative fraction just below it
+
+        Args:
+            m: the Map object to render the scale for
+            ctx: A cairo context to render the scale into. If this is None, we create a context and find out 
+                the best location for the scale bar
+            width: the width of area available for rendering the scale bar (in meters)
+            num_divisions: the number of divisions for the scale bar
+            bar_size: the size of the scale bar in points
+            with_representative_fraction: whether we should render the representative fraction or not
+
+        Returns:
+            The size of the rendered scale block in points. (0, 0) if nothing is rendered.
+
+        Notes:
+            Does not render if lat lon maps or if the aspect ratio is not preserved.
+        """
+
+        (w, h) = (0, 0)
+
+        # don't render scale text if we are in lat lon
+        # dont render scale text if we have warped the aspect ratio
+        if self._preserve_aspect and not self._is_latlon:
+
+            if ctx is None:
+                ctx = cairo.Context(self._surface)
+                (tx, ty) = self._get_meta_info_corner((self.map_box.width(), self.map_box.height()), m)
+                ctx.translate(m2pt(tx), m2pt(ty))
+
+            (w, h) = self._render_scale_bar(m, ctx, width, w, h, num_divisions, bar_size)
+
+            # renders the scale representative fraction text
+            if with_representative_fraction:
+                bar_to_fraction_space = 2
+                ctx.move_to(0, h + bar_to_fraction_space)
+
+                box_width = None
+                if width > 0:
+                    box_width = m2pt(width)
+                h += self._render_scale_representative_fraction(ctx, box_width)
+
+        return (w, h)
+
+    def _render_scale_bar(self, m, ctx, width=0.05, w=0, h=0, num_divisions=3, bar_size=8.0):
+        """
+        Renders a graphic scale bar.
+
+        Returns:
+            The width and height of the scale bar rendered
+        """
+        scale_bar_extra_space_factor = 1.2
+        dwidth = width / num_divisions * scale_bar_extra_space_factor
+        (div_size, page_div_size) = self._get_sensible_scalebar_size(m, num_divisions=num_divisions, width=dwidth)
+
+        div_unit = "m"
+        if div_size > 1000:
+            div_size /= 1000
+            div_unit = "km"
+        text = "0{}".format(div_unit)
+
+        ctx.save()
+        if width > 0:
+            ctx.translate(m2pt(width - num_divisions * page_div_size) / 2, 0)
+        for ii in range(num_divisions):
+            fill = (ii % 2,) * 3
+            rectangle = Rectangle(m2pt(ii*page_div_size), h, m2pt(page_div_size), bar_size)
+            self._render_box(ctx, rectangle, text, fill_color=fill)
+            fill = [1 - z for z in fill]
+            text = "{0}{1}".format((ii + 1) * div_size, div_unit)
+
+        w = (num_divisions) * page_div_size
+        h += bar_size
+        ctx.restore()
+
+        return (w, h)
+
+    def _render_scale_representative_fraction(self, ctx, box_width, box_width_padding=2, font_size=6):
+        """
+        Renders the scale text, i.e.
+
+        Returns:
+            The text extent width including padding.
+        """
+        if HAS_PANGOCAIRO_MODULE:
+            alignment = pango.ALIGN_CENTER
+        else:
+            alignment = None
+
+        text = "Scale 1:{}".format(self.rounded_mapscale)
+        text_extent = self.write_text(ctx, text, box_width=box_width, size=font_size, alignment=alignment)
+
+        text_extent_width = text_extent[3]
+
+        return text_extent_width + box_width_padding
+
+    def _get_meta_info_corner(self, render_size, m):
+        """
+        Returns the corner (in page coordinates) of a possibly
+        sensible place to render metadata such as a legend or scale.
+        """
+        (x, y) = self._get_render_corner(render_size, m)
+        if self._is_map_size_constrained(m):
+            y += render_size[1] + 0.005
+            x = self._margin
+        else:
+            x += render_size[0] + 0.005
+            y = self._margin
+
+        return (x, y)
 
     def render_on_map_lat_lon_grid(self, m, dec_degrees=True):
         # don't render lat_lon grid if we are already in latlon
