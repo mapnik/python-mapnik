@@ -1,28 +1,18 @@
 # -*- coding: utf-8 -*-
 
-"""Mapnik classes to assist in creating printable maps
+"""Mapnik classes to assist in creating printable maps."""
 
-basic usage is along the lines of
-
-import mapnik
-
-page = mapnik.printing.PDFPrinter()
-m = mapnik.Map(100,100)
-mapnik.load_map(m, "my_xml_map_description", True)
-m.zoom_all()
-page.render_map(m,"my_output_file.pdf")
-
-see the documentation of mapnik.printing.PDFPrinter() for options
-
-"""
 from __future__ import absolute_import, print_function
 
 import math
 import os
 import tempfile
 
-from . import (Box2d, Coord, Feature, Geometry, Layer, Map, Projection, Style,
-               render)
+import mapnik
+from mapnik import Box2d, Coord, Geometry, Layer, Map, Projection, Style, render
+from mapnik.conversions import m2pt, m2px
+from mapnik.formats import pagesizes
+from mapnik.scales import any_scale, default_scale, deg_min_sec_scale, sequence_scale
 
 try:
     import cairo
@@ -38,300 +28,58 @@ except ImportError:
     HAS_PANGOCAIRO_MODULE = False
 
 try:
-    import pyPdf
-    HAS_PYPDF = True
+    from PyPDF2 import PdfFileReader, PdfFileWriter
+    from PyPDF2.generic import (ArrayObject, DecodedStreamObject, DictionaryObject, FloatObject, NameObject,
+        NumberObject, TextStringObject)
+    HAS_PYPDF2 = True
 except ImportError:
-    HAS_PYPDF = False
+    HAS_PYPDF2 = False
 
 
 class centering:
-    """Style of centering to use with the map, the default is constrained
 
-    none: map will be placed flush with the margin/box in the top left corner
-    constrained: map will be centered on the most constrained axis (for a portrait page
-                 and a square map this will be horizontally)
-    unconstrained: map will be centered on the unconstrained axis
-    vertical:
-    horizontal:
-    both:
     """
+    Style of centering to use with the map.
+
+    none: map will be placed in the top left corner
+    constrained_axis: map will be centered on the most constrained axis (e.g. vertical for a portrait page); a square
+        map will be constrained horizontally
+    unconstrained_axis: map will be centered on the unconstrained axis
+    vertical: map will be centered vertically
+    horizontal: map will be centered horizontally
+    both: map will be centered vertically and horizontally
+    """
+
     none = 0
-    constrained = 1
-    unconstrained = 2
+    constrained_axis = 1
+    unconstrained_axis = 2
     vertical = 3
     horizontal = 4
     both = 5
 
-"""Some predefined page sizes custom sizes can also be passed
-a tuple of the page width and height in meters"""
-pagesizes = {
-    "a0": (0.841000, 1.189000),
-    "a0l": (1.189000, 0.841000),
-    "b0": (1.000000, 1.414000),
-    "b0l": (1.414000, 1.000000),
-    "c0": (0.917000, 1.297000),
-    "c0l": (1.297000, 0.917000),
-    "a1": (0.594000, 0.841000),
-    "a1l": (0.841000, 0.594000),
-    "b1": (0.707000, 1.000000),
-    "b1l": (1.000000, 0.707000),
-    "c1": (0.648000, 0.917000),
-    "c1l": (0.917000, 0.648000),
-    "a2": (0.420000, 0.594000),
-    "a2l": (0.594000, 0.420000),
-    "b2": (0.500000, 0.707000),
-    "b2l": (0.707000, 0.500000),
-    "c2": (0.458000, 0.648000),
-    "c2l": (0.648000, 0.458000),
-    "a3": (0.297000, 0.420000),
-    "a3l": (0.420000, 0.297000),
-    "b3": (0.353000, 0.500000),
-    "b3l": (0.500000, 0.353000),
-    "c3": (0.324000, 0.458000),
-    "c3l": (0.458000, 0.324000),
-    "a4": (0.210000, 0.297000),
-    "a4l": (0.297000, 0.210000),
-    "b4": (0.250000, 0.353000),
-    "b4l": (0.353000, 0.250000),
-    "c4": (0.229000, 0.324000),
-    "c4l": (0.324000, 0.229000),
-    "a5": (0.148000, 0.210000),
-    "a5l": (0.210000, 0.148000),
-    "b5": (0.176000, 0.250000),
-    "b5l": (0.250000, 0.176000),
-    "c5": (0.162000, 0.229000),
-    "c5l": (0.229000, 0.162000),
-    "a6": (0.105000, 0.148000),
-    "a6l": (0.148000, 0.105000),
-    "b6": (0.125000, 0.176000),
-    "b6l": (0.176000, 0.125000),
-    "c6": (0.114000, 0.162000),
-    "c6l": (0.162000, 0.114000),
-    "a7": (0.074000, 0.105000),
-    "a7l": (0.105000, 0.074000),
-    "b7": (0.088000, 0.125000),
-    "b7l": (0.125000, 0.088000),
-    "c7": (0.081000, 0.114000),
-    "c7l": (0.114000, 0.081000),
-    "a8": (0.052000, 0.074000),
-    "a8l": (0.074000, 0.052000),
-    "b8": (0.062000, 0.088000),
-    "b8l": (0.088000, 0.062000),
-    "c8": (0.057000, 0.081000),
-    "c8l": (0.081000, 0.057000),
-    "a9": (0.037000, 0.052000),
-    "a9l": (0.052000, 0.037000),
-    "b9": (0.044000, 0.062000),
-    "b9l": (0.062000, 0.044000),
-    "c9": (0.040000, 0.057000),
-    "c9l": (0.057000, 0.040000),
-    "a10": (0.026000, 0.037000),
-    "a10l": (0.037000, 0.026000),
-    "b10": (0.031000, 0.044000),
-    "b10l": (0.044000, 0.031000),
-    "c10": (0.028000, 0.040000),
-    "c10l": (0.040000, 0.028000),
-    "letter": (0.216, 0.279),
-    "letterl": (0.279, 0.216),
-    "legal": (0.216, 0.356),
-    "legall": (0.356, 0.216),
-}
-"""size of a pt in meters"""
-pt_size = 0.0254 / 72.0
-
-
-def m2pt(x):
-    """convert distance from meters to points"""
-    return x / pt_size
-
-
-def pt2m(x):
-    """convert distance from points to meters"""
-    return x * pt_size
-
-
-def m2in(x):
-    """convert distance from meters to inches"""
-    return x / 0.0254
-
-
-def m2px(x, resolution):
-    """convert distance from meters to pixels at the given resolution in DPI/PPI"""
-    return m2in(x) * resolution
-
 
 class resolutions:
-    """some predefined resolutions in DPI"""
+
+    """Some predefined resolutions in DPI"""
+
     dpi72 = 72
     dpi150 = 150
     dpi300 = 300
     dpi600 = 600
 
 
-def any_scale(scale):
-    """Scale helper function that allows any scale"""
-    return scale
-
-
-def sequence_scale(scale, scale_sequence):
-    """Default scale helper, this rounds scale to a 'sensible' value"""
-    factor = math.floor(math.log10(scale))
-    norm = scale / (10**factor)
-
-    for s in scale_sequence:
-        if norm <= s:
-            return s * 10**factor
-    return scale_sequence[0] * 10**(factor + 1)
-
-
-def default_scale(scale):
-    """Default scale helper, this rounds scale to a 'sensible' value"""
-    return sequence_scale(scale, (1, 1.25, 1.5, 1.75, 2,
-                                  2.5, 3, 4, 5, 6, 7.5, 8, 9, 10))
-
-
-def deg_min_sec_scale(scale):
-    for x in (1.0 / 3600,
-              2.0 / 3600,
-              5.0 / 3600,
-              10.0 / 3600,
-              30.0 / 3600,
-              1.0 / 60,
-              2.0 / 60,
-              5.0 / 60,
-              10.0 / 60,
-              30.0 / 60,
-              1,
-              2,
-              5,
-              10,
-              30,
-              60
-              ):
-        if scale < x:
-            return x
-    else:
-        return x
-
-
-def format_deg_min_sec(value):
-    deg = math.floor(value)
-    min = math.floor((value - deg) / (1.0 / 60))
-    sec = int((value - deg * 1.0 / 60) / 1.0 / 3600)
-    return "%d°%d'%d\"" % (deg, min, sec)
-
-
-def round_grid_generator(first, last, step):
-    val = (math.floor(first / step) + 1) * step
-    yield val
-    while val < last:
-        val += step
-        yield val
-
-
-def convert_pdf_pages_to_layers(
-        filename, output_name=None, layer_names=(), reverse_all_but_last=True):
-    """
-    opens the given multipage PDF and converts each page to be a layer in a single page PDF
-    layer_names should be a sequence of the user visible names of the layers, if not given
-    or if shorter than num pages generic names will be given to the unnamed layers
-
-    if output_name is not provided a temporary file will be used for the conversion which
-    will then be copied back over the source file.
-
-    requires pyPdf >= 1.13 to be available"""
-
-    if not HAS_PYPDF:
-        raise Exception("pyPdf Not available")
-
-    infile = file(filename, 'rb')
-    if output_name:
-        outfile = file(output_name, 'wb')
-    else:
-        (outfd, outfilename) = tempfile.mkstemp(dir=os.path.dirname(filename))
-        outfile = os.fdopen(outfd, 'wb')
-
-    i = pyPdf.PdfFileReader(infile)
-    o = pyPdf.PdfFileWriter()
-
-    template_page_size = i.pages[0].mediaBox
-    op = o.addBlankPage(
-        width=template_page_size.getWidth(),
-        height=template_page_size.getHeight())
-
-    contentkey = pyPdf.generic.NameObject('/Contents')
-    resourcekey = pyPdf.generic.NameObject('/Resources')
-    propertieskey = pyPdf.generic.NameObject('/Properties')
-    op[contentkey] = pyPdf.generic.ArrayObject()
-    op[resourcekey] = pyPdf.generic.DictionaryObject()
-    properties = pyPdf.generic.DictionaryObject()
-    ocgs = pyPdf.generic.ArrayObject()
-
-    for (i, p) in enumerate(i.pages):
-        # first start an OCG for the layer
-        ocgname = pyPdf.generic.NameObject('/oc%d' % i)
-        ocgstart = pyPdf.generic.DecodedStreamObject()
-        ocgstart._data = "/OC %s BDC\n" % ocgname
-        ocgend = pyPdf.generic.DecodedStreamObject()
-        ocgend._data = "EMC\n"
-        if isinstance(p['/Contents'], pyPdf.generic.ArrayObject):
-            p[pyPdf.generic.NameObject('/Contents')].insert(0, ocgstart)
-            p[pyPdf.generic.NameObject('/Contents')].append(ocgend)
-        else:
-            p[pyPdf.generic.NameObject(
-                '/Contents')] = pyPdf.generic.ArrayObject((ocgstart, p['/Contents'], ocgend))
-
-        op.mergePage(p)
-
-        ocg = pyPdf.generic.DictionaryObject()
-        ocg[pyPdf.generic.NameObject(
-            '/Type')] = pyPdf.generic.NameObject('/OCG')
-        if len(layer_names) > i:
-            ocg[pyPdf.generic.NameObject(
-                '/Name')] = pyPdf.generic.TextStringObject(layer_names[i])
-        else:
-            ocg[pyPdf.generic.NameObject(
-                '/Name')] = pyPdf.generic.TextStringObject('Layer %d' % (i + 1))
-        indirect_ocg = o._addObject(ocg)
-        properties[ocgname] = indirect_ocg
-        ocgs.append(indirect_ocg)
-
-    op[resourcekey][propertieskey] = o._addObject(properties)
-
-    ocproperties = pyPdf.generic.DictionaryObject()
-    ocproperties[pyPdf.generic.NameObject('/OCGs')] = ocgs
-    defaultview = pyPdf.generic.DictionaryObject()
-    defaultview[pyPdf.generic.NameObject(
-        '/Name')] = pyPdf.generic.TextStringObject('Default')
-    defaultview[pyPdf.generic.NameObject(
-        '/BaseState ')] = pyPdf.generic.NameObject('/ON ')
-    defaultview[pyPdf.generic.NameObject('/ON')] = ocgs
-    if reverse_all_but_last:
-        defaultview[pyPdf.generic.NameObject(
-            '/Order')] = pyPdf.generic.ArrayObject(reversed(ocgs[:-1]))
-        defaultview[pyPdf.generic.NameObject('/Order')].append(ocgs[-1])
-    else:
-        defaultview[pyPdf.generic.NameObject(
-            '/Order')] = pyPdf.generic.ArrayObject(reversed(ocgs))
-    defaultview[pyPdf.generic.NameObject('/OFF')] = pyPdf.generic.ArrayObject()
-
-    ocproperties[pyPdf.generic.NameObject('/D')] = o._addObject(defaultview)
-
-    o._root.getObject()[pyPdf.generic.NameObject(
-        '/OCProperties')] = o._addObject(ocproperties)
-
-    o.write(outfile)
-
-    outfile.close()
-    infile.close()
-
-    if not output_name:
-        os.rename(outfilename, filename)
-
-
 class PDFPrinter:
-    """Main class for creating PDF print outs, basically contruct an instance
-    with appropriate options and then call render_map with your mapnik map
+
+    """
+    Main class for creating PDF print outs. Basic usage is along the lines of
+
+    import mapnik
+
+    page = mapnik.printing.PDFPrinter()
+    m = mapnik.Map(100,100)
+    mapnik.load_map(m, "my_xml_map_description", True)
+    m.zoom_all()
+    page.render_map(m, "my_output_file.pdf")
     """
 
     def __init__(self,
@@ -339,55 +87,51 @@ class PDFPrinter:
                  margin=0.005,
                  box=None,
                  percent_box=None,
-                 scale=default_scale,
+                 scale_function=default_scale,
                  resolution=resolutions.dpi72,
                  preserve_aspect=True,
-                 centering=centering.constrained,
+                 centering=centering.constrained_axis,
                  is_latlon=False,
                  use_ocg_layers=False):
-        """Creates a cairo surface and context to render a PDF with.
-
-        pagesize: tuple of page size in meters, see predefined sizes in pagessizes dict (default a4)
-        margin: page margin in meters (default 0.01)
-        box: box within the page to render the map into (will not render over margin). This should be
-             a Mapnik Box2d object. Default is the full page within the margin
-        percent_box: as per box, but specified as a percent (0->1) of the full page size. If both box
-                     and percent_box are specified percent_box will be used.
-        scale: scale helper to use when rounding the map scale. This should be a function that
-               takes a single float and returns a float which is at least as large as the value
-               passed in. This is a 1:x scale.
-        resolution: the resolution to render non vector elements at (in DPI), defaults to 72 DPI
-        preserve_aspect: whether to preserve map aspect ratio. This defaults to True and it
-                         is recommended you do not change it unless you know what you are doing
-                         scales and so on will not work if this is False.
-        centering: Centering rules for maps where the scale rounding has reduced the map size.
-                   This should be a value from the centering class. The default is to center on the
-                   maps constrained axis, typically this will be horizontal for portrait pages and
-                   vertical for landscape pages.
-        is_latlon: Is the map in lat lon degrees. If true magic anti meridian logic is enabled
-        use_ocg_layers: Create OCG layers in the PDF, requires pyPdf >= 1.13
+        """
+        Args:
+            pagesize: tuple of page size in meters, see predefined sizes in mapnik.formats module
+            margin: page margin in meters
+            box: the box to render the map into. Must be within page area, margin excluded. 
+                This should be a Mapnik Box2d object. Default is the full page without margin.
+            percent_box: similar to box argument but specified as a percent (0->1) of the full page size.
+                If both box and percent_box are specified percent_box will be used.
+            scale: scale helper to use when rounding the map scale. This should be a function that takes a single
+                float and returns a float which is at least as large as the value passed in. This is a 1:x scale.
+            resolution: the resolution used to render non vector elements (in DPI).
+            preserve_aspect: whether to preserve map aspect ratio or not. This defaults to True and it is recommended
+                you do not change it unless you know what you are doing: scales and so on will not work if it is
+                set to False.
+            centering: centering rules for maps where the scale rounding has reduced the map size. This should
+                be a value from the mapnik.utils.centering class. The default is to center on the maps constrained
+                axis. Typically this will be horizontal for portrait pages and vertical for landscape pages.
+            is_latlon: whether the map is in lat lon degrees or not.
+            use_ocg_layers: create OCG layers in the PDF, requires PyPDF2
         """
         self._pagesize = pagesize
         self._margin = margin
         self._box = box
-        self._scale = scale
         self._resolution = resolution
-        self._preserve_aspect = preserve_aspect
         self._centering = centering
         self._is_latlon = is_latlon
         self._use_ocg_layers = use_ocg_layers
 
-        self._s = None
+        self._surface = None
         self._layer_names = []
         self._filename = None
 
         self.map_box = None
-        self.scale = None
 
-        # don't both to round the scale if they are not preserving the aspect
-        # ratio
+        self.rounded_mapscale = None
+        self._scale_function = scale_function
+        self._preserve_aspect = preserve_aspect
         if not preserve_aspect:
-            self._scale = any_scale
+            self._scale_function = any_scale
 
         if percent_box:
             self._box = Box2d(percent_box[0] * pagesize[0], percent_box[1] * pagesize[1],
