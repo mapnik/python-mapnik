@@ -4,21 +4,19 @@
 
 from __future__ import absolute_import, print_function
 
+import logging
 import math
-import os
-import tempfile
 
 import mapnik
 from mapnik import Box2d, Coord, Geometry, Layer, Map, Projection, Style, render
-from mapnik.conversions import m2pt, m2px
-from mapnik.formats import pagesizes
-from mapnik.scales import any_scale, default_scale, deg_min_sec_scale, sequence_scale
+from mapnik.printing.conversions import m2pt, m2px
+from mapnik.printing.formats import pagesizes
+from mapnik.printing.scales import any_scale, default_scale, deg_min_sec_scale, sequence_scale
 
 try:
     import cairo
-    HAS_PYCAIRO_MODULE = True
 except ImportError:
-    HAS_PYCAIRO_MODULE = False
+    raise ImportError("Could not import pycairo; PDF rendering only available when pycairo is available")
 
 try:
     import pangocairo
@@ -136,10 +134,6 @@ class PDFPrinter(object):
         if percent_box:
             self._box = Box2d(percent_box[0] * pagesize[0], percent_box[1] * pagesize[1],
                               percent_box[2] * pagesize[0], percent_box[3] * pagesize[1])
-
-        if not HAS_PYCAIRO_MODULE:
-            raise Exception(
-                "PDF rendering only available when pycairo is available")
 
         self.font_name = "DejaVu Sans"
 
@@ -407,7 +401,7 @@ class PDFPrinter(object):
         value = first_percent * (end - start) + start
 
         while value < end:
-            self._draw_line(ctx, m2pt(value), m2pt(boundary_start), m2pt(value), m2pt(boundary_end))
+            self._draw_line(ctx, m2pt(value), m2pt(boundary_start), m2pt(value), m2pt(boundary_end), line_width=0.5)
             self._render_scale_boxes(ctx, boundary_start, boundary_end, prev, value, text=text, fill_color=fill_color)
 
             prev = value
@@ -421,7 +415,7 @@ class PDFPrinter(object):
             # ensure that the last box gets drawn
             self._render_scale_boxes(ctx, boundary_start, boundary_end, prev, end, fill_color=fill_color)
 
-    def _draw_line(self, ctx, start_x, start_y, end_x, end_y, stroke_color=(0.5, 0.5, 0.5), line_width=1):
+    def _draw_line(self, ctx, start_x, start_y, end_x, end_y, line_width=1, stroke_color=(0.5, 0.5, 0.5)):
         """Draws a line from (start_x, start_y) to (end_x, end_y) on the specified cairo context."""
         ctx.save()
 
@@ -456,11 +450,11 @@ class PDFPrinter(object):
 
         if text:
             ctx.move_to(rectangle.x + 1, rectangle.y)
-            self.write_text(ctx, text, fill_color=[1 - z for z in fill_color], size=rectangle.height - 2)
+            self.write_text(ctx, text, size=rectangle.height - 2, stroke_color=[1 - z for z in fill_color])
 
         ctx.restore()
 
-    def write_text(self, ctx, text, box_width=None, size=10, fill_color=(0.0, 0.0, 0.0), alignment=None):
+    def write_text(self, ctx, text, box_width=None, size=10, stroke_color=(0.0, 0.0, 0.0), alignment=None):
         """
         Writes the text to the specified context.
 
@@ -468,11 +462,11 @@ class PDFPrinter(object):
             A rectangle (x, y, width, height) representing the extents of the text drawn
         """
         if HAS_PANGOCAIRO_MODULE:
-            return self._write_text_pangocairo(ctx, text, box_width, size, fill_color, alignment)
+            return self._write_text_pangocairo(ctx, text, box_width=box_width, size=size, stroke_color=stroke_color, alignment=alignment)
         else:
-            return self._write_text_cairo(ctx, text, box_width, size)
+            return self._write_text_cairo(ctx, text, size=size, stroke_color=stroke_color)
 
-    def _write_text_pangocairo(self, ctx, text, box_width=None, size=10, fill_color=(0.0, 0.0, 0.0), alignment=None):
+    def _write_text_pangocairo(self, ctx, text, box_width=None, size=10, stroke_color=(0.0, 0.0, 0.0), alignment=None):
         """
         Use a pango.Layout object to write text to the cairo Context specified as a parameter.
 
@@ -495,12 +489,12 @@ class PDFPrinter(object):
         pctx.update_layout(pango_layout)
 
         pango_layout.set_text(t)
-        pctx.set_source_rgb(*fill_color)
+        pctx.set_source_rgb(*stroke_color)
         pctx.show_layout(pango_layout)
 
         return pango_layout.get_pixel_extents()[0]
 
-    def _write_text_cairo(self, ctx, text, size=10):
+    def _write_text_cairo(self, ctx, text, size=10, stroke_color=(0.0, 0.0, 0.0)):
         """
         Writes text to the cairo Context specified as a parameter.
 
@@ -513,6 +507,7 @@ class PDFPrinter(object):
             cairo.FONT_SLANT_NORMAL,
             cairo.FONT_WEIGHT_NORMAL)
         ctx.set_font_size(size)
+        ctx.set_source_rgb(*stroke_color)
         ctx.show_text(text)
 
         ctx.rel_move_to(0, size)
@@ -624,16 +619,18 @@ class PDFPrinter(object):
         sensible place to render metadata such as a legend or scale.
         """
         (x, y) = self._get_render_corner(render_size, m)
+
+        render_box_padding_in_meters = 0.005
         if self._is_map_size_constrained(m):
-            y += render_size[1] + 0.005
+            y += render_size[1] + render_box_padding_in_meters
             x = self._margin
         else:
-            x += render_size[0] + 0.005
+            x += render_size[0] + render_box_padding_in_meters
             y = self._margin
 
         return (x, y)
 
-    def render_on_map_lat_lon_grid(self, m, dec_degrees=True):
+    def render_on_map_lat_lon_grid(self, m, dec_degrees=True, grid_layer_name="Latitude Longitude Grid Overlay"):
         # FIXME: buggy. does not get the top and right lines. see _render_lat_lon_axis also 
 
         """Renders a lat lon grid on the map."""
@@ -644,7 +641,7 @@ class PDFPrinter(object):
         p2 = Projection(m.srs)
         latlon_bounds = p2.inverse(m.envelope())
 
-        # TODO: comment
+        # ensure that the projected map envelope is within the lat lon bounds and shift if necessary
         latlon_bounds = self._adjust_latlon_bounds(m, p2, latlon_bounds)
 
         latlon_mapwidth = latlon_bounds.width()
@@ -680,10 +677,14 @@ class PDFPrinter(object):
             dec_degrees,
             False)
 
+        if self._use_ocg_layers:
+            self._surface.show_page()
+            self._layer_names.append(grid_layer_name)
+
     def _adjust_latlon_bounds(self, m, proj, latlon_bounds):
         """
         Ensures that the projected map envelope is within the lat lon bounds.
-        If it's not it shifts the lat lon bounds.
+        If it's not, it shifts the lat lon bounds in the right direction by 360 degrees.
 
         Returns:
             The adjusted lat lon bounds box
@@ -746,7 +747,7 @@ class PDFPrinter(object):
                     temp = m.view_transform().forward(p2.forward(Coord(yvalue, xvalue)))
                     end = Coord(m2pt(self.map_box.height()) - temp.y, temp.x)
 
-                self._draw_line(ctx, start.x, start.y, end.x, end.y)
+                self._draw_line(ctx, start.x, start.y, end.x, end.y, line_width=0.5)
 
                 if cmp(start.y, 0) != cmp(end.y, 0):
                     start_cross = end.x
@@ -813,7 +814,7 @@ class PDFPrinter(object):
 
             # TODO: refactor that to reduce the number of arguments?
             (render_box.width, render_box.height) = self._render_legend_items(m, ctx, render_box, column_width, height,
-                columns, attribution, legend_item_box_size)
+                                                                              columns=columns, attribution=attribution, legend_item_box_size=legend_item_box_size)
 
         return (render_box.width, render_box.height)
 
@@ -947,9 +948,8 @@ class PDFPrinter(object):
             for sym in r.symbols:
                 try:
                     sym.avoid_edges = False
-                except:
-                    print(
-                        "**** Cant set avoid edges for rule", r.name)
+                except AttributeError:
+                    logging.warning("Could not set avoid_edges for rule {}".format(r.name))
             if r.min_scale <= m.scale_denominator() and m.scale_denominator() < r.max_scale:
                 legend_rule = r
                 legend_rule.min_scale = 0
@@ -958,7 +958,7 @@ class PDFPrinter(object):
 
         return legend_style
 
-    def _render_legend_item_map(self, lemap, legend_map_size, ctx, x, y, current_column, column_width):
+    def _render_legend_item_map(self, lemap, legend_map_size, ctx, x, y, current_column, column_width, stroke_color=(0.5, 0.5, 0.5), line_width=1):
         """Renders the legend item map."""
         ctx.save()
         ctx.translate(x + m2pt(current_column * column_width), y)
@@ -969,8 +969,8 @@ class PDFPrinter(object):
         ctx.restore()
 
         ctx.rectangle(0, 0, *legend_map_size)
-        ctx.set_source_rgb(0.5, 0.5, 0.5)
-        ctx.set_line_width(1)
+        ctx.set_source_rgb(*stroke_color)
+        ctx.set_line_width(line_width)
         ctx.stroke()
         ctx.restore()
 
@@ -983,12 +983,16 @@ class PDFPrinter(object):
             the legend text height depending on which one takes more vertical
             space.
         """
-        legend_entry_size = legend_map_size[1]
+        gray_rgb = (0.5, 0.5, 0.5)
+        legend_box_padding_in_meters = 0.005
+        legend_box_width = m2pt(column_width - legend_item_box_size[0] - legend_box_padding_in_meters)
 
+        legend_entry_size = legend_map_size[1]
         legend_text_size = 0
+
         rule_text = layer_title
         if rule_text:
-            e = self.write_text(ctx, rule_text, m2pt(column_width - legend_item_box_size[0] - 0.005), 6)
+            e = self.write_text(ctx, rule_text, box_width=legend_box_width, size=6)
             legend_text_size += e[3]
             ctx.rel_move_to(0, e[3])
         if attribution:
@@ -996,10 +1000,9 @@ class PDFPrinter(object):
                 e = self.write_text(
                         ctx,
                         attribution[layer_title],
-                        m2pt(column_width - legend_item_box_size[0] - 0.005),
-                        6,
-                        fill_color=(0.5, 0.5, 0.5)
-                    )
+                        box_width=legend_box_width,
+                        size=6,
+                        stroke_color=gray_rgb)
                 legend_text_size += e[3]
 
         if legend_text_size > legend_entry_size:
@@ -1035,8 +1038,7 @@ class PDFPrinter(object):
                 ["Legend and Information"],
                 reverse_all_but_last=True)
 
-    def convert_pdf_pages_to_layers(
-        self, filename, output_name=None, layer_names=None, reverse_all_but_last=True):
+    def convert_pdf_pages_to_layers(self, filename, layer_names=None, reverse_all_but_last=True):
         """
         Takes a multi pages PDF as input and converts each page to a layer in a single page PDF.
 
@@ -1051,48 +1053,39 @@ class PDFPrinter(object):
             will then be copied back over the source file.
         """
         if not HAS_PYPDF2:
-            raise Exception("PyPDF2 not available; PyPDF2 required to convert pdf pages to layers")
+            raise RuntimeError("PyPDF2 not available; PyPDF2 required to convert pdf pages to layers")
 
-        infile = file(filename, 'rb')
-        if output_name:
-            outfile = file(output_name, 'wb')
-        else:
-            (outfd, tmp_file_abs_path) = tempfile.mkstemp(dir=os.path.dirname(filename))
-            outfile = os.fdopen(outfd, 'wb')
+        with open(filename, "rb+") as f:
+            file_reader = PdfFileReader(f)
+            file_writer = PdfFileWriter()
 
-        file_reader = PdfFileReader(infile)
-        file_writer = PdfFileWriter()
+            template_page_size = file_reader.pages[0].mediaBox
+            output_pdf = file_writer.addBlankPage(
+                width=template_page_size.getWidth(),
+                height=template_page_size.getHeight())
 
-        template_page_size = file_reader.pages[0].mediaBox
-        output_pdf = file_writer.addBlankPage(
-            width=template_page_size.getWidth(),
-            height=template_page_size.getHeight())
+            content_key = NameObject('/Contents')
+            output_pdf[content_key] = ArrayObject()
 
-        content_key = NameObject('/Contents')
-        output_pdf[content_key] = ArrayObject()
+            resource_key = NameObject('/Resources')
+            output_pdf[resource_key] = DictionaryObject()
 
-        resource_key = NameObject('/Resources')
-        output_pdf[resource_key] = DictionaryObject()
+            (properties, ocgs) = self._make_ocg_layers(file_reader, file_writer, output_pdf, layer_names)
 
-        (properties, ocgs) = self._make_ocg_layers(file_reader, file_writer, output_pdf, layer_names)
+            properties_key = NameObject('/Properties')
+            output_pdf[resource_key][properties_key] = file_writer._addObject(properties)
 
-        properties_key = NameObject('/Properties')
-        output_pdf[resource_key][properties_key] = file_writer._addObject(properties)
+            ocproperties = DictionaryObject()
+            ocproperties[NameObject('/OCGs')] = ocgs
 
-        ocproperties = DictionaryObject()
-        ocproperties[NameObject('/OCGs')] = ocgs
+            default_view = self._get_pdf_default_view(ocgs, reverse_all_but_last)
+            ocproperties[NameObject('/D')] = file_writer._addObject(default_view)
 
-        default_view = self._get_pdf_default_view(ocgs, reverse_all_but_last)
-        ocproperties[NameObject('/D')] = file_writer._addObject(default_view)
+            file_writer._root_object[NameObject('/OCProperties')] = file_writer._addObject(ocproperties)
 
-        file_writer._root_object[NameObject('/OCProperties')] = file_writer._addObject(ocproperties)
-
-        file_writer.write(outfile)
-        outfile.close()
-        infile.close()
-
-        if not output_name:
-            os.rename(tmp_file_abs_path, filename)
+            f.seek(0)
+            file_writer.write(f)
+            f.truncate()
 
     def _make_ocg_layers(self, file_reader, file_writer, output_pdf, layer_names=None):
         """
@@ -1169,12 +1162,14 @@ class PDFPrinter(object):
             The epsg code or the wkt text of the projection must be provided.
             Must be called *after* the page has had .finish() called.
         """
-        if HAS_PYPDF2 and (epsg or wkt):
-            infile = file(filename, 'rb')
-            (outfd, tmp_file_abs_path) = tempfile.mkstemp(dir=os.path.dirname(filename))
-            outfile = os.fdopen(outfd, 'wb')
+        if not HAS_PYPDF2:
+            raise RuntimeError("PyPDF2 not available; PyPDF2 required to add geospatial header to PDF")
 
-            file_reader = PdfFileReader(infile)
+        if not any((epsg,wkt)):
+            raise RuntimeError("EPSG or WKT required to add geospatial header to PDF")
+
+        with open(filename, "rb+") as f:
+            file_reader = PdfFileReader(f)
             file_writer = PdfFileWriter()
 
             # preserve OCProperties at document root if we have one
@@ -1196,10 +1191,9 @@ class PDFPrinter(object):
 
                 file_writer.addPage(page)
 
-            file_writer.write(outfile)
-            infile = None
-            outfile.close()
-            os.rename(tmp_file_abs_path, filename)
+            f.seek(0)
+            file_writer.write(f)
+            f.truncate()
 
     def _get_pdf_measure(self, m, gcs):
         """
