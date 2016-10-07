@@ -33,37 +33,29 @@ try:
 except ImportError:
     HAS_PYPDF2 = False
 
+"""
+Style of centering to use with the map.
 
-class Centering(object):
+CENTERING_NONE: map will be placed in the top left corner
+CENTERING_CONSTRAINED_AXIS: map will be centered on the most constrained axis (e.g. vertical for a portrait page); a square
+    map will be constrained horizontally
+CENTERING_UNCONSTRAINED_AXIS: map will be centered on the unconstrained axis
+CENTERING_VERTICAL: map will be centered vertically
+CENTERING_HORIZONTAL: map will be centered horizontally
+CENTERING_BOTH: map will be centered vertically and horizontally
+"""
+CENTERING_NONE = 0
+CENTERING_CONSTRAINED_AXIS = 1
+CENTERING_UNCONSTRAINED_AXIS = 2
+CENTERING_VERTICAL = 3
+CENTERING_HORIZONTAL = 4
+CENTERING_BOTH = 5
 
-    """
-    Style of centering to use with the map.
-
-    none: map will be placed in the top left corner
-    constrained_axis: map will be centered on the most constrained axis (e.g. vertical for a portrait page); a square
-        map will be constrained horizontally
-    unconstrained_axis: map will be centered on the unconstrained axis
-    vertical: map will be centered vertically
-    horizontal: map will be centered horizontally
-    both: map will be centered vertically and horizontally
-    """
-
-    none = 0
-    constrained_axis = 1
-    unconstrained_axis = 2
-    vertical = 3
-    horizontal = 4
-    both = 5
-
-
-class Resolutions(object):
-
-    """Some predefined resolutions in DPI"""
-
-    dpi72 = 72
-    dpi150 = 150
-    dpi300 = 300
-    dpi600 = 600
+# some predefined resolutions in DPI
+DPI_72 = 72
+DPI_150 = 150
+DPI_300 = 300
+DPI_600 = 600
 
 
 class PDFPrinter(object):
@@ -86,9 +78,9 @@ class PDFPrinter(object):
                  box=None,
                  percent_box=None,
                  scale_function=default_scale,
-                 resolution=Resolutions.dpi72,
+                 resolution=DPI_72,
                  preserve_aspect=True,
-                 centering=Centering.constrained_axis,
+                 centering=CENTERING_CONSTRAINED_AXIS,
                  is_latlon=False,
                  use_ocg_layers=False):
         """
@@ -139,6 +131,11 @@ class PDFPrinter(object):
 
     def render_map(self, m, filename):
         """Renders the given map to filename."""
+
+        # FIXME: bug. map-background rendering is not correctly supported
+        # it gets added to the legend layer on top of the map, should have its own layer and be below the map
+        # to reproduce render python-mapnik/test/data/good_maps/agg_poly_gamma_map.xml
+
         self._surface = cairo.PDFSurface(filename, m2pt(self._pagesize[0]), m2pt(self._pagesize[1]))
         ctx = cairo.Context(self._surface)
 
@@ -152,6 +149,8 @@ class PDFPrinter(object):
         m.resize(*self._get_map_pixel_size(mapw, maph))
 
         (tx, ty) = self._get_render_corner((mapw, maph), m)
+
+        self._render_map_background(m, ctx, tx, ty)
         self._render_layers_maps(m, ctx, tx, ty)
 
         self.map_box = Box2d(tx, ty, tx + mapw, ty + maph)
@@ -234,10 +233,10 @@ class PDFPrinter(object):
         """Returns whether the map has an horizontal centering or not."""
         is_map_size_constrained = self._is_map_size_constrained(m)
 
-        if (self._centering == Centering.both or
-                self._centering == Centering.horizontal or
-                (self._centering == Centering.constrained_axis and is_map_size_constrained) or
-                (self._centering == Centering.unconstrained_axis and not is_map_size_constrained)):
+        if (self._centering == CENTERING_BOTH or
+                self._centering == CENTERING_HORIZONTAL or
+                (self._centering == CENTERING_CONSTRAINED_AXIS and is_map_size_constrained) or
+                (self._centering == CENTERING_UNCONSTRAINED_AXIS and not is_map_size_constrained)):
             return True
         else:
             return False
@@ -246,10 +245,10 @@ class PDFPrinter(object):
         """Returns whether the map has a vertical centering or not."""
         is_map_size_constrained = self._is_map_size_constrained(m)
 
-        if (self._centering == Centering.both or
-                self._centering == Centering.vertical or
-                (self._centering == Centering.constrained_axis and not is_map_size_constrained) or
-                (self._centering == Centering.unconstrained_axis and is_map_size_constrained)):
+        if (self._centering == CENTERING_BOTH or
+                self._centering == CENTERING_VERTICAL or
+                (self._centering == CENTERING_CONSTRAINED_AXIS and not is_map_size_constrained) or
+                (self._centering == CENTERING_UNCONSTRAINED_AXIS and is_map_size_constrained)):
             return True
         else:
             return False
@@ -261,6 +260,27 @@ class PDFPrinter(object):
         page_aspect = available_area[0] / available_area[1]
 
         return map_aspect > page_aspect
+
+    def _render_map_background(self, m, ctx, tx, ty):
+        """
+        Renders the map background if there is one. If the user set use_ocg_layers to True, we put
+        the background in a separate layer.
+        """
+        if m.background or m.background_image or m.background_color:
+            background_map = Map(m.width,m.height,m.srs)
+            if m.background:
+                background_map.background = m.background
+            if m.background_image:
+                background_map.background_image = m.background_image
+            if m.background_color:
+                background_map.background_color = m.background_color
+
+            background_map.zoom_to_box(m.envelope())
+            self._render_layer_map(background_map, ctx, tx, ty)
+
+            if self._use_ocg_layers:
+                self._surface.show_page()
+                self._layer_names.append("Map Background")
 
     def _render_layers_maps(self, m, ctx, tx, ty):
         """Renders a layer as an individual map within a parent Map object."""
@@ -310,6 +330,11 @@ class PDFPrinter(object):
         ctx.translate(m2pt(tx), m2pt(ty))
         # cairo defaults to 72dpi
         ctx.scale(72.0 / self._resolution, 72.0 / self._resolution)
+
+        # we clip the context to the map rectangle in order to restrict the background to that area
+        ctx.rectangle(0, 0, layer_map.width , layer_map.height)
+        ctx.clip()
+
         render(layer_map, ctx)
         ctx.restore()
 
@@ -568,14 +593,16 @@ class PDFPrinter(object):
         Returns:
             The width and height of the scale bar rendered
         """
-        scale_bar_extra_space_factor = 1.2
-        dwidth = width / num_divisions * scale_bar_extra_space_factor
-        (div_size, page_div_size) = self._get_sensible_scalebar_size(m, num_divisions=num_divisions, width=dwidth)
 
-        div_unit = "m"
-        if div_size > 1000:
-            div_size /= 1000
-            div_unit = "km"
+        # FIXME: bug. the scale bar divisions does not scale properly when the map envelope is huge
+        # to reproduce render python-mapnik/test/data/good_maps/agg_poly_gamma_map.xml and call render_scale
+
+        scale_bar_extra_space_factor = 1.2
+        div_width = width / num_divisions * scale_bar_extra_space_factor
+        (div_size, page_div_size) = self._get_sensible_scalebar_size(m, num_divisions=num_divisions, width=div_width)
+
+        div_unit = self._get_div_unit(div_size)
+
         text = "0{}".format(div_unit)
 
         ctx.save()
@@ -594,6 +621,19 @@ class PDFPrinter(object):
 
         return (w, h)
 
+    def _get_div_unit(self, div_size):
+        """Returns the appropriate division unit based on the division size."""
+
+        # TODO: we're assuming the coordinate system units are meters
+        # Is there a way to encapsulate this so miles/meters/feet/whatever can be customised via subclassing?
+
+        div_unit = "m"
+        if div_size > 1000:
+            div_size /= 1000
+            div_unit = "km"
+
+        return div_unit
+
     def _render_scale_representative_fraction(self, ctx, box_width, box_width_padding=2, font_size=6):
         """
         Renders the scale text, i.e.
@@ -606,7 +646,7 @@ class PDFPrinter(object):
         else:
             alignment = None
 
-        text = "Scale 1:{}".format(self.rounded_mapscale)
+        text = "Scale 1:{}".format(int(self.rounded_mapscale))
         text_extent = self.write_text(ctx, text, box_width=box_width, size=font_size, alignment=alignment)
 
         text_extent_width = text_extent[3]
@@ -812,7 +852,6 @@ class PDFPrinter(object):
                 column_width = width / columns
                 render_box.width = m2pt(width)
 
-            # TODO: refactor that to reduce the number of arguments?
             (render_box.width, render_box.height) = self._render_legend_items(m, ctx, render_box, column_width, height,
                                                                               columns=columns, attribution=attribution, legend_item_box_size=legend_item_box_size)
 
@@ -906,8 +945,7 @@ class PDFPrinter(object):
     def _create_legend_item_map(self, m, layer, f, legend_map_size):
         """Creates the legend map, i.e., a minified version of the layer map, and returns it."""
         legend_map = Map(legend_map_size[0], legend_map_size[1], srs=m.srs)
-        if m.background:
-            legend_map.background = m.background
+
         # the buffer is needed to ensure that text labels that overflow the edge of the
         # map still render for the legend
         legend_map.buffer_size = 1000
@@ -1266,7 +1304,8 @@ class PDFPrinter(object):
 
         bbox = ArrayObject()
         for x in self.map_box:
-            # FIXME: this should be converted from meters to points
+            # this should be converted from meters to points
+            # fix submitted in https://github.com/mapnik/python-mapnik/pull/115
             bbox.append(FloatObject(str(x)))
 
         viewport[NameObject('/BBox')] = bbox

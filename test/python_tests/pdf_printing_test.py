@@ -32,7 +32,8 @@ def make_pdf(m, output_pdf, esri_wkt):
 
 def test_pdf_printing():
 	# TODO: make this a proper test once refactoring is over
-	source_xml = '../data/good_maps/marker-text-line.xml'.encode('utf-8')
+	# source_xml = '../data/good_maps/marker-text-line.xml'.encode('utf-8')
+	source_xml = "../data/good_maps/agg_poly_gamma_map.xml".encode("utf-8")
 	m = make_map_from_xml(source_xml)
 
 	output_pdf = "/tmp/pdf_printing_test-test_pdf_printing.pdf"
@@ -40,6 +41,8 @@ def test_pdf_printing():
 	make_pdf(m, output_pdf, esri_wkt)
 
 	# TODO: compare against expected PDF once finished
+	# TODO: test with and without pangocairo
+	# TODO: test legend with attibution
 
 if __name__ == "__main__":
     setup()
