@@ -38,10 +38,10 @@ except ImportError:
     HAS_PANGOCAIRO_MODULE = False
 
 try:
-    import pyPdf
-    HAS_PYPDF = True
+    import PyPDF2
+    HAS_PYPDF2 = True
 except ImportError:
-    HAS_PYPDF = False
+    HAS_PYPDF2 = False
 
 
 class centering:
@@ -239,10 +239,10 @@ def convert_pdf_pages_to_layers(
     if output_name is not provided a temporary file will be used for the conversion which
     will then be copied back over the source file.
 
-    requires pyPdf >= 1.13 to be available"""
+    requires PyPDF2 to be available"""
 
-    if not HAS_PYPDF:
-        raise Exception("pyPdf Not available")
+    if not HAS_PYPDF2:
+        raise Exception("PyPDF2 Not available")
 
     infile = file(filename, 'rb')
     if output_name:
@@ -251,74 +251,73 @@ def convert_pdf_pages_to_layers(
         (outfd, outfilename) = tempfile.mkstemp(dir=os.path.dirname(filename))
         outfile = os.fdopen(outfd, 'wb')
 
-    i = pyPdf.PdfFileReader(infile)
-    o = pyPdf.PdfFileWriter()
+    i = PyPDF2.PdfFileReader(infile)
+    o = PyPDF2.PdfFileWriter()
 
     template_page_size = i.pages[0].mediaBox
     op = o.addBlankPage(
         width=template_page_size.getWidth(),
         height=template_page_size.getHeight())
 
-    contentkey = pyPdf.generic.NameObject('/Contents')
-    resourcekey = pyPdf.generic.NameObject('/Resources')
-    propertieskey = pyPdf.generic.NameObject('/Properties')
-    op[contentkey] = pyPdf.generic.ArrayObject()
-    op[resourcekey] = pyPdf.generic.DictionaryObject()
-    properties = pyPdf.generic.DictionaryObject()
-    ocgs = pyPdf.generic.ArrayObject()
+    contentkey = PyPDF2.generic.NameObject('/Contents')
+    resourcekey = PyPDF2.generic.NameObject('/Resources')
+    propertieskey = PyPDF2.generic.NameObject('/Properties')
+    op[contentkey] = PyPDF2.generic.ArrayObject()
+    op[resourcekey] = PyPDF2.generic.DictionaryObject()
+    properties = PyPDF2.generic.DictionaryObject()
+    ocgs = PyPDF2.generic.ArrayObject()
 
     for (i, p) in enumerate(i.pages):
         # first start an OCG for the layer
-        ocgname = pyPdf.generic.NameObject('/oc%d' % i)
-        ocgstart = pyPdf.generic.DecodedStreamObject()
+        ocgname = PyPDF2.generic.NameObject('/oc%d' % i)
+        ocgstart = PyPDF2.generic.DecodedStreamObject()
         ocgstart._data = "/OC %s BDC\n" % ocgname
-        ocgend = pyPdf.generic.DecodedStreamObject()
+        ocgend = PyPDF2.generic.DecodedStreamObject()
         ocgend._data = "EMC\n"
-        if isinstance(p['/Contents'], pyPdf.generic.ArrayObject):
-            p[pyPdf.generic.NameObject('/Contents')].insert(0, ocgstart)
-            p[pyPdf.generic.NameObject('/Contents')].append(ocgend)
+        if isinstance(p['/Contents'], PyPDF2.generic.ArrayObject):
+            p[PyPDF2.generic.NameObject('/Contents')].insert(0, ocgstart)
+            p[PyPDF2.generic.NameObject('/Contents')].append(ocgend)
         else:
-            p[pyPdf.generic.NameObject(
-                '/Contents')] = pyPdf.generic.ArrayObject((ocgstart, p['/Contents'], ocgend))
+            p[PyPDF2.generic.NameObject(
+                '/Contents')] = PyPDF2.generic.ArrayObject((ocgstart, p['/Contents'], ocgend))
 
         op.mergePage(p)
 
-        ocg = pyPdf.generic.DictionaryObject()
-        ocg[pyPdf.generic.NameObject(
-            '/Type')] = pyPdf.generic.NameObject('/OCG')
+        ocg = PyPDF2.generic.DictionaryObject()
+        ocg[PyPDF2.generic.NameObject(
+            '/Type')] = PyPDF2.generic.NameObject('/OCG')
         if len(layer_names) > i:
-            ocg[pyPdf.generic.NameObject(
-                '/Name')] = pyPdf.generic.TextStringObject(layer_names[i])
+            ocg[PyPDF2.generic.NameObject(
+                '/Name')] = PyPDF2.generic.TextStringObject(layer_names[i])
         else:
-            ocg[pyPdf.generic.NameObject(
-                '/Name')] = pyPdf.generic.TextStringObject('Layer %d' % (i + 1))
+            ocg[PyPDF2.generic.NameObject(
+                '/Name')] = PyPDF2.generic.TextStringObject('Layer %d' % (i + 1))
         indirect_ocg = o._addObject(ocg)
         properties[ocgname] = indirect_ocg
         ocgs.append(indirect_ocg)
 
     op[resourcekey][propertieskey] = o._addObject(properties)
 
-    ocproperties = pyPdf.generic.DictionaryObject()
-    ocproperties[pyPdf.generic.NameObject('/OCGs')] = ocgs
-    defaultview = pyPdf.generic.DictionaryObject()
-    defaultview[pyPdf.generic.NameObject(
-        '/Name')] = pyPdf.generic.TextStringObject('Default')
-    defaultview[pyPdf.generic.NameObject(
-        '/BaseState ')] = pyPdf.generic.NameObject('/ON ')
-    defaultview[pyPdf.generic.NameObject('/ON')] = ocgs
+    ocproperties = PyPDF2.generic.DictionaryObject()
+    ocproperties[PyPDF2.generic.NameObject('/OCGs')] = ocgs
+    defaultview = PyPDF2.generic.DictionaryObject()
+    defaultview[PyPDF2.generic.NameObject(
+        '/Name')] = PyPDF2.generic.TextStringObject('Default')
+    defaultview[PyPDF2.generic.NameObject(
+        '/BaseState ')] = PyPDF2.generic.NameObject('/ON ')
+    defaultview[PyPDF2.generic.NameObject('/ON')] = ocgs
     if reverse_all_but_last:
-        defaultview[pyPdf.generic.NameObject(
-            '/Order')] = pyPdf.generic.ArrayObject(reversed(ocgs[:-1]))
-        defaultview[pyPdf.generic.NameObject('/Order')].append(ocgs[-1])
+        defaultview[PyPDF2.generic.NameObject(
+            '/Order')] = PyPDF2.generic.ArrayObject(reversed(ocgs[:-1]))
+        defaultview[PyPDF2.generic.NameObject('/Order')].append(ocgs[-1])
     else:
-        defaultview[pyPdf.generic.NameObject(
-            '/Order')] = pyPdf.generic.ArrayObject(reversed(ocgs))
-    defaultview[pyPdf.generic.NameObject('/OFF')] = pyPdf.generic.ArrayObject()
+        defaultview[PyPDF2.generic.NameObject(
+            '/Order')] = PyPDF2.generic.ArrayObject(reversed(ocgs))
+    defaultview[PyPDF2.generic.NameObject('/OFF')] = PyPDF2.generic.ArrayObject()
 
-    ocproperties[pyPdf.generic.NameObject('/D')] = o._addObject(defaultview)
+    ocproperties[PyPDF2.generic.NameObject('/D')] = o._addObject(defaultview)
 
-    o._root.getObject()[pyPdf.generic.NameObject(
-        '/OCProperties')] = o._addObject(ocproperties)
+    o._root_object[PyPDF2.generic.NameObject('/OCProperties')] = o._addObject(ocproperties)
 
     o.write(outfile)
 
@@ -365,7 +364,7 @@ class PDFPrinter:
                    maps constrained axis, typically this will be horizontal for portrait pages and
                    vertical for landscape pages.
         is_latlon: Is the map in lat lon degrees. If true magic anti meridian logic is enabled
-        use_ocg_layers: Create OCG layers in the PDF, requires pyPdf >= 1.13
+        use_ocg_layers: Create OCG layers in the PDF, requires PyPDF2
         """
         self._pagesize = pagesize
         self._margin = margin
@@ -418,43 +417,43 @@ class PDFPrinter:
         one of either the epsg code or wkt text for the projection must be provided
 
         Should be called *after* the page has had .finish() called"""
-        if HAS_PYPDF and (epsg or wkt):
+        if HAS_PYPDF2 and (epsg or wkt):
             infile = file(filename, 'rb')
             (outfd, outfilename) = tempfile.mkstemp(
                 dir=os.path.dirname(filename))
             outfile = os.fdopen(outfd, 'wb')
 
-            i = pyPdf.PdfFileReader(infile)
-            o = pyPdf.PdfFileWriter()
+            i = PyPDF2.PdfFileReader(infile)
+            o = PyPDF2.PdfFileWriter()
 
             # preserve OCProperties at document root if we have one
-            if pyPdf.generic.NameObject('/OCProperties') in i.trailer['/Root']:
-                o._root.getObject()[pyPdf.generic.NameObject('/OCProperties')] = i.trailer[
-                    '/Root'].getObject()[pyPdf.generic.NameObject('/OCProperties')]
+            if i.trailer['/Root'].has_key(PyPDF2.generic.NameObject('/OCProperties')):
+                o._root_object[PyPDF2.generic.NameObject(
+                    '/OCProperties')] = i.trailer['/Root'].getObject()[PyPDF2.generic.NameObject('/OCProperties')]
 
             for p in i.pages:
-                gcs = pyPdf.generic.DictionaryObject()
-                gcs[pyPdf.generic.NameObject(
-                    '/Type')] = pyPdf.generic.NameObject('/PROJCS')
+                gcs = PyPDF2.generic.DictionaryObject()
+                gcs[PyPDF2.generic.NameObject(
+                    '/Type')] = PyPDF2.generic.NameObject('/PROJCS')
                 if epsg:
-                    gcs[pyPdf.generic.NameObject(
-                        '/EPSG')] = pyPdf.generic.NumberObject(int(epsg))
+                    gcs[PyPDF2.generic.NameObject(
+                        '/EPSG')] = PyPDF2.generic.NumberObject(int(epsg))
                 if wkt:
-                    gcs[pyPdf.generic.NameObject(
-                        '/WKT')] = pyPdf.generic.TextStringObject(wkt)
+                    gcs[PyPDF2.generic.NameObject(
+                        '/WKT')] = PyPDF2.generic.TextStringObject(wkt)
 
-                measure = pyPdf.generic.DictionaryObject()
-                measure[pyPdf.generic.NameObject(
-                    '/Type')] = pyPdf.generic.NameObject('/Measure')
-                measure[pyPdf.generic.NameObject(
-                    '/Subtype')] = pyPdf.generic.NameObject('/GEO')
-                measure[pyPdf.generic.NameObject('/GCS')] = gcs
-                bounds = pyPdf.generic.ArrayObject()
+                measure = PyPDF2.generic.DictionaryObject()
+                measure[PyPDF2.generic.NameObject(
+                    '/Type')] = PyPDF2.generic.NameObject('/Measure')
+                measure[PyPDF2.generic.NameObject(
+                    '/Subtype')] = PyPDF2.generic.NameObject('/GEO')
+                measure[PyPDF2.generic.NameObject('/GCS')] = gcs
+                bounds = PyPDF2.generic.ArrayObject()
                 for x in (0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0):
-                    bounds.append(pyPdf.generic.FloatObject(str(x)))
-                measure[pyPdf.generic.NameObject('/Bounds')] = bounds
-                measure[pyPdf.generic.NameObject('/LPTS')] = bounds
-                gpts = pyPdf.generic.ArrayObject()
+                    bounds.append(PyPDF2.generic.FloatObject(str(x)))
+                measure[PyPDF2.generic.NameObject('/Bounds')] = bounds
+                measure[PyPDF2.generic.NameObject('/LPTS')] = bounds
+                gpts = PyPDF2.generic.ArrayObject()
 
                 proj = Projection(m.srs)
                 env = m.envelope()
@@ -462,25 +461,25 @@ class PDFPrinter:
                           (env.maxx, env.maxy), (env.maxx, env.miny)):
                     latlon_corner = proj.inverse(Coord(*x))
                     # these are in lat,lon order according to the standard
-                    gpts.append(pyPdf.generic.FloatObject(
+                    gpts.append(PyPDF2.generic.FloatObject(
                         str(latlon_corner.y)))
-                    gpts.append(pyPdf.generic.FloatObject(
+                    gpts.append(PyPDF2.generic.FloatObject(
                         str(latlon_corner.x)))
-                measure[pyPdf.generic.NameObject('/GPTS')] = gpts
+                measure[PyPDF2.generic.NameObject('/GPTS')] = gpts
 
-                vp = pyPdf.generic.DictionaryObject()
-                vp[pyPdf.generic.NameObject(
-                    '/Type')] = pyPdf.generic.NameObject('/Viewport')
-                bbox = pyPdf.generic.ArrayObject()
+                vp = PyPDF2.generic.DictionaryObject()
+                vp[PyPDF2.generic.NameObject(
+                    '/Type')] = PyPDF2.generic.NameObject('/Viewport')
+                bbox = PyPDF2.generic.ArrayObject()
 
                 for x in self.map_box:
-                    bbox.append(pyPdf.generic.FloatObject(str(m2pt(x))))
-                vp[pyPdf.generic.NameObject('/BBox')] = bbox
-                vp[pyPdf.generic.NameObject('/Measure')] = measure
+                    bbox.append(PyPDF2.generic.FloatObject(str(m2pt(x))))
+                vp[PyPDF2.generic.NameObject('/BBox')] = bbox
+                vp[PyPDF2.generic.NameObject('/Measure')] = measure
 
-                vpa = pyPdf.generic.ArrayObject()
+                vpa = PyPDF2.generic.ArrayObject()
                 vpa.append(vp)
-                p[pyPdf.generic.NameObject('/VP')] = vpa
+                p[PyPDF2.generic.NameObject('/VP')] = vpa
                 o.addPage(p)
 
             o.write(outfile)

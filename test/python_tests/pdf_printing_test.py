@@ -3,7 +3,7 @@
 import os
 
 from nose.tools import eq_
-import pyPdf
+import PyPDF2
 
 from mapnik import printing, Map, load_map
 from .utilities import execution_path, run_all
@@ -40,7 +40,7 @@ def test_pdf_bbox():
 	make_pdf(m, output_pdf, esri_wkt)
 
 	infile = file(output_pdf, 'rb')
-	pdf_file_reader = pyPdf.PdfFileReader(infile)
+	pdf_file_reader = PyPDF2.PdfFileReader(infile)
 	pdf_page = pdf_file_reader.getPage(0)
 	bbox = pdf_page.bleedBox
 	actual_bbox = [float(bbox[x]) for x in range(0,4)]
