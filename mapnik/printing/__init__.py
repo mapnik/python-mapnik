@@ -57,6 +57,8 @@ DPI_150 = 150
 DPI_300 = 300
 DPI_600 = 600
 
+L = logging.getLogger("mapnik.printing")
+
 
 class PDFPrinter(object):
 
@@ -82,7 +84,8 @@ class PDFPrinter(object):
                  preserve_aspect=True,
                  centering=CENTERING_CONSTRAINED_AXIS,
                  is_latlon=False,
-                 use_ocg_layers=False):
+                 use_ocg_layers=False,
+                 font_name="DejaVu Sans"):
         """
         Args:
             pagesize: tuple of page size in meters, see predefined sizes in mapnik.formats module
@@ -102,6 +105,7 @@ class PDFPrinter(object):
                 axis. Typically this will be horizontal for portrait pages and vertical for landscape pages.
             is_latlon: whether the map is in lat lon degrees or not.
             use_ocg_layers: create OCG layers in the PDF, requires PyPDF2
+            font_name: the font name used each time text is written (e.g., legend titles, representative fraction, etc.)
         """
         self._pagesize = pagesize
         self._margin = margin
@@ -127,15 +131,10 @@ class PDFPrinter(object):
             self._box = Box2d(percent_box[0] * pagesize[0], percent_box[1] * pagesize[1],
                               percent_box[2] * pagesize[0], percent_box[3] * pagesize[1])
 
-        self.font_name = "DejaVu Sans"
+        self.font_name = font_name
 
     def render_map(self, m, filename):
         """Renders the given map to filename."""
-
-        # FIXME: bug. map-background rendering is not correctly supported
-        # it gets added to the legend layer on top of the map, should have its own layer and be below the map
-        # to reproduce render python-mapnik/test/data/good_maps/agg_poly_gamma_map.xml
-
         self._surface = cairo.PDFSurface(filename, m2pt(self._pagesize[0]), m2pt(self._pagesize[1]))
         ctx = cairo.Context(self._surface)
 
@@ -345,8 +344,13 @@ class PDFPrinter(object):
         else:
             return False
 
-    def render_on_map_scale(self, m, grid_layer_name="Coordinates Grid Overlay"):
-        """Adds a grid overlay on the map."""
+    def render_grid_on_map(self, m, grid_layer_name="Coordinates Grid Overlay"):
+        """
+        Adds a grid overlay on the map, i.e., horizontal and vertical axes plus boxes around the map.
+
+        Axes are drawn as 0.5px gray lines.
+        Boxes alternate between black fill / white stroke and white fill / black stroke. Font is DejaVu Sans.
+        """
         (div_size, page_div_size) = self._get_sensible_scalebar_size(m)
 
         # render horizontal axes
@@ -354,7 +358,7 @@ class PDFPrinter(object):
             div_size,
             m.envelope().minx,
             m.envelope().width())
-        self._render_scale_axes(
+        self._render_grid_axes_and_boxes_on_map(
             first_value_x,
             first_value_x_percent,
             page_div_size,
@@ -366,7 +370,7 @@ class PDFPrinter(object):
             div_size,
             m.envelope().miny,
             m.envelope().height())
-        self._render_scale_axes(
+        self._render_grid_axes_and_boxes_on_map(
             first_value_y,
             first_value_y_percent,
             page_div_size,
@@ -387,8 +391,8 @@ class PDFPrinter(object):
         # ensures we can fit the bar within page area width if specified
         page_div_size = self.map_box.width() * div_size / m.envelope().width()
         while width > 0 and page_div_size > width:
-            div_size /= 2
-            page_div_size /= 2
+            div_size /= 2.0
+            page_div_size /= 2.0
 
         return (div_size, page_div_size)
 
@@ -402,8 +406,14 @@ class PDFPrinter(object):
 
         return (first_value, first_value_percent)
 
-    def _render_scale_axes(self, first, first_percent, page_div_size, div_size, is_x_axis):
-        """Renders the horizontal or vertical axes on the map depending on the is_x_axis parameter."""
+    def _render_grid_axes_and_boxes_on_map(self, first, first_percent, page_div_size, div_size, is_x_axis):
+        """
+        Renders the horizontal or vertical axes and corresponding boxes on the map depending on the is_x_axis
+        parameter.
+
+        Axes are drawn as 0.5px gray lines.
+        Boxes alternate between black fill / white stroke and white fill / black stroke. Font is DejaVu Sans.
+        """
         ctx = cairo.Context(self._surface)
 
         if is_x_axis:
@@ -427,7 +437,7 @@ class PDFPrinter(object):
 
         while value < end:
             self._draw_line(ctx, m2pt(value), m2pt(boundary_start), m2pt(value), m2pt(boundary_end), line_width=0.5)
-            self._render_scale_boxes(ctx, boundary_start, boundary_end, prev, value, text=text, fill_color=fill_color)
+            self._render_grid_boxes(ctx, boundary_start, boundary_end, prev, value, text=text, fill_color=fill_color)
 
             prev = value
             value += page_div_size
@@ -438,10 +448,13 @@ class PDFPrinter(object):
             text = "%d" % label_value
         else:
             # ensure that the last box gets drawn
-            self._render_scale_boxes(ctx, boundary_start, boundary_end, prev, end, fill_color=fill_color)
+            self._render_grid_boxes(ctx, boundary_start, boundary_end, prev, end, fill_color=fill_color)
 
     def _draw_line(self, ctx, start_x, start_y, end_x, end_y, line_width=1, stroke_color=(0.5, 0.5, 0.5)):
-        """Draws a line from (start_x, start_y) to (end_x, end_y) on the specified cairo context."""
+        """
+        Draws a line from (start_x, start_y) to (end_x, end_y) on the specified cairo context.
+        By default, the line drawn is 1px wide and gray.
+        """
         ctx.save()
 
         ctx.move_to(start_x, start_y)
@@ -452,14 +465,17 @@ class PDFPrinter(object):
 
         ctx.restore()
 
-    def _render_scale_boxes(self, ctx, boundary_start, boundary_end, prev, value, text=None, border_size=8, fill_color=(0.0, 0.0, 0.0)):
+    def _render_grid_boxes(self, ctx, boundary_start, boundary_end, prev, value, text=None, border_size=8, fill_color=(0.0, 0.0, 0.0)):
         """Renders the scale boxes at each end of the grid overlay."""
         for bar in (m2pt(boundary_start) - border_size, m2pt(boundary_end)):
             rectangle = Rectangle(m2pt(prev), bar, m2pt(value - prev), border_size)
             self._render_box(ctx, rectangle, text, fill_color=fill_color)
 
-    def _render_box(self, ctx, rectangle, text=None, stroke_color=(0.0, 0.0, 0.0), fill_color=(0.0, 0.0, 0.0)):
-        """Renders a box with top left corner positioned at (x,y)."""
+    def _render_box(self, ctx, rectangle, text=None, stroke_color=(0.0, 0.0, 0.0), fill_color=(1.0, 1.0, 1.0)):
+        """
+        Renders a box with top left corner positioned at (x,y).
+        Default design is white fill and black stroke.
+        """
         ctx.save()
 
         line_width = 1
@@ -559,8 +575,8 @@ class PDFPrinter(object):
 
         Notes:
             Does not render if lat lon maps or if the aspect ratio is not preserved.
+            The scale bar divisions alternate between black fill / white stroke and white fill / black stroke.
         """
-
         (w, h) = (0, 0)
 
         # don't render scale text if we are in lat lon
@@ -593,7 +609,6 @@ class PDFPrinter(object):
         Returns:
             The width and height of the scale bar rendered
         """
-
         # FIXME: bug. the scale bar divisions does not scale properly when the map envelope is huge
         # to reproduce render python-mapnik/test/data/good_maps/agg_poly_gamma_map.xml and call render_scale
 
@@ -601,7 +616,7 @@ class PDFPrinter(object):
         div_width = width / num_divisions * scale_bar_extra_space_factor
         (div_size, page_div_size) = self._get_sensible_scalebar_size(m, num_divisions=num_divisions, width=div_width)
 
-        div_unit = self._get_div_unit(div_size)
+        div_unit = self.get_div_unit(div_size)
 
         text = "0{}".format(div_unit)
 
@@ -621,16 +636,24 @@ class PDFPrinter(object):
 
         return (w, h)
 
-    def _get_div_unit(self, div_size):
-        """Returns the appropriate division unit based on the division size."""
+    def get_div_unit(self, div_size, div_unit_short="m", div_unit_long="km", div_unit_divisor=1000.0):
+        """
+        Returns the appropriate division unit based on the division size.
 
-        # TODO: we're assuming the coordinate system units are meters
-        # Is there a way to encapsulate this so miles/meters/feet/whatever can be customised via subclassing?
+        Args:
+            div_size: the size of the division
+            div_unit_short: the default string for the division unit
+            div_unit_long: the string for the division unit if div_size is large enough to be converted
+                from div_unit_short to div_unit_long while keeping div_size greater than 1
+            div_unit_divisor: the divisor applied to convert from div_unit_short to div_unit_long
 
-        div_unit = "m"
-        if div_size > 1000:
-            div_size /= 1000
-            div_unit = "km"
+        Note:
+            Default values use the metric system
+        """
+        div_unit = div_unit_short
+        if div_size > div_unit_divisor:
+            div_size /= div_unit_divisor
+            div_unit = div_unit_long
 
         return div_unit
 
@@ -670,10 +693,16 @@ class PDFPrinter(object):
 
         return (x, y)
 
-    def render_on_map_lat_lon_grid(self, m, dec_degrees=True, grid_layer_name="Latitude Longitude Grid Overlay"):
-        # FIXME: buggy. does not get the top and right lines. see _render_lat_lon_axis also 
+    def render_graticule_on_map(self, m, dec_degrees=True, grid_layer_name="Graticule"):
+        # FIXME: buggy. does not get the top and right lines and other issues. see _render_graticule_axes_and_text also
 
-        """Renders a lat lon grid on the map."""
+        """
+        Renders the graticule on the map.
+
+        Lines are drawn as 0.5px wide and gray.
+        Text font is DejaVu Sans and gray.
+        """
+
         # don't render lat_lon grid if we are already in latlon
         if self._is_latlon:
             return
@@ -695,8 +724,8 @@ class PDFPrinter(object):
             latlon_divsize = deg_min_sec_scale(latlon_mapwidth / 7.0)
         latlon_interpsize = latlon_mapwidth / m.width
 
-        # renders the horizontal lat lon axes
-        self._render_lat_lon_axes(
+        # renders the horizontal graticule axes
+        self._render_graticule_axes_and_text(
             m,
             p2,
             latlon_bounds,
@@ -706,8 +735,8 @@ class PDFPrinter(object):
             dec_degrees,
             True)
 
-        # renders the vertical lat lon axes
-        self._render_lat_lon_axes(
+        # renders the vertical graticule axes
+        self._render_graticule_axes_and_text(
             m, 
             p2,
             latlon_bounds,
@@ -744,10 +773,17 @@ class PDFPrinter(object):
 
         return latlon_bounds
 
-    def _render_lat_lon_axes(self, m, p2, latlon_bounds, latlon_buffer,
+    def _render_graticule_axes_and_text(self, m, p2, latlon_bounds, latlon_buffer,
                              latlon_interpsize, latlon_divsize, dec_degrees, is_x_axis, stroke_color=(0.5, 0.5, 0.5)):
-        # FIXME: buggy. does not get the top and right lines. see render_on_map_lat_lon_grid also
-        """Renders the horizontal or vertical axes on the map depending on the is_x_axis parameter."""
+        # FIXME: buggy. does not get the top and right lines and other issues. see render_graticule_on_map also
+        """
+        Renders the horizontal or vertical axes on the map - depending on the is_x_axis parameter - along with
+        the latitude or longitude text.
+
+        Lines are drawn as 0.5px gray.
+        Text font is DejaVu Sans gray.
+        """
+
         ctx = cairo.Context(self._surface)
         ctx.set_source_rgb(*stroke_color)
         ctx.set_line_width(1)
@@ -987,7 +1023,7 @@ class PDFPrinter(object):
                 try:
                     sym.avoid_edges = False
                 except AttributeError:
-                    logging.warning("Could not set avoid_edges for rule {}".format(r.name))
+                    L.warning("Could not set avoid_edges for rule %s", r.name)
             if r.min_scale <= m.scale_denominator() and m.scale_denominator() < r.max_scale:
                 legend_rule = r
                 legend_rule.min_scale = 0
