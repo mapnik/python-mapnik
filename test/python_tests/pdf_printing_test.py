@@ -20,29 +20,34 @@ def make_map_from_xml(source_xml):
 	return m
 
 def make_pdf(m, output_pdf, esri_wkt):
+	# renders a PDF with a grid and a legend
 	page = printing.PDFPrinter(use_ocg_layers=True)
+
 	page.render_map(m, output_pdf)
-	page.render_on_map_scale(m)
-	# page.render_on_map_lat_lon_grid(m) # FIXME. to be tested has a few problems
+	page.render_grid_on_map(m)
 	page.render_legend(m)
-	ctx = page.get_cairo_context()
-	page.render_scale(m, ctx)
+
 	page.finish()
 	page.add_geospatial_pdf_header(m, output_pdf, wkt=esri_wkt)
 
 def test_pdf_printing():
-	# TODO: make this a proper test once refactoring is over
-	# source_xml = '../data/good_maps/marker-text-line.xml'.encode('utf-8')
-	source_xml = "../data/good_maps/agg_poly_gamma_map.xml".encode("utf-8")
+	source_xml = '../data/good_maps/marker-text-line.xml'.encode('utf-8')
 	m = make_map_from_xml(source_xml)
 
-	output_pdf = "/tmp/pdf_printing_test-test_pdf_printing.pdf"
+	actual_pdf = "/tmp/pdf-printing-actual.pdf"
 	esri_wkt = 'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]]'
-	make_pdf(m, output_pdf, esri_wkt)
+	make_pdf(m, actual_pdf, esri_wkt)
 
-	# TODO: compare against expected PDF once finished
-	# TODO: test with and without pangocairo
-	# TODO: test legend with attibution
+	expected_pdf = 'images/pycairo/pdf-printing-expected.pdf'
+
+	diff = abs(os.stat(expected_pdf).st_size - os.stat(actual_pdf).st_size)
+	msg = 'diff in size (%s) between actual (%s) and expected(%s)' % (diff, actual_pdf, 'tests/python_tests/' + expected_pdf)
+	eq_(diff < 1500, True, msg)
+
+# TODO: ideas for further testing on printing module
+# - test with and without pangocairo
+# - test legend with attribution
+# - test graticule (bug at the moment)
 
 if __name__ == "__main__":
     setup()
