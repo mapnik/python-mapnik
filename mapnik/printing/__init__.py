@@ -7,7 +7,6 @@ from __future__ import absolute_import, print_function
 import logging
 import math
 
-import mapnik
 from mapnik import Box2d, Coord, Geometry, Layer, Map, Projection, Style, render
 from mapnik.printing.conversions import m2pt, m2px
 from mapnik.printing.formats import pagesizes
@@ -980,6 +979,8 @@ class PDFPrinter(object):
 
     def _create_legend_item_map(self, m, layer, f, legend_map_size):
         """Creates the legend map, i.e., a minified version of the layer map, and returns it."""
+        from mapnik import MemoryDatasource
+
         legend_map = Map(legend_map_size[0], legend_map_size[1], srs=m.srs)
 
         # the buffer is needed to ensure that text labels that overflow the edge of the
@@ -989,7 +990,7 @@ class PDFPrinter(object):
             lestyle = self._get_layer_style_valid_rules(m, layer_style)
             legend_map.append_style(layer_style, lestyle)
 
-        ds = mapnik.MemoryDatasource()
+        ds = MemoryDatasource()
         if f is None:
             ds = layer.datasource
             layer_srs = layer.srs
