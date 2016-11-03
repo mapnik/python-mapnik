@@ -75,3 +75,7 @@ That means you likely have built python-mapnik is linked against a differ python
 ```
 
 If you still hit a problem create an issue and we'll try to help.
+
+## Tutorials
+
+- [Getting started with Python bindings](docs/getting-started.md)
