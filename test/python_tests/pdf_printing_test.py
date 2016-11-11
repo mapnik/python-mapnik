@@ -31,6 +31,8 @@ def make_pdf(m, output_pdf, esri_wkt):
 	page.add_geospatial_pdf_header(m, output_pdf, wkt=esri_wkt)
 
 if mapnik.has_pycairo():
+	import mapnik.printing
+
 	def test_pdf_printing():
 		source_xml = '../data/good_maps/marker-text-line.xml'.encode('utf-8')
 		m = make_map_from_xml(source_xml)
