@@ -65,6 +65,7 @@ class PDFPrinter(object):
     Main class for creating PDF print outs. Basic usage is along the lines of
 
     import mapnik
+    import mapnik.printing
 
     page = mapnik.printing.PDFPrinter()
     m = mapnik.Map(100,100)
