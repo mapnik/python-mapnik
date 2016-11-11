@@ -256,7 +256,7 @@ if os.environ.get("CXX", False) == False:
 setup(
     name="mapnik",
     version="0.1",
-    packages=['mapnik'],
+    packages=['mapnik','mapnik.printing'],
     author="Blake Thompson",
     author_email="flippmoke@gmail.com",
     description="Python bindings for Mapnik",
