@@ -30,7 +30,7 @@
 #pragma GCC diagnostic pop
 
 // mapnik
-#include <mapnik/value_error.hpp>
+#include <mapnik/value/error.hpp>
 #include <mapnik/rule.hpp>
 #include "mapnik_enumeration.hpp"
 #include <mapnik/feature_type_style.hpp>

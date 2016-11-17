@@ -40,7 +40,7 @@
 #include "mapnik_enumeration.hpp"
 #include "mapnik_svg.hpp"
 #include <mapnik/expression_node.hpp>
-#include <mapnik/value_error.hpp>
+#include <mapnik/value/error.hpp>
 #include <mapnik/marker_cache.hpp> // for known_svg_prefix_
 #include <mapnik/group/group_layout.hpp>
 #include <mapnik/group/group_rule.hpp>

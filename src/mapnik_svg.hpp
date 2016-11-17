@@ -25,7 +25,7 @@
 // mapnik
 #include <mapnik/parse_transform.hpp>
 #include <mapnik/symbolizer.hpp>
-#include <mapnik/value_error.hpp>
+#include <mapnik/value/error.hpp>
 
 #pragma GCC diagnostic push
 #include <mapnik/warning_ignore.hpp>
@@ -48,8 +48,8 @@ void set_svg_transform(T& symbolizer, std::string const& transform_wkt)
     if (!trans_expr)
     {
         std::stringstream ss;
-        ss << "Could not parse transform from '" 
-           << transform_wkt 
+        ss << "Could not parse transform from '"
+           << transform_wkt
            << "', expected SVG transform attribute";
         throw mapnik::value_error(ss.str());
     }

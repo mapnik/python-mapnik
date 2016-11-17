@@ -100,7 +100,8 @@ void export_logger();
 #include <mapnik/image_util.hpp>
 #include <mapnik/image_any.hpp>
 #include <mapnik/load_map.hpp>
-#include <mapnik/value_error.hpp>
+#include <mapnik/value/error.hpp>
+#include <mapnik/value.hpp>
 #include <mapnik/save_map.hpp>
 #include <mapnik/scale_denominator.hpp>
 #if defined(GRID_RENDERER)

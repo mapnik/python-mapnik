@@ -34,15 +34,14 @@
 #pragma GCC diagnostic pop
 
 // mapnik
-#include <mapnik/value_types.hpp>
+#include <mapnik/value/types.hpp>
 #include <mapnik/feature.hpp>
 #include <mapnik/feature_factory.hpp>
 #include <mapnik/feature_kv_iterator.hpp>
 #include <mapnik/datasource.hpp>
 #include <mapnik/wkb.hpp>
-//#include <mapnik/wkt/wkt_factory.hpp>
 #include <mapnik/json/feature_parser.hpp>
-#include <mapnik/json/feature_generator.hpp>
+#include <mapnik/util/feature_to_geojson.hpp>
 
 // stl
 #include <stdexcept>
@@ -67,7 +66,7 @@ mapnik::feature_ptr from_geojson_impl(std::string const& json, mapnik::context_p
 std::string feature_to_geojson(mapnik::feature_impl const& feature)
 {
     std::string json;
-    if (!mapnik::json::to_geojson(json,feature))
+    if (!mapnik::util::to_geojson(json,feature))
     {
         throw std::runtime_error("Failed to generate GeoJSON");
     }
