@@ -62,7 +62,7 @@ git submodule update --init
 python setup.py test
 ```
 
-The test data in `./test/data` and `./test/data-visual` are standalone modules. If you need to update them see https://github.com/mapnik/mapnik/blob/master/docs/contributing.markdown#testing
+The test data in `./test/data` and `./test/data-visual` are standalone modules. If you need to update them see https://github.com/mapnik/mapnik/blob/master/docs/contributing.md#testing
 
 
 ### Troubleshooting
