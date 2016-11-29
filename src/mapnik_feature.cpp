@@ -214,7 +214,8 @@ void export_feature()
         boost::noncopyable>("Feature",init<context_ptr,mapnik::value_integer>("Default ctor."))
         .def("id",&mapnik::feature_impl::id)
         .add_property("geometry",
-                      make_function(&mapnik::feature_impl::get_geometry,return_value_policy<reference_existing_object>()),
+                      make_function((mapnik::geometry::geometry<double>& (mapnik::feature_impl::*)())
+                                    &mapnik::feature_impl::get_geometry, return_value_policy<reference_existing_object>()),
                       &mapnik::feature_impl::set_geometry_copy)
         .def("envelope", &mapnik::feature_impl::envelope)
         .def("has_key", &mapnik::feature_impl::has_key)
