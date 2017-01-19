@@ -23,7 +23,7 @@
 #define MAPNIK_PYTHON_BINDING_SVG_INCLUDED
 
 // mapnik
-#include <mapnik/parse_transform.hpp>
+#include <mapnik/transform/parse_transform.hpp>
 #include <mapnik/symbolizer.hpp>
 #include <mapnik/value/error.hpp>
 
