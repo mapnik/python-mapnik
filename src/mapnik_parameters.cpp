@@ -33,7 +33,7 @@
 #include <mapnik/params.hpp>
 #include <mapnik/unicode.hpp>
 #include <mapnik/value.hpp>
-#include <mapnik/value/types.hpp>
+#include <mapnik/value_types.hpp>
 // stl
 #include <iterator>
 

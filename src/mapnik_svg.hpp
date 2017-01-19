@@ -25,7 +25,7 @@
 // mapnik
 #include <mapnik/parse_transform.hpp>
 #include <mapnik/symbolizer.hpp>
-#include <mapnik/value/error.hpp>
+#include <mapnik/value_error.hpp>
 
 #pragma GCC diagnostic push
 #include <mapnik/warning_ignore.hpp>

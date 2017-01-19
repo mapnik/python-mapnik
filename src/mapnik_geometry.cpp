@@ -35,13 +35,13 @@
 
 // mapnik
 #include <mapnik/geometry.hpp>
-#include <mapnik/geometry/geometry_type.hpp>
-#include <mapnik/geometry/envelope.hpp>
-#include <mapnik/geometry/is_valid.hpp>
-#include <mapnik/geometry/is_simple.hpp>
-#include <mapnik/geometry/is_empty.hpp>
-#include <mapnik/geometry/correct.hpp>
-#include <mapnik/geometry/centroid.hpp>
+#include <mapnik/geometry_type.hpp>
+#include <mapnik/geometry_envelope.hpp>
+#include <mapnik/geometry_is_valid.hpp>
+#include <mapnik/geometry_is_simple.hpp>
+#include <mapnik/geometry_is_empty.hpp>
+#include <mapnik/geometry_correct.hpp>
+#include <mapnik/geometry_centroid.hpp>
 
 #include <mapnik/wkt/wkt_factory.hpp> // from_wkt
 #include <mapnik/json/geometry_parser.hpp> // from_geojson

@@ -31,7 +31,7 @@
 
 // mapnik
 #include <mapnik/box2d.hpp>
-#include <mapnik/value/error.hpp>
+#include <mapnik/value_error.hpp>
 
 using mapnik::coord;
 using mapnik::box2d;
