@@ -28,7 +28,7 @@
 #include <boost/noncopyable.hpp>
 #pragma GCC diagnostic pop
 
-#include <mapnik/value_types.hpp>
+#include <mapnik/value/types.hpp>
 #include <mapnik/params.hpp>
 #include <mapnik/datasource.hpp>
 #include <mapnik/datasource_cache.hpp>
