@@ -40,7 +40,7 @@
 #include "mapnik_enumeration.hpp"
 #include "mapnik_svg.hpp"
 #include <mapnik/expression_node.hpp>
-#include <mapnik/value_error.hpp>
+#include <mapnik/value/error.hpp>
 #include <mapnik/marker_cache.hpp> // for known_svg_prefix_
 #include <mapnik/group/group_layout.hpp>
 #include <mapnik/group/group_rule.hpp>
@@ -202,6 +202,49 @@ void export_symbolizer()
         ;
 }
 
+void export_text_symbolizer()
+{
+    using namespace boost::python;
+    mapnik::enumeration_<mapnik::label_placement_e>("label_placement")
+        .value("LINE_PLACEMENT", mapnik::LINE_PLACEMENT)
+        .value("POINT_PLACEMENT", mapnik::POINT_PLACEMENT)
+        .value("VERTEX_PLACEMENT", mapnik::VERTEX_PLACEMENT)
+        .value("INTERIOR_PLACEMENT", mapnik::INTERIOR_PLACEMENT);
+
+    mapnik::enumeration_<mapnik::vertical_alignment_e>("vertical_alignment")
+        .value("TOP", mapnik::V_TOP)
+        .value("MIDDLE", mapnik::V_MIDDLE)
+        .value("BOTTOM", mapnik::V_BOTTOM)
+        .value("AUTO", mapnik::V_AUTO);
+
+    mapnik::enumeration_<mapnik::horizontal_alignment_e>("horizontal_alignment")
+        .value("LEFT", mapnik::H_LEFT)
+        .value("MIDDLE", mapnik::H_MIDDLE)
+        .value("RIGHT", mapnik::H_RIGHT)
+        .value("AUTO", mapnik::H_AUTO);
+
+    mapnik::enumeration_<mapnik::justify_alignment_e>("justify_alignment")
+        .value("LEFT", mapnik::J_LEFT)
+        .value("MIDDLE", mapnik::J_MIDDLE)
+        .value("RIGHT", mapnik::J_RIGHT)
+        .value("AUTO", mapnik::J_AUTO);
+
+    mapnik::enumeration_<mapnik::text_transform_e>("text_transform")
+        .value("NONE", mapnik::NONE)
+        .value("UPPERCASE", mapnik::UPPERCASE)
+        .value("LOWERCASE", mapnik::LOWERCASE)
+        .value("CAPITALIZE", mapnik::CAPITALIZE);
+
+    mapnik::enumeration_<mapnik::halo_rasterizer_e>("halo_rasterizer")
+        .value("FULL", mapnik::HALO_RASTERIZER_FULL)
+        .value("FAST", mapnik::HALO_RASTERIZER_FAST);
+
+    class_< text_symbolizer, bases<symbolizer_base> >("TextSymbolizer",
+                                                      init<>("Default ctor"))
+        .def("__hash__",hash_impl_2<text_symbolizer>)
+        ;
+
+}
 
 void export_shield_symbolizer()
 {

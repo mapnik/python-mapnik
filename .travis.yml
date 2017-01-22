@@ -76,6 +76,7 @@ before_install:
  - pip install --upgrade --user wheel
  - pip install --upgrade --user twine
  - pip install --upgrade --user setuptools
+ - pip install --upgrade --user PyPDF2
  - python --version
 
 install:

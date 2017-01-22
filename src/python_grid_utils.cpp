@@ -36,7 +36,7 @@
 #include <mapnik/grid/grid_renderer.hpp>
 #include <mapnik/grid/grid.hpp>
 #include <mapnik/grid/grid_view.hpp>
-#include <mapnik/value_error.hpp>
+#include <mapnik/value/error.hpp>
 #include <mapnik/feature.hpp>
 #include <mapnik/feature_kv_iterator.hpp>
 #include "python_grid_utils.hpp"

@@ -31,8 +31,14 @@ Assuming that you built your own mapnik from source, and you have run `make inst
 python setup.py develop
 ```
 
-If you wish to are currently developing on mapnik-python and wish to change the code in place and immediately have python changes reflected in your environment.
+If you are currently developing on mapnik-python and wish to change the code in place and immediately have python changes reflected in your environment.
 
+
+```
+python setup.py install
+```
+
+If you wish to just install the package.
 
 ```
 python setup.py develop --uninstall
@@ -41,11 +47,11 @@ python setup.py develop --uninstall
 Will de-activate the development install by removing the `python-mapnik` entry from `site-packages/easy-install.pth`.
 
 
-```
-python setup.py install
-```
+If you need Pycairo, make sure that PYCAIRO is set to true in your environment or run:
 
-If you wish to just install the package
+```
+PYCAIRO=true python setup.py develop
+```
 
 ## Testing
 
@@ -56,7 +62,7 @@ git submodule update --init
 python setup.py test
 ```
 
-The test data in `./test/data` and `./test/data-visual` are standalone modules. If you need to update them see https://github.com/mapnik/mapnik/blob/master/docs/contributing.markdown#testing
+The test data in `./test/data` and `./test/data-visual` are standalone modules. If you need to update them see https://github.com/mapnik/mapnik/blob/master/docs/contributing.md#testing
 
 
 ### Troubleshooting

@@ -73,9 +73,6 @@ bootstrap_env()
 
 from ._mapnik import *
 
-from . import printing
-printing.renderer = render
-
 # The base Boost.Python class
 BoostPythonMetaclass = Coord.__class__
 

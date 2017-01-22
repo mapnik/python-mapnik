@@ -307,7 +307,6 @@ setup(
             'src/mapnik_style.cpp',
             'src/mapnik_svg_generator_grammar.cpp',
             'src/mapnik_symbolizer.cpp',
-            'src/mapnik_text_placement.cpp',
             'src/mapnik_view_transform.cpp',
             'src/python_grid_utils.cpp',
         ],
