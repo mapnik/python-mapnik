@@ -6,7 +6,6 @@ from nose.tools import eq_
 from PyPDF2 import PdfFileReader
 
 from mapnik import Map, has_pycairo, load_map
-from mapnik.printing import PDFPrinter
 from .utilities import execution_path, run_all
 
 
@@ -36,6 +35,8 @@ def make_pdf(m, output_pdf, esri_wkt, render_grid_on_map=False, render_legend=Fa
 	page.add_geospatial_pdf_header(m, output_pdf, wkt=esri_wkt)
 
 if has_pycairo():
+  from mapnik.printing import PDFPrinter
+
 	def test_pdf_printing():
 		source_xml = "../data/good_maps/marker-text-line.xml"
 		m = make_map_from_xml(source_xml)
