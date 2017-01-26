@@ -30,7 +30,7 @@
 
 // mapnik
 #include <mapnik/coord.hpp>
-#include <mapnik/box2d.hpp>
+#include <mapnik/geometry/box2d.hpp>
 #include <mapnik/projection.hpp>
 
 using mapnik::projection;

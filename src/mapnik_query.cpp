@@ -32,7 +32,7 @@
 
 // mapnik
 #include <mapnik/query.hpp>
-#include <mapnik/box2d.hpp>
+#include <mapnik/geometry/box2d.hpp>
 
 #include <string>
 #include <set>
