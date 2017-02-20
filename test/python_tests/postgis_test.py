@@ -728,7 +728,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
                             table='test',
                             max_size=20,
                             geometry_field='geom')
-        fs = ds.all_features()
+        fs = list(ds.all_features())
         eq_(len(fs), 8)
 
         meta = ds.describe()
@@ -967,8 +967,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         failed = False
         try:
             fs = ds_bad.featureset()
-            for feature in fs.features:
-                pass
+            count = sum(1 for f in fs)
         except RuntimeError as e:
             assert 'invalid input syntax for integer' in str(e)
             failed = True
@@ -977,9 +976,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
 
         # Should be ok
         fs = ds_good.featureset()
-        count = 0
-        for feature in fs.features:
-            count += 1
+        count = sum(1 for f in fs)
         eq_(count, 8)
 
     def test_psql_error_should_give_back_connections_opened_for_lower_layers_to_the_pool():
