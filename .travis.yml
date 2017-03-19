@@ -15,7 +15,7 @@ matrix:
       # note: only using ccache for CC is intentional here to
       # workaround an odd bug in distutils that manifests when only `ccache` is used to link
       # because distutils also has a bug whereby CC is used to compile instead of CXX, this works :)
-      env: JOBS=8 CXX="clang++-3.8 -Qunused-arguments" CC="ccache clang-3.8"
+      env: JOBS=8 CXX="clang++-3.9 -Qunused-arguments" CC="ccache clang-3.9"
       addons:
         apt:
           sources: [ 'ubuntu-toolchain-r-test']
@@ -55,9 +55,9 @@ before_install:
  - export COMMIT_MESSAGE=$(git show -s --format=%B $TRAVIS_COMMIT | tr -d '\n')
  - |
    if [[ $(uname -s) == 'Linux' ]]; then
-     export LDSHARED=$(python -c "import os;from distutils import sysconfig;print sysconfig.get_config_var('LDSHARED').replace('cc ','clang++-3.8 ')");
-     ./.mason/mason install clang 3.8.0
-     export PATH=$(./.mason/mason prefix clang 3.8.0)/bin:${PATH}
+     export LDSHARED=$(python -c "import os;from distutils import sysconfig;print sysconfig.get_config_var('LDSHARED').replace('cc ','clang++-3.9 ')");
+     ./.mason/mason install clang++ 3.9.1
+     export PATH=$(./.mason/mason prefix clang++ 3.9.1)/bin:${PATH}
      which clang++
    else
      sudo easy_install pip;
