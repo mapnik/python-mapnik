@@ -117,12 +117,12 @@ PyObject* to_wkb_impl(mapnik::geometry::geometry<double> const& geom, mapnik::wk
 
 std::string to_geojson_impl(mapnik::geometry::geometry<double> const& geom)
 {
-    std::string wkt;
-    if (!mapnik::util::to_geojson(wkt, geom))
+    std::string json;
+    if (!mapnik::util::to_geojson(json, geom))
     {
         throw std::runtime_error("Generate JSON failed");
     }
-    return wkt;
+    return json;
 }
 
 std::string to_wkt_impl(mapnik::geometry::geometry<double> const& geom)
