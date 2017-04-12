@@ -188,12 +188,6 @@ void linear_ring_add_coord_impl2(mapnik::geometry::linear_ring<double> & l, mapn
     l.push_back(p);
 }
 
-mapnik::geometry::linear_ring<double> & polygon_exterior_impl(mapnik::geometry::polygon<double> & poly)
-{
-    if (poly.empty()) poly.resize(1);
-    return poly[0];
-}
-
 void polygon_add_ring_impl(mapnik::geometry::polygon<double> & poly, mapnik::geometry::linear_ring<double> const& ring)
 {
     poly.push_back(ring); // copy
