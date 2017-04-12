@@ -168,14 +168,35 @@ void geometry_correct_impl(mapnik::geometry::geometry<double> & geom)
     mapnik::geometry::correct(geom);
 }
 
-void polygon_set_exterior_impl(mapnik::geometry::polygon<double> & poly, mapnik::geometry::linear_ring<double> const& ring)
+void line_string_add_coord_impl1(mapnik::geometry::line_string<double> & l, double x, double y)
 {
-    poly.exterior_ring = ring; // copy
+    l.emplace_back(x, y);
 }
 
-void polygon_add_hole_impl(mapnik::geometry::polygon<double> & poly, mapnik::geometry::linear_ring<double> const& ring)
+void line_string_add_coord_impl2(mapnik::geometry::line_string<double> & l, mapnik::geometry::point<double> const& p)
 {
-    poly.interior_rings.push_back(ring); // copy
+    l.push_back(p);
+}
+
+void linear_ring_add_coord_impl1(mapnik::geometry::linear_ring<double> & l, double x, double y)
+{
+    l.emplace_back(x, y);
+}
+
+void linear_ring_add_coord_impl2(mapnik::geometry::linear_ring<double> & l, mapnik::geometry::point<double> const& p)
+{
+    l.push_back(p);
+}
+
+mapnik::geometry::linear_ring<double> & polygon_exterior_impl(mapnik::geometry::polygon<double> & poly)
+{
+    if (poly.empty()) poly.resize(1);
+    return poly[0];
+}
+
+void polygon_add_ring_impl(mapnik::geometry::polygon<double> & poly, mapnik::geometry::linear_ring<double> const& ring)
+{
+    poly.push_back(ring); // copy
 }
 
 mapnik::geometry::point<double> geometry_centroid_impl(mapnik::geometry::geometry<double> const& geom)
@@ -230,7 +251,8 @@ void export_geometry()
 
     class_<line_string<double> >("LineString", init<>(
                       "Constructs a new LineString object\n"))
-        .def("add_coord", &line_string<double>::add_coord, "Adds coord")
+        .def("add_coord", &line_string_add_coord_impl1, "Adds coord x,y")
+        .def("add_point", &line_string_add_coord_impl2, "Adds point")
 #if BOOST_VERSION >= 105800
         .def("is_valid", &geometry_is_valid_impl)
         .def("is_simple", &geometry_is_simple_impl)
@@ -242,14 +264,14 @@ void export_geometry()
 
     class_<linear_ring<double> >("LinearRing", init<>(
                             "Constructs a new LinearRtring object\n"))
-        .def("add_coord", &linear_ring<double>::add_coord, "Adds coord")
+        .def("add_coord", &linear_ring_add_coord_impl1, "Adds coord x,y")
+        .def("add_point", &linear_ring_add_coord_impl2, "Adds point")
         ;
 
     class_<polygon<double> >("Polygon", init<>(
                         "Constructs a new Polygon object\n"))
-        .add_property("exterior_ring", &polygon<double>::exterior_ring , "Exterior ring")
-        .def("add_hole", &polygon_add_hole_impl, "Add interior ring")
-        .def("num_rings", polygon_set_exterior_impl, "Number of rings (at least 1)")
+        .def("add_ring", &polygon_add_ring_impl, "Add ring")
+        .def("num_rings", &polygon<double>::size, "Number of rings")
 #if BOOST_VERSION >= 105800
         .def("is_valid", &geometry_is_valid_impl)
         .def("is_simple", &geometry_is_simple_impl)
