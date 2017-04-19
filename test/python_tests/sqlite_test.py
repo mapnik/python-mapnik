@@ -3,6 +3,7 @@
 import os
 
 from nose.tools import eq_, raises
+from nose.plugins.skip import SkipTest
 
 import mapnik
 
@@ -23,6 +24,9 @@ def teardown():
 if 'sqlite' in mapnik.DatasourceCache.plugin_names():
 
     def test_attachdb_with_relative_file():
+        if not os.path.exists('../data/sqlite/world.sqlite'):
+            raise SkipTest
+
         # The point table and index is in the qgis_spatiallite.sqlite
         # database.  If either is not found, then this fails
         ds = mapnik.SQLite(file='../data/sqlite/world.sqlite',
@@ -36,6 +40,9 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
     test_attachdb_with_relative_file.requires_data = True
 
     def test_attachdb_with_multiple_files():
+        if not os.path.exists('../data/sqlite/world.sqlite'):
+            raise SkipTest
+
         ds = mapnik.SQLite(file='../data/sqlite/world.sqlite',
                            table='attachedtest',
                            attachdb='scratch1@:memory:,scratch2@:memory:',
@@ -57,6 +64,9 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
     test_attachdb_with_multiple_files.requires_data = True
 
     def test_attachdb_with_absolute_file():
+        if not os.path.exists('../data/sqlite/world.sqlite'):
+            raise SkipTest
+
         # The point table and index is in the qgis_spatiallite.sqlite
         # database.  If either is not found, then this fails
         ds = mapnik.SQLite(file=os.getcwd() + '/../data/sqlite/world.sqlite',
@@ -70,6 +80,9 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
     test_attachdb_with_absolute_file.requires_data = True
 
     def test_attachdb_with_index():
+        if not os.path.exists('../data/sqlite/world.sqlite'):
+            raise SkipTest
+
         ds = mapnik.SQLite(file='../data/sqlite/world.sqlite',
                            table='attachedtest',
                            attachdb='scratch@:memory:',
@@ -91,6 +104,9 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
     test_attachdb_with_index.requires_data = True
 
     def test_attachdb_with_explicit_index():
+        if not os.path.exists('../data/sqlite/world.sqlite'):
+            raise SkipTest
+
         ds = mapnik.SQLite(file='../data/sqlite/world.sqlite',
                            table='attachedtest',
                            index_table='myindex',
@@ -112,6 +128,9 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
     test_attachdb_with_explicit_index.requires_data = True
 
     def test_attachdb_with_sql_join():
+        if not os.path.exists('../data/sqlite/world.sqlite'):
+            raise SkipTest
+
         ds = mapnik.SQLite(file='../data/sqlite/world.sqlite',
                            table='(select * from world_merc INNER JOIN business on world_merc.iso3 = business.ISO3 limit 100)',
                            attachdb='busines@business.sqlite'
@@ -223,6 +242,9 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
     test_attachdb_with_sql_join.requires_data = True
 
     def test_attachdb_with_sql_join_count():
+        if not os.path.exists('../data/sqlite/world.sqlite'):
+            raise SkipTest
+
         ds = mapnik.SQLite(file='../data/sqlite/world.sqlite',
                            table='(select * from world_merc INNER JOIN business on world_merc.iso3 = business.ISO3 limit 100)',
                            attachdb='busines@business.sqlite'
@@ -293,6 +315,9 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
     test_attachdb_with_sql_join_count.requires_data = True
 
     def test_attachdb_with_sql_join_count2():
+        if not os.path.exists('../data/sqlite/world.sqlite'):
+            raise SkipTest
+
         '''
         sqlite3 world.sqlite
         attach database 'business.sqlite' as business;
@@ -368,6 +393,9 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
     test_attachdb_with_sql_join_count2.requires_data = True
 
     def test_attachdb_with_sql_join_count3():
+        if not os.path.exists('../data/sqlite/world.sqlite'):
+            raise SkipTest
+
         '''
         select count(*) from (select * from world_merc where 1=1) as world_merc INNER JOIN business on world_merc.iso3 = business.ISO3;
         '''
@@ -441,6 +469,9 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
     test_attachdb_with_sql_join_count3.requires_data = True
 
     def test_attachdb_with_sql_join_count4():
+        if not os.path.exists('../data/sqlite/world.sqlite'):
+            raise SkipTest
+
         '''
         select count(*) from (select * from world_merc where 1=1) as world_merc INNER JOIN business on world_merc.iso3 = business.ISO3;
         '''
@@ -514,6 +545,9 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
     test_attachdb_with_sql_join_count4.requires_data = True
 
     def test_attachdb_with_sql_join_count5():
+        if not os.path.exists('../data/sqlite/world.sqlite'):
+            raise SkipTest
+
         '''
         select count(*) from (select * from world_merc where 1=1) as world_merc INNER JOIN business on world_merc.iso3 = business.ISO3;
         '''
@@ -555,6 +589,9 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
     test_attachdb_with_sql_join_count5.requires_data = True
 
     def test_subqueries():
+        if not os.path.exists('../data/sqlite/world.sqlite'):
+            raise SkipTest
+
         ds = mapnik.SQLite(file='../data/sqlite/world.sqlite',
                            table='world_merc',
                            )
@@ -629,6 +666,9 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
     test_subqueries.requires_data = True
 
     def test_empty_db():
+        if not os.path.exists('../data/sqlite/empty.db'):
+            raise SkipTest
+
         ds = mapnik.SQLite(file='../data/sqlite/empty.db',
                            table='empty',
                            )
@@ -644,6 +684,9 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
 
     @raises(RuntimeError)
     def test_that_nonexistant_query_field_throws(**kwargs):
+        if not os.path.exists('../data/sqlite/empty.db'):
+            raise SkipTest
+
         ds = mapnik.SQLite(file='../data/sqlite/empty.db',
                            table='empty',
                            )
@@ -710,6 +753,9 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
     test_that_nonexistant_query_field_throws.requires_data = True
 
     def test_intersects_token1():
+        if not os.path.exists('../data/sqlite/empty.db'):
+            raise SkipTest
+
         ds = mapnik.SQLite(file='../data/sqlite/empty.db',
                            table='(select * from empty where !intersects!)',
                            )
@@ -724,6 +770,9 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
     test_intersects_token1.requires_data = True
 
     def test_intersects_token2():
+        if not os.path.exists('../data/sqlite/empty.db'):
+            raise SkipTest
+
         ds = mapnik.SQLite(file='../data/sqlite/empty.db',
                            table='(select * from empty where "a"!="b" and !intersects!)',
                            )
@@ -738,6 +787,9 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
     test_intersects_token2.requires_data = True
 
     def test_intersects_token3():
+        if not os.path.exists('../data/sqlite/empty.db'):
+            raise SkipTest
+
         ds = mapnik.SQLite(file='../data/sqlite/empty.db',
                            table='(select * from empty where "a"!="b" and !intersects!)',
                            )
@@ -815,6 +867,9 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         eq_(ds.field_types(), ['int', 'str', 'int'])
 
     def test_that_64bit_int_fields_work():
+        if not os.path.exists('../data/sqlite/64bit_int.sqlite'):
+            raise SkipTest
+
         ds = mapnik.SQLite(file='../data/sqlite/64bit_int.sqlite',
                            table='int_table',
                            use_spatial_index=False

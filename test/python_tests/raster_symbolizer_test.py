@@ -3,6 +3,7 @@
 import os
 
 from nose.tools import eq_
+from nose.plugins.skip import SkipTest
 
 import mapnik
 
@@ -16,6 +17,9 @@ def setup():
 
 
 def test_dataraster_coloring():
+    if not os.path.exists('../data/raster/dataraster.tif'):
+        raise SkipTest
+
     srs = '+init=epsg:32630'
     lyr = mapnik.Layer('dataraster')
     if 'gdal' in mapnik.DatasourceCache.plugin_names():
@@ -72,6 +76,9 @@ def test_dataraster_coloring():
 
 
 def test_dataraster_query_point():
+    if not os.path.exists('../data/raster/dataraster.tif'):
+        raise SkipTest
+
     srs = '+init=epsg:32630'
     lyr = mapnik.Layer('dataraster')
     if 'gdal' in mapnik.DatasourceCache.plugin_names():
@@ -106,6 +113,9 @@ def test_dataraster_query_point():
 
 
 def test_load_save_map():
+    if not os.path.exists('../data/good_maps/raster_symbolizer.xml'):
+        raise SkipTest
+
     map = mapnik.Map(256, 256)
     in_map = "../data/good_maps/raster_symbolizer.xml"
     try:
@@ -122,6 +132,9 @@ def test_load_save_map():
 
 
 def test_raster_with_alpha_blends_correctly_with_background():
+    if not os.path.exists('../data/raster/white-alpha.png'):
+        raise SkipTest
+
     WIDTH = 500
     HEIGHT = 500
 
@@ -157,6 +170,9 @@ def test_raster_with_alpha_blends_correctly_with_background():
 
 
 def test_raster_warping():
+    if not os.path.exists('../data/raster/dataraster.tif'):
+        raise SkipTest
+
     lyrSrs = "+init=epsg:32630"
     mapSrs = '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
     lyr = mapnik.Layer('dataraster', lyrSrs)
@@ -198,6 +214,9 @@ def test_raster_warping():
 
 
 def test_raster_warping_does_not_overclip_source():
+    if not os.path.exists('../data/raster/dataraster.tif'):
+        raise SkipTest
+
     lyrSrs = "+init=epsg:32630"
     mapSrs = '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
     lyr = mapnik.Layer('dataraster', lyrSrs)

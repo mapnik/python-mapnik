@@ -2,6 +2,7 @@
 import os
 
 from nose.tools import eq_
+from nose.plugins.skip import SkipTest
 
 import mapnik
 
@@ -15,6 +16,9 @@ def setup():
 
 if 'csv' in mapnik.DatasourceCache.plugin_names():
     def test_marker_ellipse_render1():
+        if not os.path.exists('../data/good_maps/marker_ellipse_transform.xml'):
+            raise SkipTest
+
         m = mapnik.Map(256, 256)
         mapnik.load_map(m, '../data/good_maps/marker_ellipse_transform.xml')
         m.zoom_all()
@@ -32,6 +36,9 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
                                                                 'test/python_tests/' + expected))
 
     def test_marker_ellipse_render2():
+        if not os.path.exists('../data/good_maps/marker_ellipse_transform2.xml'):
+            raise SkipTest
+
         m = mapnik.Map(256, 256)
         mapnik.load_map(m, '../data/good_maps/marker_ellipse_transform2.xml')
         m.zoom_all()

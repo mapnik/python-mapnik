@@ -3,6 +3,7 @@
 import os
 
 from nose.tools import eq_
+from nose.plugins.skip import SkipTest
 
 import mapnik
 
@@ -16,6 +17,9 @@ def setup():
 
 
 def test_adding_datasource_to_layer():
+    if not os.path.exists('../data/shp/world_merc.shp'):
+        raise SkipTest
+
     map_string = '''<?xml version="1.0" encoding="utf-8"?>
 <Map>
 

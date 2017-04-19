@@ -5,6 +5,7 @@ import os
 import sys
 
 from nose.tools import eq_
+from nose.plugins.skip import SkipTest
 
 import mapnik
 
@@ -26,6 +27,9 @@ expected_rgb = '[Palette 2 colors #ff00ff #ffffff]'
 
 
 def test_reading_palettes():
+    if not os.path.exists('../data/palettes/palette64.act') or not os.path.exists('../data/palettes/palette256.act'):
+        raise SkipTest
+
     with open('../data/palettes/palette64.act', 'rb') as act:
         palette = mapnik.Palette(act.read(), 'act')
     eq_(palette.to_string(), expected_64)
@@ -41,6 +45,9 @@ def test_reading_palettes():
 if 'shape' in mapnik.DatasourceCache.plugin_names():
 
     def test_render_with_palette():
+        if not os.path.exists('../data/good_maps/agg_poly_gamma_map.xml'):
+            raise SkipTest
+
         m = mapnik.Map(600, 400)
         mapnik.load_map(m, '../data/good_maps/agg_poly_gamma_map.xml')
         m.zoom_all()

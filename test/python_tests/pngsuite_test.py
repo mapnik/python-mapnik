@@ -3,6 +3,7 @@
 import os
 
 from nose.tools import assert_raises
+from nose.plugins.skip import SkipTest
 
 import mapnik
 
@@ -26,6 +27,9 @@ def assert_good_file(fname):
 
 
 def get_pngs(good):
+    if not os.path.exists(datadir):
+        raise SkipTest
+
     files = [x for x in os.listdir(datadir) if x.endswith('.png')]
     return [os.path.join(datadir, x)
             for x in files if good != x.startswith('x')]

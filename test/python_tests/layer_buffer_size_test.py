@@ -2,6 +2,7 @@
 import os
 
 from nose.tools import eq_
+from nose.plugins.skip import SkipTest
 
 import mapnik
 
@@ -19,6 +20,9 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
     # override the postive map buffer leading
     # only one point to be rendered in the map
     def test_layer_buffer_size_1():
+        if not os.path.exists('../data/good_maps/layer_buffer_size_reduction.xml'):
+            raise SkipTest
+
         m = mapnik.Map(512, 512)
         eq_(m.buffer_size, 0)
         mapnik.load_map(m, '../data/good_maps/layer_buffer_size_reduction.xml')

@@ -3,6 +3,7 @@
 import os
 
 from nose.tools import eq_
+from nose.plugins.skip import SkipTest
 
 import mapnik
 
@@ -30,6 +31,9 @@ plugins = mapnik.DatasourceCache.plugin_names()
 if 'shape' in plugins and 'ogr' in plugins:
 
     def ensure_geometries_are_interpreted_equivalently(filename):
+        if not os.path.exists(filename):
+            raise SkipTest
+
         ds1 = mapnik.Ogr(file=filename, layer_by_index=0)
         ds2 = mapnik.Shapefile(file=filename)
         fs1 = ds1.featureset()

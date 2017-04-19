@@ -3,6 +3,7 @@
 import os
 
 from nose.tools import eq_
+from nose.plugins.skip import SkipTest
 
 import mapnik
 
@@ -16,6 +17,9 @@ def setup():
 
 
 def test_loading_fontset_from_map():
+    if not os.path.exists('../data/good_maps/fontset.xml'):
+        raise SkipTest
+
     m = mapnik.Map(256, 256)
     mapnik.load_map(m, '../data/good_maps/fontset.xml', True)
     fs = m.find_fontset('book-fonts')

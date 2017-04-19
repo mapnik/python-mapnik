@@ -6,6 +6,7 @@ import os
 import shutil
 
 from nose.tools import eq_
+from nose.plugins.skip import SkipTest
 
 import mapnik
 
@@ -178,6 +179,9 @@ if mapnik.has_pycairo():
 
     if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         def _pycairo_surface(type, sym):
+            if not os.path.exists('../data/good_maps/%s_symbolizer.xml' % sym):
+                raise SkipTest
+
             test_cairo_file = '/tmp/mapnik-cairo-surface-test.%s.%s' % (
                 sym, type)
             expected_cairo_file = './images/pycairo/cairo-surface-expected.%s.%s' % (

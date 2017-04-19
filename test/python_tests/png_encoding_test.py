@@ -4,6 +4,7 @@
 import os
 
 from nose.tools import eq_
+from nose.plugins.skip import SkipTest
 
 import mapnik
 
@@ -152,6 +153,9 @@ if mapnik.has_png():
         eq_(t0_len < t1_len < t2_len, True)
 
     def test_transparency_levels_aerial():
+        if not os.path.exists('../data/images/12_654_1580.png'):
+            raise SkipTest
+
         im = mapnik.Image.open('../data/images/12_654_1580.png')
         im_in = mapnik.Image.open(
             './images/support/transparency/aerial_rgba.png')

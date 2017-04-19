@@ -4,6 +4,7 @@ import sys
 from itertools import groupby
 
 from nose.tools import eq_, raises
+from nose.plugins.skip import SkipTest
 
 import mapnik
 
@@ -69,6 +70,9 @@ def test_vrt_referring_to_missing_files():
 
 def test_field_listing():
     if 'shape' in mapnik.DatasourceCache.plugin_names():
+        if not os.path.exists('../data/shp/poly.shp'):
+            raise SkipTest
+
         ds = mapnik.Shapefile(file='../data/shp/poly.shp')
         fields = ds.fields()
         eq_(fields, ['AREA', 'EAS_ID', 'PRFEDEA'])
@@ -81,6 +85,9 @@ def test_field_listing():
 
 def test_total_feature_count_shp():
     if 'shape' in mapnik.DatasourceCache.plugin_names():
+        if not os.path.exists('../data/shp/poly.shp'):
+            raise SkipTest
+
         ds = mapnik.Shapefile(file='../data/shp/poly.shp')
         features = ds.all_features()
         num_feats = len(list(features))
@@ -89,6 +96,9 @@ def test_total_feature_count_shp():
 
 def test_total_feature_count_json():
     if 'ogr' in mapnik.DatasourceCache.plugin_names():
+        if not os.path.exists('../data/json/points.geojson'):
+            raise SkipTest
+
         ds = mapnik.Ogr(file='../data/json/points.geojson', layer_by_index=0)
         desc = ds.describe()
         eq_(desc['geometry_type'], mapnik.DataGeometryType.Point)
@@ -102,6 +112,9 @@ def test_total_feature_count_json():
 
 def test_sqlite_reading():
     if 'sqlite' in mapnik.DatasourceCache.plugin_names():
+        if not os.path.exists('../data/sqlite/world.sqlite'):
+            raise SkipTest
+
         ds = mapnik.SQLite(
             file='../data/sqlite/world.sqlite',
             table_by_index=0)
@@ -116,6 +129,9 @@ def test_sqlite_reading():
 
 
 def test_reading_json_from_string():
+    if not os.path.exists('../data/json/points.geojson'):
+        raise SkipTest
+
     with open('../data/json/points.geojson', 'r') as f:
         json = f.read()
     if 'ogr' in mapnik.DatasourceCache.plugin_names():
@@ -127,6 +143,9 @@ def test_reading_json_from_string():
 
 def test_feature_envelope():
     if 'shape' in mapnik.DatasourceCache.plugin_names():
+        if not os.path.exists('../data/shp/poly.shp'):
+            raise SkipTest
+
         ds = mapnik.Shapefile(file='../data/shp/poly.shp')
         features = ds.all_features()
         for feat in features:
@@ -139,6 +158,9 @@ def test_feature_envelope():
 
 def test_feature_attributes():
     if 'shape' in mapnik.DatasourceCache.plugin_names():
+        if not os.path.exists('../data/shp/poly.shp'):
+            raise SkipTest
+
         ds = mapnik.Shapefile(file='../data/shp/poly.shp')
         features = list(ds.all_features())
         feat = features[0]
@@ -150,6 +172,9 @@ def test_feature_attributes():
 
 def test_ogr_layer_by_sql():
     if 'ogr' in mapnik.DatasourceCache.plugin_names():
+        if not os.path.exists('../data/shp/poly.shp'):
+            raise SkipTest
+
         ds = mapnik.Ogr(file='../data/shp/poly.shp',
                         layer_by_sql='SELECT * FROM poly WHERE EAS_ID = 168')
         features = ds.all_features()
@@ -163,6 +188,9 @@ def test_hit_grid():
         """ encode a list of strings with run-length compression """
         return ["%d:%s" % (len(list(group)), name)
                 for name, group in groupby(l)]
+
+    if not os.path.exists('../data/good_maps/agg_poly_gamma_map.xml'):
+        raise SkipTest
 
     m = mapnik.Map(256, 256)
     try:

@@ -6,6 +6,7 @@ import shutil
 from subprocess import PIPE, Popen
 
 from nose.tools import eq_
+from nose.plugins.skip import SkipTest
 
 import mapnik
 
@@ -19,6 +20,9 @@ def setup():
 
 
 def test_shapeindex():
+    if not os.path.exists('../data/shp/'):
+        raise SkipTest
+
     # first copy shapefiles to tmp directory
     source_dir = '../data/shp/'
     working_dir = '/tmp/mapnik-shp-tmp/'
