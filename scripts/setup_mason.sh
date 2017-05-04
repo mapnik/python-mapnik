@@ -4,7 +4,7 @@ set -eu
 set -o pipefail
 
 # we pin the mason version to avoid changes in mason breaking builds
-MASON_VERSION="v0.9.0"
+MASON_VERSION="v0.10.0"
 
 function setup_mason() {
     mkdir -p ./mason
