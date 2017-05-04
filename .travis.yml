@@ -56,8 +56,8 @@ before_install:
  - |
    if [[ $(uname -s) == 'Linux' ]]; then
      export LDSHARED=$(python -c "import os;from distutils import sysconfig;print sysconfig.get_config_var('LDSHARED').replace('cc ','clang++-3.9 ')");
-     ./.mason/mason install clang++ 3.9.1
-     export PATH=$(./.mason/mason prefix clang++ 3.9.1)/bin:${PATH}
+     mason install clang++ 3.9.1
+     export PATH=$(mason prefix clang++ 3.9.1)/bin:${PATH}
      which clang++
    else
      sudo easy_install pip;

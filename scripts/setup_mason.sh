@@ -7,7 +7,7 @@ set -o pipefail
 MASON_VERSION="v0.9.0"
 
 function setup_mason() {
-    mkdir ./mason
+    mkdir -p ./mason
     curl -sSfL https://github.com/mapbox/mason/archive/${MASON_VERSION}.tar.gz | tar --gunzip --extract --strip-components=1 --exclude="*md" --exclude="test*" --directory=./mason
     export MASON_HOME=$(pwd)/mason_packages/.link
     export PATH=$(pwd)/mason:${PATH}
