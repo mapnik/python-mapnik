@@ -227,6 +227,8 @@ if mason_build:
 
 extra_comp_args = check_output([mapnik_config, '--cflags']).split(' ')
 
+extra_comp_args = list(filter(lambda arg: arg != "-fvisibility=hidden", extra_comp_args))
+
 if os.environ.get("PYCAIRO", "false") == "true":
     try:
         extra_comp_args.append('-DHAVE_PYCAIRO')
