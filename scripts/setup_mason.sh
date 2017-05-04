@@ -4,18 +4,13 @@ set -eu
 set -o pipefail
 
 # we pin the mason version to avoid changes in mason breaking builds
-MASON_VERSION="181a39c"
+MASON_VERSION="v0.9.0"
 
 function setup_mason() {
-    if [[ ! -d ./.mason ]]; then
-        git clone https://github.com/mapbox/mason.git ./.mason
-        (cd ./.mason && git checkout ${MASON_VERSION})
-    else
-        echo "Updating to latest mason"
-        (cd ./.mason && git fetch && git checkout ${MASON_VERSION})
-    fi
+    mkdir ./mason
+    curl -sSfL https://github.com/mapbox/mason/archive/${MASON_VERSION}.tar.gz | tar --gunzip --extract --strip-components=1 --exclude="*md" --exclude="test*" --directory=./mason
     export MASON_HOME=$(pwd)/mason_packages/.link
-    export PATH=$(pwd)/.mason:$PATH
+    export PATH=$(pwd)/mason:${PATH}
     export CXX=${CXX:-clang++}
     export CC=${CC:-clang}
 }
