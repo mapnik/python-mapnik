@@ -137,7 +137,7 @@ if mason_build:
         if sys.platform == 'darwin':
             base_f = 'libmapnik.dylib'
         else:
-            base_f = 'libmapnik.so.3.0'
+            base_f = 'libmapnik.so'
         f = os.path.join(lib_path, base_f)
         if not os.path.exists(os.path.join('mapnik', 'lib')):
             os.makedirs(os.path.join('mapnik', 'lib'))
