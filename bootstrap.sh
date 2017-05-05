@@ -59,7 +59,7 @@ function main() {
     setup_runtime_settings
     echo "Ready, now run:"
     echo ""
-    echo "    make test"
+    echo "    python setup.py test"
 }
 
 main
