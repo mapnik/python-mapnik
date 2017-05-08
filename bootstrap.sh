@@ -16,7 +16,7 @@ function install() {
 ICU_VERSION="57.1"
 
 function install_mason_deps() {
-    install mapnik 333ef9f
+    install mapnik 6e02595
     install jpeg_turbo 1.5.1
     install libpng 1.6.28
     install libtiff 4.0.7
