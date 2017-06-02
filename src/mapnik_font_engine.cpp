@@ -21,7 +21,6 @@
  *****************************************************************************/
 
 #include <mapnik/config.hpp>
-#include "boost_std_shared_shim.hpp"
 
 #pragma GCC diagnostic push
 #include <mapnik/warning_ignore.hpp>
@@ -30,27 +29,16 @@
 #pragma GCC diagnostic pop
 
 #include <mapnik/font_engine_freetype.hpp>
-#include <mapnik/util/singleton.hpp>
 
 void export_font_engine()
 {
     using mapnik::freetype_engine;
-    using mapnik::singleton;
-    using mapnik::CreateStatic;
     using namespace boost::python;
-    class_<singleton<freetype_engine,CreateStatic>,boost::noncopyable>("Singleton",no_init)
-        .def("instance",&singleton<freetype_engine,CreateStatic>::instance,
-             return_value_policy<reference_existing_object>())
-        .staticmethod("instance")
-        ;
-
-    class_<freetype_engine,bases<singleton<freetype_engine,CreateStatic> >,
-        boost::noncopyable>("FontEngine",no_init)
-        .def("register_font",&freetype_engine::register_font)
-        .def("register_fonts",&freetype_engine::register_fonts)
-        .def("face_names",&freetype_engine::face_names)
+    class_<freetype_engine, boost::noncopyable>("FontEngine", no_init)
+        .def("register_font", &freetype_engine::register_font)
+        .def("register_fonts", &freetype_engine::register_fonts)
+        .def("face_names", &freetype_engine::face_names)
         .staticmethod("register_font")
         .staticmethod("register_fonts")
-        .staticmethod("face_names")
-        ;
+        .staticmethod("face_names");
 }
