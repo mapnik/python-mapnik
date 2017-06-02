@@ -1065,7 +1065,7 @@ def register_fonts(path=None, valid_extensions=[
     for dirpath, _, filenames in os.walk(path):
         for filename in filenames:
             if os.path.splitext(filename.lower())[1] in valid_extensions:
-                FontEngine.instance().register_font(os.path.join(dirpath, filename))
+                FontEngine.register_font(os.path.join(dirpath, filename))
 
 # auto-register known plugins and fonts
 register_plugins()
