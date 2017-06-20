@@ -265,7 +265,7 @@ setup(
         'nose',
     ],
     package_data={
-        'mapnik': ['lib/*', 'plugins/*/*', 'share/*/*'],
+        'mapnik': ['lib/*/*/*', 'share/*/*'],
     },
     test_suite='nose.collector',
     cmdclass={
