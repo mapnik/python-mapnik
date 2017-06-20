@@ -256,7 +256,7 @@ def test_tiff_rgba8_compare_stripped():
 
 def test_tiff_rgba8_compare_tiled():
     filepath1 = '../data/tiff/ndvi_256x256_rgba8_striped.tif'
-    filepath2 = '/tmp/mapnik-tiff-rgba8-stripped.tiff'
+    filepath2 = '/tmp/mapnik-tiff-rgba8-tiled.tiff'
     im = mapnik.Image.open(filepath1)
     im.save(filepath2, 'tiff:method=tiled')
     im2 = mapnik.Image.open(filepath2)
