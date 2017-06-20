@@ -69,12 +69,12 @@ install:
 before_script:
  # start postgres/postgis
  - source mason-config.env && ./mason_packages/.link/bin/postgres > postgres.log &
+
+script:
  - python test/run_tests.py
  - python test/visual.py -q
  # stop postgres
  - ./mason_packages/.link/bin/pg_ctl -w stop
-
-script:
  - |
    if [[ ${COMMIT_MESSAGE} =~ "[publish]" ]]; then
      python setup.py bdist_wheel
