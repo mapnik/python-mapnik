@@ -15,28 +15,29 @@ ICU_VERSION="57.1"
 
 function install_mason_deps() {
     install mapnik 3.0.13-1
-    install jpeg_turbo 1.5.1 libjpeg
-    install libpng 1.6.28 libpng
-    install libtiff 4.0.7 libtiff
+    install jpeg_turbo 1.5.1
+    install libpng 1.6.28
+    install libtiff 4.0.7
     install libpq 9.6.2
-    install sqlite 3.17.0 libsqlite3
-    install expat 2.2.0 libexpat
+    install sqlite 3.17.0
+    install expat 2.2.0
     install icu ${ICU_VERSION}
-    install proj 4.9.3 libproj
-    install pixman 0.34.0 libpixman-1
-    install cairo 1.14.8 libcairo
-    install webp 0.6.0 libwebp
-    install libgdal 2.1.3 libgdal
+    install proj 4.9.3
+    install pixman 0.34.0
+    install cairo 1.14.8
+    install webp 0.6.0
+    install libgdal 2.1.3
     install boost 1.63.0
     install boost_libsystem 1.63.0
     install boost_libfilesystem 1.63.0
     install boost_libprogram_options 1.63.0
     install boost_libregex_icu57 1.63.0
-    install freetype 2.7.1 libfreetype
-    install harfbuzz 1.4.2-ft libharfbuzz
+    install freetype 2.7.1
+    install harfbuzz 1.4.2-ft
     # deps needed by python-mapnik (not mapnik core)
     install boost_libthread 1.63.0
     install boost_libpython 1.63.0
+    install postgis 2.3.2-1
 }
 
 function setup_runtime_settings() {
