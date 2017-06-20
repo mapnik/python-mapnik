@@ -42,15 +42,28 @@ function install_mason_deps() {
 
 function setup_runtime_settings() {
     local MASON_LINKED_ABS=$(pwd)/mason_packages/.link
-    export PROJ_LIB=${MASON_LINKED_ABS}/share/proj
-    export ICU_DATA=${MASON_LINKED_ABS}/share/icu/${ICU_VERSION}
-    export GDAL_DATA=${MASON_LINKED_ABS}/share/gdal
-    if [[ $(uname -s) == 'Darwin' ]]; then
-        export DYLD_LIBRARY_PATH=$(pwd)/mason_packages/.link/lib:${DYLD_LIBRARY_PATH}
-    else
-        export LD_LIBRARY_PATH=$(pwd)/mason_packages/.link/lib:${LD_LIBRARY_PATH}
-    fi
-    export PATH=$(pwd)/mason_packages/.link/bin:${PATH}
+    echo "export PROJ_LIB=${MASON_LINKED_ABS}/share/proj" >> mason-config.env
+    echo "export ICU_DATA=${MASON_LINKED_ABS}/share/icu/${ICU_VERSION}" >> mason-config.env
+    echo "export GDAL_DATA=${MASON_LINKED_ABS}/share/gdal" >> mason-config.env
+    echo "export PATH=${MASON_LINKED_ABS}/mason_packages/.link/bin:${PATH}" >> mason-config.env
+    echo "export PGTEMP_DIR=${MASON_LINKED_ABS}/local-tmp" >> mason-config.env
+    echo "export PGDATA=${MASON_LINKED_ABS}/local-postgres" >> mason-config.env
+    source mason-config.env
+    rm -rf ${PGDATA}
+    mkdir -p ${PGDATA}
+    rm -rf ${PGTEMP_DIR}
+    mkdir -p ${PGTEMP_DIR}
+    ./mason_packages/.link/bin/initdb
+    sleep 2
+    ./mason_packages/.link/bin/postgres > postgres.log &
+    sleep 2
+    ./mason_packages/.link/bin/psql postgres -c "CREATE TABLESPACE temp_disk LOCATION '${PGTEMP_DIR}';"
+    ./mason_packages/.link/bin/psql postgres -c "SET temp_tablespaces TO 'temp_disk';"
+    ./mason_packages/.link/bin/psql postgres -c "CREATE PROCEDURAL LANGUAGE 'plpythonu' HANDLER plpython_call_handler;"
+    ./mason_packages/.link/bin/createdb template_postgis -T postgres
+    ./mason_packages/.link/bin/psql template_postgis -c "CREATE EXTENSION postgis;"
+    ./mason_packages/.link/bin/psql template_postgis -c "SELECT PostGIS_Full_Version();"
+    ./mason_packages/.link/bin/pg_ctl -w stop
 }
 
 function main() {
