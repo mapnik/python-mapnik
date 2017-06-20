@@ -57,10 +57,10 @@ function setup_runtime_settings() {
     sleep 2
     ./mason_packages/.link/bin/postgres > postgres.log &
     sleep 2
-    ./mason_packages/.link/bin/psql postgres -c "CREATE TABLESPACE temp_disk LOCATION '${PGTEMP_DIR}';"
-    ./mason_packages/.link/bin/psql postgres -c "SET temp_tablespaces TO 'temp_disk';"
-    ./mason_packages/.link/bin/psql postgres -c "CREATE PROCEDURAL LANGUAGE 'plpythonu' HANDLER plpython_call_handler;"
     ./mason_packages/.link/bin/createdb template_postgis -T postgres
+    ./mason_packages/.link/bin/psql template_postgis -c "CREATE TABLESPACE temp_disk LOCATION '${PGTEMP_DIR}';"
+    ./mason_packages/.link/bin/psql template_postgis -c "SET temp_tablespaces TO 'temp_disk';"
+    ./mason_packages/.link/bin/psql template_postgis -c "CREATE PROCEDURAL LANGUAGE 'plpythonu' HANDLER plpython_call_handler;"
     ./mason_packages/.link/bin/psql template_postgis -c "CREATE EXTENSION postgis;"
     ./mason_packages/.link/bin/psql template_postgis -c "SELECT PostGIS_Full_Version();"
     ./mason_packages/.link/bin/pg_ctl -w stop
