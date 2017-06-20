@@ -42,7 +42,7 @@ function install_mason_deps() {
 
 function setup_runtime_settings() {
     local MASON_LINKED_ABS=$(pwd)/mason_packages/.link
-    echo "export PROJ_LIB=${MASON_LINKED_ABS}/share/proj" >> mason-config.env
+    echo "export PROJ_LIB=${MASON_LINKED_ABS}/share/proj" > mason-config.env
     echo "export ICU_DATA=${MASON_LINKED_ABS}/share/icu/${ICU_VERSION}" >> mason-config.env
     echo "export GDAL_DATA=${MASON_LINKED_ABS}/share/gdal" >> mason-config.env
     echo "export PATH=${MASON_LINKED_ABS}/mason_packages/.link/bin:${PATH}" >> mason-config.env
