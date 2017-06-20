@@ -68,7 +68,8 @@ install:
 
 before_script:
  # start postgres/postgis
- - source mason-config.env && ./mason_packages/.link/bin/postgres > postgres.log &
+ - source mason-config.env
+ - ./mason_packages/.link/bin/postgres -k ${PGHOST} > postgres.log &
 
 script:
  - python test/run_tests.py

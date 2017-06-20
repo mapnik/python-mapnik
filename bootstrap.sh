@@ -45,17 +45,22 @@ function setup_runtime_settings() {
     echo "export PROJ_LIB=${MASON_LINKED_ABS}/share/proj" > mason-config.env
     echo "export ICU_DATA=${MASON_LINKED_ABS}/share/icu/${ICU_VERSION}" >> mason-config.env
     echo "export GDAL_DATA=${MASON_LINKED_ABS}/share/gdal" >> mason-config.env
-    echo "export PATH=${MASON_LINKED_ABS}/mason_packages/.link/bin:${PATH}" >> mason-config.env
-    echo "export PGTEMP_DIR=${MASON_LINKED_ABS}/local-tmp" >> mason-config.env
-    echo "export PGDATA=${MASON_LINKED_ABS}/local-postgres" >> mason-config.env
+    echo "export PATH=$(pwd)/mason_packages/.link/bin:${PATH}" >> mason-config.env
+    echo "export PGTEMP_DIR=$(pwd)/local-tmp" >> mason-config.env
+    echo "export PGDATA=$(pwd)/local-postgres" >> mason-config.env
+    echo "export PGHOST=$(pwd)/local-unix-socket" >> mason-config.env
+    echo "export PGPORT=1111" >> mason-config.env
+
     source mason-config.env
+    rm -rf ${PGHOST}
+    mkdir -p ${PGHOST}
     rm -rf ${PGDATA}
     mkdir -p ${PGDATA}
     rm -rf ${PGTEMP_DIR}
     mkdir -p ${PGTEMP_DIR}
     ./mason_packages/.link/bin/initdb
     sleep 2
-    ./mason_packages/.link/bin/postgres > postgres.log &
+    ./mason_packages/.link/bin/postgres -k ${PGHOST} > postgres.log &
     sleep 2
     ./mason_packages/.link/bin/createdb template_postgis -T postgres
     ./mason_packages/.link/bin/psql template_postgis -c "CREATE TABLESPACE temp_disk LOCATION '${PGTEMP_DIR}';"
