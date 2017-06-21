@@ -120,14 +120,10 @@ linkflags.extend([
 '-lmapnik-json',
 ] + ['-l%s' % i for i in get_boost_library_names()])
 
-# Dynamically make the mapnik/paths.py file if it doesn't exist.
-if os.path.isfile('mapnik/paths.py'):
-    create_paths = False
-else:
-    create_paths = True
-    f_paths = open('mapnik/paths.py', 'w')
-    f_paths.write('import os\n')
-    f_paths.write('\n')
+# Dynamically make the mapnik/paths.py file
+f_paths = open('mapnik/paths.py', 'w')
+f_paths.write('import os\n')
+f_paths.write('\n')
 
 input_plugin_path = check_output([mapnik_config, '--input-plugins'])
 font_path = check_output([mapnik_config, '--fonts'])
@@ -147,30 +143,32 @@ if mason_build:
     input_plugin_files = os.listdir(input_plugin_path)
     input_plugin_files = [os.path.join(
         input_plugin_path, f) for f in input_plugin_files]
-    if not os.path.exists(os.path.join('mapnik', 'plugins', 'input')):
-        os.makedirs(os.path.join('mapnik', 'plugins', 'input'))
+    if not os.path.exists(os.path.join('mapnik', 'lib', 'mapnik', 'input')):
+        os.makedirs(os.path.join('mapnik', 'lib', 'mapnik', 'input'))
     for f in input_plugin_files:
         try:
             shutil.copyfile(f, os.path.join(
-                'mapnik', 'plugins', 'input', os.path.basename(f)))
+                'mapnik', 'lib', 'mapnik', 'input', os.path.basename(f)))
         except shutil.Error:
             pass
     font_files = os.listdir(font_path)
     font_files = [os.path.join(font_path, f) for f in font_files]
-    if not os.path.exists(os.path.join('mapnik', 'plugins', 'fonts')):
-        os.makedirs(os.path.join('mapnik', 'plugins', 'fonts'))
+    if not os.path.exists(os.path.join('mapnik', 'lib', 'mapnik', 'fonts')):
+        os.makedirs(os.path.join('mapnik', 'lib', 'mapnik', 'fonts'))
     for f in font_files:
         try:
             shutil.copyfile(f, os.path.join(
-                'mapnik', 'plugins', 'fonts', os.path.basename(f)))
+                'mapnik', 'lib', 'mapnik', 'fonts', os.path.basename(f)))
         except shutil.Error:
             pass
-    if create_paths:
-        f_paths.write(
-            'mapniklibpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "plugins")\n')
-        f_paths.write("inputpluginspath = os.path.join(mapniklibpath,'input')\n")
-        f_paths.write("fontscollectionpath = os.path.join(mapniklibpath,'fonts')\n")
-elif create_paths:
+    f_paths.write(
+        'mapniklibpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "lib")\n')
+    f_paths.write("inputpluginspath = os.path.join(mapniklibpath, 'mapnik', 'input')\n")
+    f_paths.write("fontscollectionpath = os.path.join(mapniklibpath, 'mapnik', 'fonts')\n")
+    f_paths.write(
+        "__all__ = [mapniklibpath,inputpluginspath,fontscollectionpath]\n")
+    f_paths.close()
+else:
     if os.environ.get('LIB_DIR_NAME'):
         mapnik_lib_path = lib_path + os.environ.get('LIB_DIR_NAME')
     else:
@@ -181,8 +179,6 @@ elif create_paths:
         "inputpluginspath = '{path}'\n".format(path=input_plugin_path))
     f_paths.write(
         "fontscollectionpath = '{path}'\n".format(path=font_path))
-
-if create_paths:
     f_paths.write(
         "__all__ = [mapniklibpath,inputpluginspath,fontscollectionpath]\n")
     f_paths.close()
@@ -269,7 +265,7 @@ setup(
         'nose',
     ],
     package_data={
-        'mapnik': ['lib/*', 'plugins/*/*', 'share/*/*'],
+        'mapnik': ['lib/*.*', 'lib/*/*/*', 'share/*/*'],
     },
     test_suite='nose.collector',
     cmdclass={
