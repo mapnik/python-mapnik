@@ -60,6 +60,7 @@ def test_can_parse_xml_with_deprecated_properties():
             strict = True
             mapnik.load_map(m, filename, strict)
             base_path = os.path.dirname(filename)
+            m = mapnik.Map(512, 512)
             mapnik.load_map_from_string(
                 m,
                 open(
@@ -90,6 +91,7 @@ def test_good_files():
             mapnik.load_map(m, filename, strict)
             base_path = os.path.dirname(filename)
             with open(filename, 'rb') as f:
+                m = mapnik.Map(512, 512)
                 mapnik.load_map_from_string(m, f.read(), strict, base_path)
         except RuntimeError as e:
             # only test datasources that we have installed
