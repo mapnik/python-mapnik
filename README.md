@@ -80,6 +80,21 @@ That means you likely have built python-mapnik is linked against a differ python
 /usr/bin/python <your script.py>
 ```
 
+If you hit an error like the following when building with mason:
+
+```
+EnvironmentError: 
+Missing boost_python boost library, try to add its name with BOOST_PYTHON_LIB environment var.
+```
+
+Try to set `export BOOST_PYTHON_LIB=boost_python` before build.
+Also, if `boost_thread` or `boost_system` is missing, do likewise:
+
+```
+export BOOST_SYSTEM_LIB=boost_system
+export BOOST_THREAD_LIB=boost_thread
+```
+
 If you still hit a problem create an issue and we'll try to help.
 
 ## Tutorials
