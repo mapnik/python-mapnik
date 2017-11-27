@@ -228,7 +228,7 @@ extra_comp_args = list(filter(lambda arg: arg != "-fvisibility=hidden", extra_co
 if os.environ.get("PYCAIRO", "false") == "true":
     try:
         extra_comp_args.append('-DHAVE_PYCAIRO')
-        print("-I%s/include/pycairo".format(sys.exec_prefix))
+        print("-I{0}/include/pycairo".format(sys.exec_prefix))
         extra_comp_args.append("-I{0}/include/pycairo".format(sys.exec_prefix))
         #extra_comp_args.extend(check_output(["pkg-config", '--cflags', 'pycairo']).strip().split(' '))
         #linkflags.extend(check_output(["pkg-config", '--libs', 'pycairo']).strip().split(' '))

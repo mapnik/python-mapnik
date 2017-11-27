@@ -695,6 +695,16 @@ bool has_pycairo()
 #endif
 }
 
+// indicator for boost regex ICU unicode support
+bool boost_regex_has_icu()
+{
+#if defined(BOOST_REGEX_HAS_ICU)
+    return true;
+#else
+    return false;
+#endif
+}
+
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-local-typedef"
@@ -1054,6 +1064,7 @@ BOOST_PYTHON_MODULE(_mapnik)
     def("has_grid_renderer", &has_grid_renderer, "Get grid_renderer status");
     def("has_cairo", &has_cairo, "Get cairo library status");
     def("has_pycairo", &has_pycairo, "Get pycairo module status");
+    def("boost_regex_has_icu", &boost_regex_has_icu, "Get boost regex ICU status");
 
     python_optional<mapnik::font_set>();
     python_optional<mapnik::color>();

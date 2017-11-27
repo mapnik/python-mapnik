@@ -182,15 +182,14 @@ def test_unicode_regex_replace_to_str():
     expr = mapnik.Expression("[name].replace('(\B)|( )','$1 ')")
     eq_(str(expr), "[name].replace('(\B)|( )','$1 ')")
 
-
-def test_unicode_regex_replace():
-    context = mapnik.Context()
-    context.push('name')
-    f = mapnik.Feature(context, 0)
-    f["name"] = 'Québec'
-    expr = mapnik.Expression("[name].replace('(\B)|( )','$1 ')")
-    # will fail if -DBOOST_REGEX_HAS_ICU is not defined
-    eq_(expr.evaluate(f), u'Q u é b e c')
+if mapnik.boost_regex_has_icu():
+    def test_unicode_regex_replace():
+        context = mapnik.Context()
+        context.push('name')
+        f = mapnik.Feature(context, 0)
+        f["name"] = 'Québec'
+        expr = mapnik.Expression("[name].replace('(\B)|( )','$1 ')")
+        eq_(expr.evaluate(f), u'Q u é b e c')
 
 
 def test_float_precision():
