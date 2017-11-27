@@ -8,7 +8,7 @@ from nose.tools import eq_
 
 import mapnik
 
-from .utilities import execution_path, run_all
+from .utilities import execution_path, run_all, datasources_available
 
 
 default_logging_severity = mapnik.logger.get_severity()
@@ -27,17 +27,16 @@ def teardown():
     mapnik.logger.set_severity(default_logging_severity)
 
 
-def compare_map(xml):
+def compare_map(xmlfile):
+    missing_plugins = set()
+    have_inputs = datasources_available(xmlfile, missing_plugins)
+    if not have_inputs:
+        print 'Notice: skipping saved map comparison for %s due to unavailable input plugins: %s' % (os.path.basename(xmlfile), list(missing_plugins))
+        return False
+
     m = mapnik.Map(256, 256)
-    absolute_base = os.path.abspath(os.path.dirname(xml))
-    try:
-        mapnik.load_map(m, xml, False, absolute_base)
-    except RuntimeError as e:
-        # only test datasources that we have installed
-        if not 'Could not create datasource' in str(e) \
-           and not 'could not connect' in str(e):
-            raise RuntimeError(str(e))
-        return
+    absolute_base = os.path.abspath(os.path.dirname(xmlfile))
+    mapnik.load_map(m, xmlfile, False, absolute_base)
     (handle, test_map) = tempfile.mkstemp(
         suffix='.xml', prefix='mapnik-temp-map1-')
     os.close(handle)
@@ -60,7 +59,7 @@ def compare_map(xml):
     except AssertionError as e:
         raise AssertionError(
             'serialized map "%s" not the same after being reloaded, \ncompare with command:\n\n$%s' %
-            (xml, diff))
+            (xmlfile, diff))
 
     if os.path.exists(test_map):
         os.remove(test_map)
@@ -72,9 +71,6 @@ def compare_map(xml):
 def test_compare_map():
     good_maps = glob.glob("../data/good_maps/*.xml")
     good_maps = [os.path.normpath(p) for p in good_maps]
-    # remove one map that round trips CDATA differently, but this is okay
-    ignorable = os.path.join('..', 'data', 'good_maps', 'empty_parameter2.xml')
-    good_maps.remove(ignorable)
     for m in good_maps:
         compare_map(m)
 
