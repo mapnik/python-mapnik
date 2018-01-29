@@ -1249,7 +1249,7 @@ class PDFPrinter(object):
             file_writer = PdfFileWriter()
 
             # preserve OCProperties at document root if we have one
-            if file_reader.trailer['/Root'].has_key(NameObject('/OCProperties')):
+            if NameObject('/OCProperties') in file_reader.trailer['/Root']:
                 file_writer._root_object[NameObject('/OCProperties')] = file_reader.trailer[
                     '/Root'].getObject()[NameObject('/OCProperties')]
 
