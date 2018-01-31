@@ -433,16 +433,16 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
             lyr.name, tnam, lbl, overview, clip)
         compare_images(expected, im)
         # no data
-        eq_(hexlify(im.view(3, 16, 1, 1).tostring()), '00000000')
-        eq_(hexlify(im.view(128, 16, 1, 1).tostring()), '00000000')
-        eq_(hexlify(im.view(250, 16, 1, 1).tostring()), '00000000')
-        eq_(hexlify(im.view(3, 240, 1, 1).tostring()), '00000000')
-        eq_(hexlify(im.view(128, 240, 1, 1).tostring()), '00000000')
-        eq_(hexlify(im.view(250, 240, 1, 1).tostring()), '00000000')
+        eq_(hexlify(im.view(3, 16, 1, 1).tostring()), b'00000000')
+        eq_(hexlify(im.view(128, 16, 1, 1).tostring()), b'00000000')
+        eq_(hexlify(im.view(250, 16, 1, 1).tostring()), b'00000000')
+        eq_(hexlify(im.view(3, 240, 1, 1).tostring()), b'00000000')
+        eq_(hexlify(im.view(128, 240, 1, 1).tostring()), b'00000000')
+        eq_(hexlify(im.view(250, 240, 1, 1).tostring()), b'00000000')
         # dark brown
-        eq_(hexlify(im.view(174, 39, 1, 1).tostring()), 'c3a698ff')
+        eq_(hexlify(im.view(174, 39, 1, 1).tostring()), b'c3a698ff')
         # dark gray
-        eq_(hexlify(im.view(195, 132, 1, 1).tostring()), '575f62ff')
+        eq_(hexlify(im.view(195, 132, 1, 1).tostring()), b'575f62ff')
         # Now zoom over a portion of the env (1/10)
         newenv = mapnik.Box2d(-12329035.7652168, 4508926.651484220,
                               -12328997.49148983, 4508957.34625536)
@@ -456,17 +456,17 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
             lyr.name, tnam, lbl, overview, clip)
         compare_images(expected, im)
         # no data
-        eq_(hexlify(im.view(3, 16, 1, 1).tostring()), '00000000')
-        eq_(hexlify(im.view(128, 16, 1, 1).tostring()), '00000000')
-        eq_(hexlify(im.view(250, 16, 1, 1).tostring()), '00000000')
+        eq_(hexlify(im.view(3, 16, 1, 1).tostring()), b'00000000')
+        eq_(hexlify(im.view(128, 16, 1, 1).tostring()), b'00000000')
+        eq_(hexlify(im.view(250, 16, 1, 1).tostring()), b'00000000')
         # black
-        eq_(hexlify(im.view(3, 42, 1, 1).tostring()), '000000ff')
-        eq_(hexlify(im.view(3, 134, 1, 1).tostring()), '000000ff')
-        eq_(hexlify(im.view(3, 244, 1, 1).tostring()), '000000ff')
+        eq_(hexlify(im.view(3, 42, 1, 1).tostring()), b'000000ff')
+        eq_(hexlify(im.view(3, 134, 1, 1).tostring()), b'000000ff')
+        eq_(hexlify(im.view(3, 244, 1, 1).tostring()), b'000000ff')
         # gray
-        eq_(hexlify(im.view(135, 157, 1, 1).tostring()), '4e555bff')
+        eq_(hexlify(im.view(135, 157, 1, 1).tostring()), b'4e555bff')
         # brown
-        eq_(hexlify(im.view(195, 223, 1, 1).tostring()), 'f2cdbaff')
+        eq_(hexlify(im.view(195, 223, 1, 1).tostring()), b'f2cdbaff')
 
     def _test_rgb_8bui(lbl, tilesize, constraint, overview):
         tnam = 'nodataedge'
