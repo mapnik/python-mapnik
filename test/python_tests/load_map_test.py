@@ -59,6 +59,7 @@ def test_can_parse_xml_with_deprecated_properties():
             m = mapnik.Map(512, 512)
             strict = True
             mapnik.load_map(m, filename, strict)
+            m = mapnik.Map(512, 512)
             base_path = os.path.dirname(filename)
             mapnik.load_map_from_string(
                 m,
@@ -88,6 +89,7 @@ def test_good_files():
             m = mapnik.Map(512, 512)
             strict = True
             mapnik.load_map(m, filename, strict)
+            m = mapnik.Map(512, 512)
             base_path = os.path.dirname(filename)
             with open(filename, 'rb') as f:
                 mapnik.load_map_from_string(m, f.read(), strict, base_path)
