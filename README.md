@@ -53,6 +53,10 @@ If you need Pycairo, make sure that PYCAIRO is set to true in your environment o
 PYCAIRO=true python setup.py develop
 ```
 
+### Building against Mapnik 3.0.x
+
+The `master` branch is no longer compatible with `3.0.x` series of Mapnik. To build again Mapnik 3.0.x, use [`v3.0.x`](https://github.com/mapnik/python-mapnik/tree/v3.0.x) branch.
+
 ## Testing
 
 Once you have installed you can test the package by running:
