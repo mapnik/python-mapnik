@@ -164,7 +164,7 @@ sym = mapnik.LineSymbolizer()
 # FIXME - currently adding dash arrays is broken
 # https://github.com/mapnik/mapnik/issues/2324
 sym.stroke = mapnik.Color('black')
-sym.stroke_width = 1.0
+sym.stroke_width = 1
 provlines_rule.symbols.append(sym)
 provlines_style.rules.append(provlines_rule)
 
@@ -196,7 +196,7 @@ roads34_rule.filter = mapnik.Expression('([CLASS] = 3) or ([CLASS] = 4)')
 
 sym = mapnik.LineSymbolizer()
 sym.stroke = mapnik.Color(171,158,137)
-sym.stroke_width = 2.0
+sym.stroke_width = 2
 sym.stroke_linecap = mapnik.stroke_linecap.ROUND_CAP
 
 roads34_rule.symbols.append(sym)
@@ -219,7 +219,7 @@ roads2_rule_1.filter = mapnik.Expression('[CLASS] = 2')
 
 sym = mapnik.LineSymbolizer()
 sym.stroke = mapnik.Color(171,158,137)
-sym.stroke_width = 4.0
+sym.stroke_width = 4
 sym.stroke_linecap = mapnik.stroke_linecap.ROUND_CAP
 roads2_rule_1.symbols.append(sym)
 roads2_style_1.rules.append(roads2_rule_1)
@@ -232,7 +232,7 @@ roads2_rule_2.filter = mapnik.Expression('[CLASS] = 2')
 sym = mapnik.LineSymbolizer()
 sym.stroke = mapnik.Color(255,250,115)
 sym.stroke_linecap = mapnik.stroke_linecap.ROUND_CAP
-sym.stroke_width = 2.0
+sym.stroke_width = 2
 roads2_rule_2.symbols.append(sym)
 roads2_style_2.rules.append(roads2_rule_2)
 
@@ -255,7 +255,7 @@ roads1_rule_1.filter = mapnik.Expression('[CLASS] = 1')
 sym = mapnik.LineSymbolizer()
 sym.stroke = mapnik.Color(188,149,28)
 sym.stroke_linecap = mapnik.stroke_linecap.ROUND_CAP
-sym.stroke_width = 7.0
+sym.stroke_width = 7
 roads1_rule_1.symbols.append(sym)
 roads1_style_1.rules.append(roads1_rule_1)
 m.append_style('highway-border', roads1_style_1)
@@ -265,7 +265,7 @@ roads1_rule_2 = mapnik.Rule()
 roads1_rule_2.filter = mapnik.Expression('[CLASS] = 1')
 sym.stroke = mapnik.Color(242,191,36)
 sym.stroke_linecap = mapnik.stroke_linecap.ROUND_CAP
-sym.stroke_width = 5.0
+sym.stroke_width = 5
 roads1_rule_2.symbols.append(sym)
 roads1_style_2.rules.append(roads1_rule_2)
 
