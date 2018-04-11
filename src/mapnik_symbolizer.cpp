@@ -47,9 +47,6 @@
 #include <mapnik/group/group_symbolizer_properties.hpp>
 #include <mapnik/util/variant.hpp>
 
-// stl
-#include <sstream>
-
 using mapnik::symbolizer;
 using mapnik::point_symbolizer;
 using mapnik::line_symbolizer;
@@ -73,10 +70,61 @@ using mapnik::parse_path;
 
 
 namespace {
+
+struct value_to_target
+{
+    value_to_target(mapnik::symbolizer_base & sym, std::string const& name)
+        : sym_(sym), name_(name) {}
+
+    void operator() (mapnik::value_integer const& val)
+    {
+        auto key = mapnik::get_key(name_);
+        switch (std::get<2>(get_meta(key)))
+        {
+        case mapnik::property_types::target_bool:
+            put(sym_, key, static_cast<mapnik::value_bool>(val));
+            break;
+        case mapnik::property_types::target_double:
+            put(sym_, key, static_cast<mapnik::value_double>(val));
+            break;
+        default:
+            put(sym_, key, val);
+            break;
+        }
+    }
+
+    void operator() (mapnik::value_double const& val)
+    {
+        auto key = mapnik::get_key(name_);
+        switch (std::get<2>(get_meta(key)))
+        {
+        case mapnik::property_types::target_bool:
+            put(sym_, key, static_cast<mapnik::value_bool>(val));
+            break;
+        case mapnik::property_types::target_integer:
+            put(sym_, key, static_cast<mapnik::value_integer>(val));
+            break;
+        default:
+            put(sym_, key, val);
+            break;
+        }
+    }
+
+    template <typename T>
+    void operator() (T const& val)
+    {
+        put(sym_, mapnik::get_key(name_), val);
+    }
+private:
+    mapnik::symbolizer_base & sym_;
+    std::string const& name_;
+
+};
+
 using namespace boost::python;
 void __setitem__(mapnik::symbolizer_base & sym, std::string const& name, mapnik::symbolizer_base::value_type const& val)
 {
-    put(sym, mapnik::get_key(name), val);
+    mapnik::util::apply_visitor(value_to_target(sym, name), val);
 }
 
 std::shared_ptr<mapnik::symbolizer_base::value_type> numeric_wrapper(const object& arg)
