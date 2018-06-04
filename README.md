@@ -10,7 +10,7 @@ this currently does not work though. So for now here are the instructions
 
 ### Create a virtual environment
 
-It is highly suggested that you [a python virtualenv](http://docs.python-guide.org/en/latest/dev/virtualenvs/) when developing
+It is highly suggested that you use [a python virtualenv](http://docs.python-guide.org/en/latest/dev/virtualenvs/) when developing
 on mapnik.
 
 ### Building from Mason
