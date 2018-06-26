@@ -10,7 +10,7 @@ this currently does not work though. So for now here are the instructions
 
 ### Create a virtual environment
 
-It is highly suggested that you [a python virtualenv](http://docs.python-guide.org/en/latest/dev/virtualenvs/) when developing
+It is highly suggested that you have [a python virtualenv](http://docs.python-guide.org/en/latest/dev/virtualenvs/) when developing
 on mapnik.
 
 ### Building from Mason
@@ -78,7 +78,7 @@ Fatal Python error: PyThreadState_Get: no current thread
 Abort trap: 6
 ```
 
-That means you likely have built python-mapnik is linked against a differ python version than what you are running. To solve this try running:
+That means you likely have built python-mapnik linked against a different python version than what you are running. To solve this try running:
 
 ```
 /usr/bin/python <your script.py>
