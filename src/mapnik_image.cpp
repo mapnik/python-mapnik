@@ -44,6 +44,7 @@
 #include <mapnik/cairo/cairo_context.hpp>
 #include <mapnik/cairo/cairo_image_util.hpp>
 #if PY_MAJOR_VERSION >= 3
+#define PYCAIRO_NO_IMPORT
 #include <py3cairo.h>
 #else
 #include <pycairo.h>
