@@ -55,7 +55,7 @@ PYCAIRO=true python setup.py develop
 
 ### Building against Mapnik 3.0.x
 
-The `master` branch is no longer compatible with `3.0.x` series of Mapnik. To build again Mapnik 3.0.x, use [`v3.0.x`](https://github.com/mapnik/python-mapnik/tree/v3.0.x) branch.
+The `master` branch is no longer compatible with `3.0.x` series of Mapnik. To build against Mapnik 3.0.x, use [`v3.0.x`](https://github.com/mapnik/python-mapnik/tree/v3.0.x) branch.
 
 ## Testing
 
