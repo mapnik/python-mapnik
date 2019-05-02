@@ -35,7 +35,7 @@ chars = [
     {
         "name": "reverse_solidus",  # backslash
         "test": "string with \\ quote",
-        "json": '{"type":"Feature","id":1,"geometry":null,"properties":{"name":"string with \\\ quote"}}'
+        "json": '{"type":"Feature","id":1,"geometry":null,"properties":{"name":"string with \\\\ quote"}}'
     },
     {
         "name": "solidus",  # forward slash
