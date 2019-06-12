@@ -87,6 +87,12 @@ struct value_to_target
         case mapnik::property_types::target_double:
             put(sym_, key, static_cast<mapnik::value_double>(val));
             break;
+        case mapnik::property_types::target_comp_op:
+        case mapnik::property_types::target_scaling_method:
+        {
+            put(sym_, key, mapnik::enumeration_wrapper(val));
+            break;
+        }
         default:
             put(sym_, key, val);
             break;
