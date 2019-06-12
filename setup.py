@@ -253,7 +253,7 @@ if os.environ.get("CXX", False) == False:
 
 setup(
     name="mapnik",
-    version="3.1.0",
+    version="4.0.0",
     packages=['mapnik','mapnik.printing'],
     author="Blake Thompson",
     author_email="flippmoke@gmail.com",
