@@ -101,13 +101,15 @@ sysconfig._config_vars['CFLAGSFORSHARED'] = ''
 os.environ['ARCHFLAGS'] = ''
 
 if os.environ.get("MASON_BUILD", "false") == "true":
-    # run bootstrap.sh to get mason builds
-    subprocess.call(['./bootstrap.sh'])
-    mapnik_config = 'mason_packages/.link/bin/mapnik-config'
+    mason_packages = os.environ.get('MASON_ROOT', 'mason_packages')
+    mapnik_config = mason_packages + '/.link/bin/mapnik-config'
     mason_build = True
 else:
+    mason_packages = None
     mapnik_config = 'mapnik-config'
     mason_build = False
+
+mapnik_config = os.environ.get('MAPNIK_CONFIG', mapnik_config)
 
 
 linkflags = []
@@ -193,7 +195,7 @@ if mason_build:
         if not os.path.exists(share_path):
             os.makedirs(share_path)
 
-    icu_path = 'mason_packages/.link/share/icu/*/*.dat'
+    icu_path = mason_packages + '/.link/share/icu/*/*.dat'
     icu_files = glob.glob(icu_path)
     if len(icu_files) != 1:
         raise Exception("Failed to find icu dat file at "+ icu_path)
@@ -201,29 +203,26 @@ if mason_build:
         shutil.copyfile(f, os.path.join(
             'mapnik', share_dir, 'icu', os.path.basename(f)))
 
-    gdal_path = 'mason_packages/.link/share/gdal/'
-    gdal_files = os.listdir(gdal_path)
-    gdal_files = [os.path.join(gdal_path, f) for f in gdal_files]
-    for f in gdal_files:
+    gdal_path = mason_packages + '/.link/share/gdal/'
+    for f in os.listdir(gdal_path):
         try:
-            shutil.copyfile(f, os.path.join(
-                'mapnik', share_dir, 'gdal', os.path.basename(f)))
+            src = os.path.join(gdal_path, f)
+            dst = os.path.join('mapnik', share_dir, 'gdal', f)
+            shutil.copyfile(src, dst)
         except shutil.Error:
             pass
 
-    proj_path = 'mason_packages/.link/share/proj/'
-    proj_files = os.listdir(proj_path)
-    proj_files = [os.path.join(proj_path, f) for f in proj_files]
-    for f in proj_files:
+    proj_path = mason_packages + '/.link/share/proj/'
+    for f in os.listdir(proj_path):
         try:
-            shutil.copyfile(f, os.path.join(
-                'mapnik', share_dir, 'proj', os.path.basename(f)))
+            src = os.path.join(proj_path, f)
+            dst = os.path.join('mapnik', share_dir, 'proj', f)
+            shutil.copyfile(src, dst)
         except shutil.Error:
             pass
 
 extra_comp_args = check_output([mapnik_config, '--cflags']).split(' ')
-
-extra_comp_args = list(filter(lambda arg: arg != "-fvisibility=hidden", extra_comp_args))
+extra_comp_args = [a for a in extra_comp_args if a != "-fvisibility=hidden"]
 
 if os.environ.get("PYCAIRO", "false") == "true":
     try:
