@@ -54,7 +54,9 @@ def get_boost_library_names():
     found = []
     missing = []
     for _id in wanted:
-        name = os.environ.get("%s_LIB" % _id.upper(), find_boost_library(_id))
+        name = os.environ.get("%s_LIB" % _id.upper())
+        if name is None:
+            name = _id if mason_build else find_boost_library(_id)
         if name:
             found.append(name)
         else:
@@ -79,7 +81,9 @@ class WhichBoostCommand(Command):
         pass
 
     def run(self):
-        print("\n".join(get_boost_library_names()))
+        print("Found boost libraries:")
+        for lib in get_boost_library_names():
+            print("\t" + lib)
 
 
 cflags = sysconfig.get_config_var('CFLAGS')
