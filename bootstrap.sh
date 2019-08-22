@@ -3,14 +3,6 @@
 set -eu
 set -o pipefail
 
-function install() {
-    MASON_PLATFORM_ID=$(mason env MASON_PLATFORM_ID)
-    if [[ ! -d ./mason_packages/${MASON_PLATFORM_ID}/${1}/ ]]; then
-        mason install $1 $2
-        mason link $1 $2
-    fi
-}
-
 ICU_VERSION="57.1"
 
 function install_mason_deps() {
@@ -40,13 +32,21 @@ function install_mason_deps() {
 }
 
 function setup_runtime_settings() {
-    local MASON_LINKED_ABS=$(pwd)/mason_packages/.link
-    echo "export PROJ_LIB=${MASON_LINKED_ABS}/share/proj" > mason-config.env
-    echo "export ICU_DATA=${MASON_LINKED_ABS}/share/icu/${ICU_VERSION}" >> mason-config.env
-    echo "export GDAL_DATA=${MASON_LINKED_ABS}/share/gdal" >> mason-config.env
-    echo "export PATH=$(pwd)/mason_packages/.link/bin:${PATH}" >> mason-config.env
-
-    source mason-config.env
+    # PWD and ICU_VERSION are expanded here, but MASON_ROOT and PATH
+    # expansion must be deferred to the generated script, so that it
+    # can be used later
+    printf 'export %s=${MASON_ROOT:-%q}\n'          \
+            MASON_ROOT  "$PWD/mason_packages"       \
+        > ./mason-config.env
+    printf 'export %s=$%s\n'                                            \
+            MASON_BIN   "{MASON_ROOT}/.link/bin"                        \
+            PROJ_LIB    "{MASON_ROOT}/.link/share/proj"                 \
+            ICU_DATA    "{MASON_ROOT}/.link/share/icu/${ICU_VERSION}"   \
+            GDAL_DATA   "{MASON_ROOT}/.link/share/gdal"                 \
+            PATH    '{MASON_BIN}:${PATH}'                               \
+            PATH    '{PATH//":${MASON_BIN}:"/:}  # remove duplicates'   \
+        >> ./mason-config.env
+    source ./mason-config.env
 }
 
 function main() {

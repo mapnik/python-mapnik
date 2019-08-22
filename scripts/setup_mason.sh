@@ -4,6 +4,19 @@
 MASON_ARCHIVE_VERSION="v0.20.0"
 MASON_ARCHIVE_BASE="https://github.com/mapbox/mason/archive"
 
+function install() {
+    local package_prefix=
+    package_prefix=$(mason prefix $1 $2) || return
+    if [ ! -d "$package_prefix/" ]; then
+        mason install $1 $2 || return
+    fi
+    mason link $1 $2
+}
+
+function mason_packages() {
+    printf '%s\n' "${MASON_ROOT:-"$PWD/mason_packages"}"
+}
+
 function setup_mason() {
     local cdup=
     if cdup=$(git rev-parse --show-cdup 2>/dev/null); then
