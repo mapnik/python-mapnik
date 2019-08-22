@@ -3,10 +3,20 @@
 set -eu
 set -o pipefail
 
+BOOST_VERSION="1.66.0"
 ICU_VERSION="57.1"
+MAPNIK_VERSION="a0ea7db1a"
 
-function install_mason_deps() {
-    install mapnik df0bbe4
+function install_mason_deps() (
+    # subshell
+    set -eu
+    install_mapnik_deps
+    install mapnik ${MAPNIK_VERSION}
+)
+
+function install_mapnik_deps() (
+    # subshell
+    set -eu
     install jpeg_turbo 1.5.1
     install libpng 1.6.28
     install libtiff 4.0.7
@@ -19,17 +29,17 @@ function install_mason_deps() {
     install cairo 1.14.8
     install webp 0.6.0
     install libgdal 2.1.3
-    install boost 1.63.0
-    install boost_libsystem 1.63.0
-    install boost_libfilesystem 1.63.0
-    install boost_libprogram_options 1.63.0
-    install boost_libregex_icu57 1.63.0
+    install boost ${BOOST_VERSION}
+    install boost_libsystem ${BOOST_VERSION}
+    install boost_libfilesystem ${BOOST_VERSION}
+    install boost_libprogram_options ${BOOST_VERSION}
+    install boost_libregex_icu${ICU_VERSION%%.*} ${BOOST_VERSION}
     install freetype 2.7.1
     install harfbuzz 1.4.2-ft
     # deps needed by python-mapnik (not mapnik core)
-    install boost_libthread 1.63.0
-    install boost_libpython 1.63.0
-}
+    install boost_libthread ${BOOST_VERSION}
+    install boost_libpython ${BOOST_VERSION}
+)
 
 function setup_runtime_settings() {
     # PWD and ICU_VERSION are expanded here, but MASON_ROOT and PATH
