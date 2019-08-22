@@ -37,7 +37,6 @@ function install_mason_deps() {
     # deps needed by python-mapnik (not mapnik core)
     install boost_libthread 1.63.0
     install boost_libpython 1.63.0
-    install postgis 2.3.2-1
 }
 
 function setup_runtime_settings() {
@@ -46,29 +45,8 @@ function setup_runtime_settings() {
     echo "export ICU_DATA=${MASON_LINKED_ABS}/share/icu/${ICU_VERSION}" >> mason-config.env
     echo "export GDAL_DATA=${MASON_LINKED_ABS}/share/gdal" >> mason-config.env
     echo "export PATH=$(pwd)/mason_packages/.link/bin:${PATH}" >> mason-config.env
-    echo "export PGTEMP_DIR=$(pwd)/local-tmp" >> mason-config.env
-    echo "export PGDATA=$(pwd)/local-postgres" >> mason-config.env
-    echo "export PGHOST=$(pwd)/local-unix-socket" >> mason-config.env
-    echo "export PGPORT=1111" >> mason-config.env
 
     source mason-config.env
-    rm -rf ${PGHOST}
-    mkdir -p ${PGHOST}
-    rm -rf ${PGDATA}
-    mkdir -p ${PGDATA}
-    rm -rf ${PGTEMP_DIR}
-    mkdir -p ${PGTEMP_DIR}
-    ./mason_packages/.link/bin/initdb
-    sleep 2
-    ./mason_packages/.link/bin/postgres -k ${PGHOST} > postgres.log &
-    sleep 2
-    ./mason_packages/.link/bin/createdb template_postgis -T postgres
-    ./mason_packages/.link/bin/psql template_postgis -c "CREATE TABLESPACE temp_disk LOCATION '${PGTEMP_DIR}';"
-    ./mason_packages/.link/bin/psql template_postgis -c "SET temp_tablespaces TO 'temp_disk';"
-    ./mason_packages/.link/bin/psql template_postgis -c "CREATE PROCEDURAL LANGUAGE 'plpythonu' HANDLER plpython_call_handler;"
-    ./mason_packages/.link/bin/psql template_postgis -c "CREATE EXTENSION postgis;"
-    ./mason_packages/.link/bin/psql template_postgis -c "SELECT PostGIS_Full_Version();"
-    ./mason_packages/.link/bin/pg_ctl -w stop
 }
 
 function main() {
