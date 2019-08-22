@@ -1,22 +1,24 @@
 language: generic
 
+git:
+  submodules: false
+
 matrix:
   include:
     - os: linux
-      sudo: false
       compiler: clang
-      # note: only using ccache for CC is intentional here to
-      # workaround an odd bug in distutils that manifests when only `ccache` is used to link
-      # because distutils also has a bug whereby CC is used to compile instead of CXX, this works :)
-      env: JOBS=8 CXX="clang++-3.9 -Qunused-arguments" CC="ccache clang-3.9 -Qunused-arguments"
+      env: >-
+          CC="clang-3.9"
+          CXX="clang++-3.9"
       addons:
         apt:
-          sources: [ 'ubuntu-toolchain-r-test']
-          packages: [ 'libstdc++-5-dev', 'gdb', 'apport']
+          sources: [ ubuntu-toolchain-r-test ]
+          packages: [ clang-3.9, libstdc++-5-dev ]
     - os: osx
-      osx_image: xcode8.2
       compiler: clang
-      env: JOBS=4
+      env: >-
+          CC="clang"
+          CXX="clang++"
 
 cache:
   directories:
@@ -39,43 +41,80 @@ before_install:
    if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
      rvm get head || true
    fi
- - source scripts/setup_mason.sh
- - export PYTHONUSERBASE=$(pwd)/mason_packages/.link
- - export PYTHONPATH=$(pwd)/mason_packages/.link/lib/python2.7/site-packages
- - export PATH=$(pwd)/mason_packages/.link/bin:${PYTHONUSERBASE}/bin:${PATH}
+ - declare -p HOME PATH "${!CCACHE@}" "${!TRAVIS@}"  # print variables by prefix
+
+ # An ancient bug in distutils (https://bugs.python.org/issue8027)
+ # prevents having multi-word CXX="ccache c++". Luckily distutils
+ # uses CC to compile C++ sources, and only uses CXX for linking,
+ # for which ccache is useless.
+ - export CC="ccache $CC"
+
  - export MASON_BUILD=true
+ - export MASON_ROOT=$PWD/mason_packages
+ - export PYTHONUSERBASE=$MASON_ROOT/.link
+ - export PATH=$MASON_ROOT/.link/bin:$PATH
  - export COMMIT_MESSAGE=$(git show -s --format=%B $TRAVIS_COMMIT | tr -d '\n')
- - |
-   if [[ $(uname -s) == 'Linux' ]]; then
-     export LDSHARED=$(python -c "import os;from distutils import sysconfig;print sysconfig.get_config_var('LDSHARED').replace('cc ','clang++-3.9 ')");
-     mason install clang++ 3.9.1
-     export PATH=$(mason prefix clang++ 3.9.1)/bin:${PATH}
-     which clang++
-   else
-     sudo easy_install pip;
-     export LDSHARED=$(python -c "import os;from distutils import sysconfig;print sysconfig.get_config_var('LDSHARED').replace('cc ','clang++ ')");
-   fi
+
+install:
+ - source ./bootstrap.sh
+ - install postgres 9.6.5
+ - install postgis 2.4.1
+ - install ccache 3.3.4
+ - ccache --version
+ - test "$TRAVIS_OS_NAME" != osx || sudo easy_install pip
+ - pip install --upgrade --user pip
  - pip install --upgrade --user nose
  - pip install --upgrade --user wheel
  - pip install --upgrade --user twine
  - pip install --upgrade --user setuptools
  - pip install --upgrade --user PyPDF2
- - python --version
-
-install:
- - mkdir -p ${PYTHONPATH}
- - python setup.py install --prefix ${PYTHONUSERBASE}
 
 before_script:
- # start postgres/postgis
- - source mason-config.env
- - ./mason_packages/.link/bin/postgres -k ${PGHOST} > postgres.log &
+ - touch SCRIPT_START
+ - python --version
+ - python -m site
+ - mkdir -p "$(python -m site --user-site)"
+
+ # distutils uses LDSHARED for linking, which it somehow constructs from CC
+ # with additional flags, but the resulting command is ultimately wrong.
+ #
+ #      LDSHARED[osx]='clang -bundle -undefined dynamic_lookup'
+ #      LDSHARED[linux]='x86_64-linux-gnu-gcc -pthread -shared -Wl,-O1 -Wl,-Bsymbolic-functions -Wl,-Bsymbolic-functions -Wl,-z,relro -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -Wdate-time -D_FORTIFY_SOURCE=2 -g -fstack-protector-strong -Wformat -Werror=format-security'
+ #
+ # On Linux there are some misplaced options that don't apply to linker.
+ # OSX command looks fine, but for some reason leads to the execution of
+ # 'clang++ clang -bundle -undefined dynamic_lookup ...' and fails.
+ #
+ #      LDCXXSHARED[osx]='clang++ -bundle -undefined dynamic_lookup'
+ #      LDCXXSHARED[linux]='c++ -pthread -shared -Wl,-O1 -Wl,-Bsymbolic-functions'
+ #
+ # So let's just replace the value of LDSHARED with LDCXXSHARED, which
+ # apparently works on both OSX and Linux. Nevermind compiler 'c++',
+ # distutils substitutes that with CXX.
+ #
+ - LDSHARED=$(python -c 'from distutils import sysconfig as dusc; print(dusc.get_config_var("LDSHARED"))')
+ - LDCXXSHARED=$(python -c 'from distutils import sysconfig as dusc; print(dusc.get_config_var("LDCXXSHARED"))')
+ - printf 'default LDSHARED=%q\n' "$LDSHARED"
+ - printf 'default LDCXXSHARED=%q\n' "$LDCXXSHARED"
+ - export LDSHARED=${LDCXXSHARED}
 
 script:
+ - python setup.py install --user --prefix=
+   # why empty prefix is needed is explained here:
+   # https://stackoverflow.com/questions/4495120/combine-user-with-prefix-error-with-setup-py-install
+ - (( !TRAVIS_TEST_RESULT )) && source ./scripts/setup_postgres.sh
+ - (( !TRAVIS_TEST_RESULT )) && git submodule update --init --depth=20 test/
  - python test/run_tests.py
  - python test/visual.py -q
- # stop postgres
- - ./mason_packages/.link/bin/pg_ctl -w stop
+
+before_cache:
+ - ccache --version
+ - ccache --print-config
+ - ccache --show-stats
+ - ccache --zero-stats
+ - find $HOME/.ccache -mindepth 3 -newer SCRIPT_START | head | file --files-from -
+
+after_success:
  - |
    if [[ ${COMMIT_MESSAGE} =~ "[publish]" ]]; then
      python setup.py bdist_wheel
@@ -84,7 +123,7 @@ script:
         rename 's/linux_x86_64/any/;' $PRE_DISTS
      fi
      export DISTS='dist/*'
-     $(pwd)/mason_packages/.link/bin/twine upload -u $PYPI_USER -p $PYPI_PASSWORD $DISTS
+     "$MASON_ROOT/.link/bin/twine" upload -u $PYPI_USER -p $PYPI_PASSWORD $DISTS
    fi
 
 
