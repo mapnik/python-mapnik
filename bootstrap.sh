@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-set -eu
-set -o pipefail
-
 BOOST_VERSION="1.66.0"
 ICU_VERSION="57.1"
 MAPNIK_VERSION="a0ea7db1a"
@@ -61,15 +58,12 @@ function setup_runtime_settings() {
 
 function main() {
     source scripts/setup_mason.sh
-    setup_mason
-    install_mason_deps
-    setup_runtime_settings
+    [ $? = 0 ] && install_mason_deps
+    [ $? = 0 ] && setup_runtime_settings
+    [ $? = 0 ] || return
     echo "Ready, now run:"
     echo ""
     echo "    make test"
 }
 
 main
-
-set +eu
-set +o pipefail
