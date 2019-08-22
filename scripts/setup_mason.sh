@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # we pin the mason version to avoid changes in mason breaking builds
-MASON_ARCHIVE_VERSION="v0.20.0"
+MASON_ARCHIVE_VERSION="f00098c63"
 MASON_ARCHIVE_BASE="https://github.com/mapbox/mason/archive"
 
 function install() {

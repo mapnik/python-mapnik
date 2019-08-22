@@ -59,7 +59,7 @@ install:
  - source ./bootstrap.sh
  - install postgres 9.6.5
  - install postgis 2.4.1
- - install ccache 3.3.4
+ - install ccache 3.7.2
  - ccache --version
  - test "$TRAVIS_OS_NAME" != osx || sudo easy_install pip
  - pip install --upgrade --user pip
@@ -109,7 +109,7 @@ script:
 
 before_cache:
  - ccache --version
- - ccache --print-config
+ - ccache --show-config
  - ccache --show-stats
  - ccache --zero-stats
  - find $HOME/.ccache -mindepth 3 -newer SCRIPT_START | head | file --files-from -
