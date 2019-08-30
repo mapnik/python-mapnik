@@ -18,7 +18,7 @@ Next test the Python bindings. You should be able to open a terminal and type:
 python -c "import mapnik;print mapnik.__file__" # should return the path to the python bindings and no errors
 ```
 
-If the above does not work (e.g. throws an `ImportError`) then please go back and ensure Mapnik is properly installed.
+If the above does not work (e.g. throws an `ImportError`) then please go back and ensure [Mapnik](https://github.com/mapnik/mapnik/wiki/Mapnik-Installation) and the [Mapnik Python bindings](/README.md) are properly installed.
 ## Step 2
 
 Now, we need some data to render. Let's use a shapefile of world border polygons from [naturalearthdata.com](http://naturalearthdata.com) ([direct link](http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/110m/cultural/ne_110m_admin_0_countries.zip)). Unzip the archive in an easily accessible location of your choosing. In *Step 3* we will be referencing the path to this shapefile in Python code, so make sure you know where you put it.
