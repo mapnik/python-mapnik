@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
@@ -55,7 +55,7 @@ def test_opening_data():
                 else:
                     for plugin in plugin_mapping[ext]:
                         kwargs = {'type': plugin, 'file': filepath}
-                        if plugin is 'ogr':
+                        if plugin == 'ogr':
                             kwargs['layer_by_index'] = 0
                         try:
                             mapnik.Datasource(**kwargs)

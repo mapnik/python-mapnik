@@ -174,13 +174,13 @@ def test_regex_replace():
     context.push('name')
     f = mapnik.Feature(context, 0)
     f["name"] = 'test'
-    expr = mapnik.Expression("[name].replace('(\B)|( )','$1 ')")
+    expr = mapnik.Expression("[name].replace('(\\B)|( )','$1 ')")
     eq_(expr.evaluate(f), 't e s t')
 
 
 def test_unicode_regex_replace_to_str():
-    expr = mapnik.Expression("[name].replace('(\B)|( )','$1 ')")
-    eq_(str(expr), "[name].replace('(\B)|( )','$1 ')")
+    expr = mapnik.Expression("[name].replace('(\\B)|( )','$1 ')")
+    eq_(str(expr), "[name].replace('(\\B)|( )','$1 ')")
 
 
 def test_unicode_regex_replace():
@@ -188,7 +188,7 @@ def test_unicode_regex_replace():
     context.push('name')
     f = mapnik.Feature(context, 0)
     f["name"] = 'Québec'
-    expr = mapnik.Expression("[name].replace('(\B)|( )','$1 ')")
+    expr = mapnik.Expression("[name].replace('(\\B)|( )','$1 ')")
     # will fail if -DBOOST_REGEX_HAS_ICU is not defined
     eq_(expr.evaluate(f), u'Q u é b e c')
 
