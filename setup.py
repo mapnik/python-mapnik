@@ -303,7 +303,6 @@ setup(
             'src/mapnik_rule.cpp',
             'src/mapnik_scaling_method.cpp',
             'src/mapnik_style.cpp',
-            'src/mapnik_svg_generator_grammar.cpp',
             'src/mapnik_symbolizer.cpp',
             'src/mapnik_view_transform.cpp',
             'src/python_grid_utils.cpp',
