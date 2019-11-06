@@ -250,22 +250,36 @@ std::shared_ptr<image_any> fromstring(std::string const& str)
     {
         return std::make_shared<image_any>(reader->read(0,0,reader->width(), reader->height()));
     }
-    throw mapnik::image_reader_exception("Failed to load image from buffer" );
+    throw mapnik::image_reader_exception("Failed to load image from String" );
+}
+
+namespace {
+struct view_release
+{
+    view_release(Py_buffer & view)
+        : view_(view) {}
+    ~view_release()
+    {
+        PyBuffer_Release(&view_);
+    }
+    Py_buffer & view_;
+};
 }
 
 std::shared_ptr<image_any> frombuffer(PyObject * obj)
 {
-    void const* buffer=0;
-    Py_ssize_t buffer_len;
-    if (PyObject_AsReadBuffer(obj, &buffer, &buffer_len) == 0)
+    Py_buffer view;
+    view_release helper(view);
+    if (obj != nullptr && PyObject_GetBuffer(obj, &view, PyBUF_SIMPLE) == 0)
     {
-        std::unique_ptr<image_reader> reader(get_image_reader(reinterpret_cast<char const*>(buffer),buffer_len));
+        std::unique_ptr<image_reader> reader
+            (get_image_reader(reinterpret_cast<char const*>(view.buf), view.len));
         if (reader.get())
         {
             return std::make_shared<image_any>(reader->read(0,0,reader->width(),reader->height()));
         }
     }
-    throw mapnik::image_reader_exception("Failed to load image from buffer" );
+    throw mapnik::image_reader_exception("Failed to load image from Buffer" );
 }
 
 void set_grayscale_to_alpha(image_any & im)
