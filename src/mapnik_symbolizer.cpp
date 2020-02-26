@@ -87,8 +87,25 @@ struct value_to_target
         case mapnik::property_types::target_double:
             put(sym_, key, static_cast<mapnik::value_double>(val));
             break;
+        case mapnik::property_types::target_pattern_alignment:
         case mapnik::property_types::target_comp_op:
+        case mapnik::property_types::target_line_rasterizer:
         case mapnik::property_types::target_scaling_method:
+        case mapnik::property_types::target_line_cap:
+        case mapnik::property_types::target_line_join:
+        case mapnik::property_types::target_smooth_algorithm:
+        case mapnik::property_types::target_simplify_algorithm:
+        case mapnik::property_types::target_halo_rasterizer:
+        case mapnik::property_types::target_markers_placement:
+        case mapnik::property_types::target_markers_multipolicy:
+        case mapnik::property_types::target_halo_comp_op:
+        case mapnik::property_types::target_text_transform:
+        case mapnik::property_types::target_horizontal_alignment:
+        case mapnik::property_types::target_justify_alignment:
+        case mapnik::property_types::target_vertical_alignment:
+        case mapnik::property_types::target_upright:
+        case mapnik::property_types::target_direction:
+        case mapnik::property_types::target_line_pattern:
         {
             put(sym_, key, mapnik::enumeration_wrapper(val));
             break;
