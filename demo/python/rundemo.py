@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 #
@@ -55,7 +55,7 @@ m.background = mapnik.Color('white')
 
 provpoly_lyr = mapnik.Layer('Provinces')
 provpoly_lyr.srs = "+proj=lcc +ellps=GRS80 +lat_0=49 +lon_0=-95 +lat+1=49 +lat_2=77 +datum=NAD83 +units=m +no_defs"
-provpoly_lyr.datasource = mapnik.Shapefile(file=path.join(root,'../data/boundaries'), encoding='latin1')
+provpoly_lyr.datasource = mapnik.Shapefile(file=path.join(root,'../data/boundaries'))
 
 # We then define a style for the layer.  A layer can have one or many styles.
 # Styles are named, so they can be shared across different layers.
@@ -280,7 +280,7 @@ m.layers.append(roads1_lyr)
 
 popplaces_lyr = mapnik.Layer('Populated Places')
 popplaces_lyr.srs = "+proj=lcc +ellps=GRS80 +lat_0=49 +lon_0=-95 +lat+1=49 +lat_2=77 +datum=NAD83 +units=m +no_defs"
-popplaces_lyr.datasource = mapnik.Shapefile(file=path.join(root,'../data/popplaces'),encoding='latin1')
+popplaces_lyr.datasource = mapnik.Shapefile(file=path.join(root,'../data/popplaces'))
 
 popplaces_style = mapnik.Style()
 popplaces_rule = mapnik.Rule()
