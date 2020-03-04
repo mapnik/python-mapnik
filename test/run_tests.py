@@ -84,6 +84,7 @@ def main():
         print('')
         print("- Running nosetests:")
         print('')
+        sys.stdout.flush()
 
     argv = [
         __file__,

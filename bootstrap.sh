@@ -1,20 +1,19 @@
 #!/usr/bin/env bash
 
-set -eu
-set -o pipefail
-
-function install() {
-    MASON_PLATFORM_ID=$(mason env MASON_PLATFORM_ID)
-    if [[ ! -d ./mason_packages/${MASON_PLATFORM_ID}/${1}/ ]]; then
-        mason install $1 $2
-        mason link $1 $2
-    fi
-}
-
+BOOST_VERSION="1.66.0"
 ICU_VERSION="57.1"
+MAPNIK_VERSION="a0ea7db1a"
 
-function install_mason_deps() {
-    install mapnik df0bbe4
+function install_mason_deps() (
+    # subshell
+    set -eu
+    install_mapnik_deps
+    install mapnik ${MAPNIK_VERSION}
+)
+
+function install_mapnik_deps() (
+    # subshell
+    set -eu
     install jpeg_turbo 1.5.1
     install libpng 1.6.28
     install libtiff 4.0.7
@@ -27,61 +26,44 @@ function install_mason_deps() {
     install cairo 1.14.8
     install webp 0.6.0
     install libgdal 2.1.3
-    install boost 1.63.0
-    install boost_libsystem 1.63.0
-    install boost_libfilesystem 1.63.0
-    install boost_libprogram_options 1.63.0
-    install boost_libregex_icu57 1.63.0
+    install boost ${BOOST_VERSION}
+    install boost_libsystem ${BOOST_VERSION}
+    install boost_libfilesystem ${BOOST_VERSION}
+    install boost_libprogram_options ${BOOST_VERSION}
+    install boost_libregex_icu${ICU_VERSION%%.*} ${BOOST_VERSION}
     install freetype 2.7.1
     install harfbuzz 1.4.2-ft
     # deps needed by python-mapnik (not mapnik core)
-    install boost_libthread 1.63.0
-    install boost_libpython 1.63.0
-    install postgis 2.3.2-1
-}
+    install boost_libthread ${BOOST_VERSION}
+    install boost_libpython ${BOOST_VERSION}
+)
 
 function setup_runtime_settings() {
-    local MASON_LINKED_ABS=$(pwd)/mason_packages/.link
-    echo "export PROJ_LIB=${MASON_LINKED_ABS}/share/proj" > mason-config.env
-    echo "export ICU_DATA=${MASON_LINKED_ABS}/share/icu/${ICU_VERSION}" >> mason-config.env
-    echo "export GDAL_DATA=${MASON_LINKED_ABS}/share/gdal" >> mason-config.env
-    echo "export PATH=$(pwd)/mason_packages/.link/bin:${PATH}" >> mason-config.env
-    echo "export PGTEMP_DIR=$(pwd)/local-tmp" >> mason-config.env
-    echo "export PGDATA=$(pwd)/local-postgres" >> mason-config.env
-    echo "export PGHOST=$(pwd)/local-unix-socket" >> mason-config.env
-    echo "export PGPORT=1111" >> mason-config.env
-
-    source mason-config.env
-    rm -rf ${PGHOST}
-    mkdir -p ${PGHOST}
-    rm -rf ${PGDATA}
-    mkdir -p ${PGDATA}
-    rm -rf ${PGTEMP_DIR}
-    mkdir -p ${PGTEMP_DIR}
-    ./mason_packages/.link/bin/initdb
-    sleep 2
-    ./mason_packages/.link/bin/postgres -k ${PGHOST} > postgres.log &
-    sleep 2
-    ./mason_packages/.link/bin/createdb template_postgis -T postgres
-    ./mason_packages/.link/bin/psql template_postgis -c "CREATE TABLESPACE temp_disk LOCATION '${PGTEMP_DIR}';"
-    ./mason_packages/.link/bin/psql template_postgis -c "SET temp_tablespaces TO 'temp_disk';"
-    ./mason_packages/.link/bin/psql template_postgis -c "CREATE PROCEDURAL LANGUAGE 'plpythonu' HANDLER plpython_call_handler;"
-    ./mason_packages/.link/bin/psql template_postgis -c "CREATE EXTENSION postgis;"
-    ./mason_packages/.link/bin/psql template_postgis -c "SELECT PostGIS_Full_Version();"
-    ./mason_packages/.link/bin/pg_ctl -w stop
+    # PWD and ICU_VERSION are expanded here, but MASON_ROOT and PATH
+    # expansion must be deferred to the generated script, so that it
+    # can be used later
+    printf 'export %s=${MASON_ROOT:-%q}\n'          \
+            MASON_ROOT  "$PWD/mason_packages"       \
+        > ./mason-config.env
+    printf 'export %s=$%s\n'                                            \
+            MASON_BIN   "{MASON_ROOT}/.link/bin"                        \
+            PROJ_LIB    "{MASON_ROOT}/.link/share/proj"                 \
+            ICU_DATA    "{MASON_ROOT}/.link/share/icu/${ICU_VERSION}"   \
+            GDAL_DATA   "{MASON_ROOT}/.link/share/gdal"                 \
+            PATH    '{MASON_BIN}:${PATH}'                               \
+            PATH    '{PATH//":${MASON_BIN}:"/:}  # remove duplicates'   \
+        >> ./mason-config.env
+    source ./mason-config.env
 }
 
 function main() {
     source scripts/setup_mason.sh
-    setup_mason
-    install_mason_deps
-    setup_runtime_settings
+    [ $? = 0 ] && install_mason_deps
+    [ $? = 0 ] && setup_runtime_settings
+    [ $? = 0 ] || return
     echo "Ready, now run:"
     echo ""
     echo "    make test"
 }
 
 main
-
-set +eu
-set +o pipefail

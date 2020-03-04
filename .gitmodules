@@ -4,3 +4,6 @@
 [submodule "test/data"]
 	path = test/data
 	url = https://github.com/mapnik/test-data.git
+[submodule "mason"]
+	path = mason
+	url = https://github.com/mapbox/mason.git
