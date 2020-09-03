@@ -92,7 +92,7 @@ Homebrew includes the python version in the libboost_python38.dylib name, which 
 
 ```
 git clone https://github.com/mapnik/python-mapnik ; cd python-mapnik
-BOOST_PYTHON=“boost_python38” python3 setup.py install
+BOOST_PYTHON=boost_python38 python3 setup.py install
 ```
 
 ### Building against Mapnik 3.0.x
