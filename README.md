@@ -61,19 +61,32 @@ On MacOS Catalina with Homebrew, the homebrew's mapnik version (3.0) conflicts w
 
 Its much easier to compile mapnik 4.0 from `mapnik/master`, and compile `python-mapnik` against that.
 
-#### First: build `mapnik/master`
-
-Setting the `PYTHON=python2` env var is important, an older fork of SConstruct is embedded in mapnik source, which will not work with `python` if its linked to `python3` as on some MacOS systems.
+#### First: setup homebrew packages
 
 ```
+# note: boost needs to be >= 1.73, make sure boost@1.73 is linked too
+brew install boost boost-python3 sqlite gdal cairo python@3.8
+brew upgrade boost boost-python3 sqlite gdal cairo python@3.8
+brew link boost
+
+# We're build a custom mapnik 4, uninstall the stale 3.x version in homebrew:
+brew uninstall mapnik
+```
+
+#### Second: build `mapnik/master`
+
+Setting the `PYTHON=python2` env var is important, an older fork of SConstruct is embedded in mapnik source, which will not work with `python` if its linked to `python3` as on some MacOS systems. Passing a path to sqlite3 will select the homebrew version instead of the MacOS system version (which doesn't include support for sqlite extensions and will break the mapnik compile).
+
+```
+brew install boost 
 git clone https://github.com/mapnik/mapnik ; cd mapnik
 git submodule update --init
-PYTHON=python2 ./configure
+PYTHON=python2 ./configure. SQLITE_INCLUDES=/usr/local/opt/sqlite3/include
 make
 make install
 ```
 
-#### Next: build `python-mapnik/master`
+#### Finally: build `python-mapnik/master`
 
 Homebrew includes the python version in the libboost_python38.dylib name, which is not autodetected, and must be explicitly referenced:
 
