@@ -25,6 +25,8 @@ After this is done simply follow the directions as per a source build.
 
 ### Building from Source
 
+For detailed MacOS with Homebrew instructions, see section below
+
 Assuming that you built your own mapnik from source, and you have run `make install`. Set any compiler or linking environment variables as necessary so that your installation of mapnik is found. Next simply run one of the two methods:
 
 ```
@@ -51,6 +53,33 @@ If you need Pycairo, make sure that PYCAIRO is set to true in your environment o
 
 ```
 PYCAIRO=true python setup.py develop
+```
+
+### Building on MacOS Catalina with Homebrew: use mapnik/master and python-mapnik-master
+
+On MacOS Catalina with Homebrew, the homebrew's mapnik version (3.0) conflicts with the boost version (>1.73). 
+
+Its much easier to compile mapnik 4.0 from `mapnik/master`, and compile `python-mapnik` against that.
+
+#### First: build `mapnik/master`
+
+Setting the `PYTHON=python2` env var is important, an older fork of SConstruct is embedded in mapnik source, which will not work with `python` if its linked to `python3` as on some MacOS systems.
+
+```
+git clone https://github.com/mapnik/mapnik ; cd mapnik
+git submodule update --init
+PYTHON=python2 ./configure
+make
+make install
+```
+
+#### Next: build `python-mapnik/master`
+
+Homebrew includes the python version in the libboost_python38.dylib name, which is not autodetected, and must be explicitly referenced:
+
+```
+git clone https://github.com/mapnik/python-mapnik ; cd python-mapnik
+BOOST_PYTHON=“boost_python38” python3 setup.py install
 ```
 
 ### Building against Mapnik 3.0.x
