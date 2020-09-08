@@ -14,7 +14,7 @@ function install() {
 ICU_VERSION="57.1"
 
 function install_mason_deps() {
-    install mapnik df0bbe4
+    install mapnik 3be9ce8fa
     install jpeg_turbo 1.5.1
     install libpng 1.6.28
     install libtiff 4.0.7
@@ -27,16 +27,16 @@ function install_mason_deps() {
     install cairo 1.14.8
     install webp 0.6.0
     install libgdal 2.1.3
-    install boost 1.63.0
-    install boost_libsystem 1.63.0
-    install boost_libfilesystem 1.63.0
-    install boost_libprogram_options 1.63.0
-    install boost_libregex_icu57 1.63.0
+    install boost 1.66.0
+    install boost_libsystem 1.66.0
+    install boost_libfilesystem 1.66.0
+    install boost_libprogram_options 1.66.0
+    install boost_libregex_icu57 1.66.0
     install freetype 2.7.1
     install harfbuzz 1.4.2-ft
     # deps needed by python-mapnik (not mapnik core)
-    install boost_libthread 1.63.0
-    install boost_libpython 1.63.0
+    install boost_libthread 1.66.0
+    install boost_libpython 1.66.0
     install postgis 2.3.2-1
 }
 
