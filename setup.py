@@ -40,8 +40,10 @@ def find_boost_library(_id):
         # Debian naming convention for versions installed in parallel
         suffixes.insert(0, "-py%d%d" % (sys.version_info.major,
                                         sys.version_info.minor))
+        suffixes.insert(1, "%d%d" % (sys.version_info.major,
+                                     sys.version_info.minor))
         # standard suffix for Python3
-        suffixes.insert(1, sys.version_info.major)
+        suffixes.insert(2, sys.version_info.major)
     for suf in suffixes:
         name = "%s%s" % (_id, suf)
         lib = find_library(name)
