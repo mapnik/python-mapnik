@@ -260,23 +260,36 @@ void grid_encode_utf(T const& grid_type,
 }
 
 template <typename T>
-boost::python::dict grid_encode( T const& grid, std::string const& format, bool add_features, unsigned int resolution)
+boost::python::object grid_encode( T const& grid, std::string const& format, bool add_features, unsigned int resolution)
 {
     if (format == "utf") {
         boost::python::dict json;
         grid_encode_utf<T>(grid,json,add_features,resolution);
         return json;
-    }
-    else
-    {
+    } else if (format == "raw") {
+        if (add_features) {
+            std::stringstream s;
+            s << "'raw' format does not support feature metadata";
+            throw mapnik::value_error(s.str());
+        }
+
+        if (resolution != 1) {
+            std::stringstream s;
+            s << "'raw' currently only supports resolution = 1";
+            throw mapnik::value_error(s.str());
+        }
+
+        const char * grid_data = reinterpret_cast<const char*>(grid.data().bytes());
+        return boost::python::str(grid_data, grid.data().size());
+    } else {
         std::stringstream s;
-        s << "'utf' is currently the only supported encoding format.";
+        s << "'utf' and 'raw' are currently the only supported encoding formats.";
         throw mapnik::value_error(s.str());
     }
 }
 
-template boost::python::dict grid_encode( mapnik::grid const& grid, std::string const& format, bool add_features, unsigned int resolution);
-template boost::python::dict grid_encode( mapnik::grid_view const& grid, std::string const& format, bool add_features, unsigned int resolution);
+template boost::python::object grid_encode( mapnik::grid const& grid, std::string const& format, bool add_features, unsigned int resolution);
+template boost::python::object grid_encode( mapnik::grid_view const& grid, std::string const& format, bool add_features, unsigned int resolution);
 
 void render_layer_for_grid(mapnik::Map const& map,
                                   mapnik::grid & grid,
