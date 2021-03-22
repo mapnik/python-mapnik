@@ -16,14 +16,14 @@ if PYTHON3:
 
 
 def test_normalizing_definition():
-    p = mapnik.Projection('+init=epsg:4326')
+    p = mapnik.Projection('epsg:4326')
     expanded = p.expanded()
     eq_('+proj=longlat' in expanded, True)
 
 
 # Trac Ticket #128
 def test_wgs84_inverse_forward():
-    p = mapnik.Projection('+init=epsg:4326')
+    p = mapnik.Projection('epsg:4326')
 
     c = mapnik.Coord(3.01331418311, 43.3333092669)
     e = mapnik.Box2d(-122.54345245, 45.12312553, 68.2335581353, 48.231231233)
@@ -78,7 +78,7 @@ def merc2wgs(x, y):
         y = -85.0511
     return [x, y]
 
-# echo -109 37 | cs2cs -f "%.10f" +init=epsg:4326 +to +init=epsg:3857
+# echo -109 37 | cs2cs -f "%.10f" epsg:4326 +to epsg:3857
 #-12133824.4964668211    4439106.7872505859 0.0000000000
 
 # todo
@@ -89,12 +89,12 @@ def merc2wgs(x, y):
 
 
 def test_proj_transform_between_init_and_literal():
-    one = mapnik.Projection('+init=epsg:4326')
-    two = mapnik.Projection('+init=epsg:3857')
+    one = mapnik.Projection('epsg:4326')
+    two = mapnik.Projection('epsg:3857')
     tr1 = mapnik.ProjTransform(one, two)
     tr1b = mapnik.ProjTransform(two, one)
-    wgs84 = '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
-    merc = '+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over'
+    wgs84 = 'epsg:4326'
+    merc = 'epsg:3857'
     src = mapnik.Projection(wgs84)
     dest = mapnik.Projection(merc)
     tr2 = mapnik.ProjTransform(src, dest)
@@ -133,8 +133,8 @@ def test_proj_antimeridian_bbox():
     # this is logic from feature_style_processor::prepare_layer()
     PROJ_ENVELOPE_POINTS = 20  # include/mapnik/config.hpp
 
-    prjGeog = mapnik.Projection('+init=epsg:4326')
-    prjProj = mapnik.Projection('+init=epsg:2193')
+    prjGeog = mapnik.Projection('epsg:4326')
+    prjProj = mapnik.Projection('epsg:2193')
     prj_trans_fwd = mapnik.ProjTransform(prjProj, prjGeog)
     prj_trans_rev = mapnik.ProjTransform(prjGeog, prjProj)
 

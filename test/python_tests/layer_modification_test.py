@@ -54,8 +54,8 @@ def test_adding_datasource_to_layer():
 
         # also note that since the srs was black it defaulted to wgs84
         eq_(m.layers[0].srs,
-            '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs')
-        eq_(lyr.srs, '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs')
+            'epsg:4326')
+        eq_(lyr.srs, 'epsg:4326')
 
         # now add a datasource one...
         ds = mapnik.Shapefile(file='../data/shp/world_merc.shp')

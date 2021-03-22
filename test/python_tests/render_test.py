@@ -166,7 +166,7 @@ def test_render_points():
     s.rules.append(r)
     lyr = mapnik.Layer(
         'Places',
-        '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs')
+        'epsg:4326')
     lyr.datasource = ds
     lyr.styles.append('places_labels')
     # latlon bounding box corners
@@ -174,8 +174,8 @@ def test_render_points():
     lr_lonlat = mapnik.Coord(143.40, -38.80)
     # render for different projections
     projs = {
-        'google': '+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over',
-        'latlon': '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs',
+        'google': 'epsg:3857',
+        'latlon': 'epsg:4326',
         'merc': '+proj=merc +datum=WGS84 +k=1.0 +units=m +over +no_defs',
         'utm': '+proj=utm +zone=54 +datum=WGS84'
     }
@@ -184,7 +184,7 @@ def test_render_points():
         m.append_style('places_labels', s)
         m.layers.append(lyr)
         dest_proj = mapnik.Projection(projs[projdescr])
-        src_proj = mapnik.Projection('+init=epsg:4326')
+        src_proj = mapnik.Projection('epsg:4326')
         tr = mapnik.ProjTransform(src_proj, dest_proj)
         m.zoom_to_box(tr.forward(mapnik.Box2d(ul_lonlat, lr_lonlat)))
         # Render to SVG so that it can be checked how many points are there

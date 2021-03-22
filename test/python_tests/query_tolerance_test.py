@@ -16,7 +16,7 @@ def setup():
 
 if 'shape' in mapnik.DatasourceCache.plugin_names():
     def test_query_tolerance():
-        srs = '+init=epsg:4326'
+        srs = 'epsg:4326'
         lyr = mapnik.Layer('test')
         ds = mapnik.Shapefile(file='../data/shp/arrows.shp')
         lyr.datasource = ds
