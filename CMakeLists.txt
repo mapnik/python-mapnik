@@ -72,3 +72,49 @@ set_target_properties(python-mapnik PROPERTIES
     OUTPUT_NAME "_mapnik"
     PREFIX ""
 )
+
+
+
+# copy plugins, fonts
+file(TO_CMAKE_PATH "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}" MODULE_PATH)
+set(MODULE_LIB_DIR "${MODULE_PATH}/lib/mapnik")
+set(MODULE_FONTS_DIR "${MODULE_LIB_DIR}/fonts")
+set(MODULE_PLUGINS_DIR "${MODULE_LIB_DIR}/input")
+file(COPY "${MAPNIK_FONTS_DIR}/" DESTINATION "${MODULE_FONTS_DIR}/")
+file(COPY "${MAPNIK_PLUGINS_DIR}/" DESTINATION "${MODULE_PLUGINS_DIR}/" PATTERN "*.input")
+
+# copy dlls on windows
+if(WIN32)
+    file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>_install_deps.cmake CONTENT "
+    file(GET_RUNTIME_DEPENDENCIES
+        RESOLVED_DEPENDENCIES_VAR RESOLVED_DEPS
+        UNRESOLVED_DEPENDENCIES_VAR UNRESOLVED_DEPS
+        LIBRARIES 
+            ${MODULE_PLUGINS_DIR}/csv.input 
+            ${MODULE_PLUGINS_DIR}/gdal.input
+            ${MODULE_PLUGINS_DIR}/geobuf.input
+            ${MODULE_PLUGINS_DIR}/geojson.input
+            ${MODULE_PLUGINS_DIR}/ogr.input
+            ${MODULE_PLUGINS_DIR}/pgraster.input
+            ${MODULE_PLUGINS_DIR}/postgis.input
+            ${MODULE_PLUGINS_DIR}/raster.input
+            ${MODULE_PLUGINS_DIR}/shape.input
+            ${MODULE_PLUGINS_DIR}/sqlite.input
+            ${MODULE_PLUGINS_DIR}/topojson.input
+            ${MODULE_FILE_PATH}
+        DIRECTORIES \"${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/bin/\"
+        PRE_EXCLUDE_REGEXES \"api-ms-*\" \"ext-ms-*\"
+        POST_EXCLUDE_REGEXES \".*system32/.*\\\\.dll\"
+    )
+    foreach(dep \${RESOLVED_DEPS})
+        file(COPY \${dep} DESTINATION \"${MODULE_PATH}\")
+    endforeach()
+    foreach(dep \${UNRESOLVED_DEPS})
+        message(WARNING \"Runtime dependency \${dep} could not be resolved.\")
+    endforeach()
+    ")
+    add_custom_command(TARGET python-mapnik POST_BUILD COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>_install_deps.cmake)
+endif()
+
+# write configure file
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/paths.py.in" "${MODULE_PATH}/paths.py")
