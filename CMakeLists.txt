@@ -4,10 +4,30 @@ if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
 endif()
 project(python-mapnik)
 
-find_package(Python COMPONENTS Development REQUIRED)
+find_package(PkgConfig REQUIRED) 
+find_package(Python COMPONENTS Interpreter Development REQUIRED)
 find_package(Boost COMPONENTS log python${Python_VERSION_MAJOR}${Python_VERSION_MINOR} REQUIRED)
 find_package(mapnik CONFIG REQUIRED)
 find_path(MAPBOX_GEOMETRY_INCLUDE_DIRS "mapbox/geometry.hpp" REQUIRED)
+
+set(PYTHON_MAPNIK_COMPILE_DEFS "")
+set(PYTHON_MAPNIK_OPTIONAL_LIBS "")
+set(PYTHON_MAPNIK_OPTIONAL_INC "")
+
+pkg_check_modules(PY_CAIRO IMPORTED_TARGET pycairo)
+if(PY_CAIRO_FOUND)
+    list(APPEND PYTHON_MAPNIK_COMPILE_DEFS HAVE_PYCAIRO)
+    list(APPEND PYTHON_MAPNIK_OPTIONAL_LIBS PkgConfig::PY_CAIRO)
+    message(STATUS "Using pkg-config pycairo")
+else()
+    execute_process(COMMAND ${Python_EXECUTABLE} -c "import os; import cairo; print(os.path.dirname(cairo.__file__))" OUTPUT_VARIABLE PYTHON_PY_CAIRO OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if(PYTHON_PY_CAIRO)
+        message(STATUS "Using python pycairo from ${PYTHON_PY_CAIRO}")
+        file(TO_CMAKE_PATH "${PYTHON_PY_CAIRO}" PYTHON_PY_CAIRO)
+        list(APPEND PYTHON_MAPNIK_COMPILE_DEFS HAVE_PYCAIRO)
+        list(APPEND PYTHON_MAPNIK_OPTIONAL_INC "${PYTHON_PY_CAIRO}/include")
+    endif()
+endif()
 
 Python_add_library(python-mapnik MODULE 
     src/boost_std_shared_shim.hpp
@@ -63,9 +83,11 @@ target_link_libraries(python-mapnik PRIVATE
     mapnik::json
     mapnik::wkt
     mapnik::mapnik
+    ${PYTHON_MAPNIK_OPTIONAL_LIBS}
 )
 target_include_directories(python-mapnik PRIVATE 
     ${MAPBOX_GEOMETRY_INCLUDE_DIRS}
+    ${PYTHON_MAPNIK_OPTIONAL_INC}
 )
 
 set_target_properties(python-mapnik PROPERTIES 
@@ -73,6 +95,9 @@ set_target_properties(python-mapnik PROPERTIES
     PREFIX ""
 )
 
+
+
+target_compile_definitions(python-mapnik PRIVATE ${PYTHON_MAPNIK_COMPILE_DEFS})
 
 
 # copy plugins, fonts
