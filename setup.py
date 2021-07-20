@@ -29,7 +29,9 @@ class CMakeExtension(Extension):
 class CMakeBuild(build_ext):
     def build_extension(self, ext):
         extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
-
+        if not extdir.endswith(os.path.sep):
+            extdir += os.path.sep
+        extdir+= "mapnik"
         # required for auto-detection of auxiliary "native" libs
         if not extdir.endswith(os.path.sep):
             extdir += os.path.sep
@@ -131,6 +133,5 @@ setup(
     test_suite='nose.collector',
     ext_modules=[CMakeExtension("python-mapnik")],
     cmdclass={"build_ext": CMakeBuild},
-    zip_safe=False,
-    extras_require={"test": ["pytest"]},
+    zip_safe=False
 )

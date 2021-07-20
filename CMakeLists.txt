@@ -68,4 +68,7 @@ target_include_directories(python-mapnik PRIVATE
     ${MAPBOX_GEOMETRY_INCLUDE_DIRS}
 )
 
-set_target_properties(python-mapnik PROPERTIES OUTPUT_NAME "mapnik")
+set_target_properties(python-mapnik PROPERTIES 
+    OUTPUT_NAME "_mapnik"
+    PREFIX ""
+)
