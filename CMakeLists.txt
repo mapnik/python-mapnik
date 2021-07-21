@@ -33,10 +33,6 @@ endif()
 if(NOT PROJ_FOUND)
     message(STATUS "PROJ not found via FindPROJ. Searching via pkg-config...")
     pkg_check_modules(PROJ REQUIRED IMPORTED_TARGET proj)
-    string(REGEX MATCH "([0-9]+)\.([0-9]+)\.([0-9]+)" _dummy "${PROJ_VERSION}")
-    set(PROJ_VERSION_MAJOR "${CMAKE_MATCH_1}")
-    set(PROJ_VERSION_MINOR "${CMAKE_MATCH_2}")
-    set(PROJ_VERSION_PATCH "${CMAKE_MATCH_3}")
 endif()
 
 Python_add_library(python-mapnik MODULE 
