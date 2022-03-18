@@ -16,7 +16,7 @@ def setup():
 
 
 def test_multi_tile_policy():
-    srs = '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
+    srs = 'epsg:4326'
     lyr = mapnik.Layer('raster')
     if 'raster' in mapnik.DatasourceCache.plugin_names():
         lyr.datasource = mapnik.Raster(

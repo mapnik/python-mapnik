@@ -598,9 +598,9 @@ std::string mapnik_version_string()
     return MAPNIK_VERSION_STRING;
 }
 
-bool has_proj4()
+bool has_proj()
 {
-#if defined(MAPNIK_USE_PROJ4)
+#if defined(MAPNIK_USE_PROJ)
     return true;
 #else
     return false;
@@ -1035,8 +1035,8 @@ BOOST_PYTHON_MODULE(_mapnik)
   ">>> m = Map(256,256)\n"
   ">>> load_map(m,'mapfile_wgs84.xml')\n"
   ">>> m.srs\n"
-  "'+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'\n"
-  ">>> m.srs = '+init=espg:3395'\n"
+  "'epsg:4326'\n"
+  ">>> m.srs = 'espg:3395'\n"
   ">>> save_map(m,'mapfile_mercator.xml')\n"
   "\n"
   );
@@ -1045,7 +1045,7 @@ BOOST_PYTHON_MODULE(_mapnik)
     def("save_map_to_string", &save_map_to_string, save_map_to_string_overloads());
     def("mapnik_version", &mapnik_version,"Get the Mapnik version number");
     def("mapnik_version_string", &mapnik_version_string,"Get the Mapnik version string");
-    def("has_proj4", &has_proj4, "Get proj4 status");
+    def("has_proj", &has_proj, "Get proj status");
     def("has_jpeg", &has_jpeg, "Get jpeg read/write support status");
     def("has_png", &has_png, "Get png read/write support status");
     def("has_tiff", &has_tiff, "Get tiff read/write support status");

@@ -46,8 +46,7 @@ struct proj_transform_pickle_suite : boost::python::pickle_suite
     getinitargs(const proj_transform& p)
     {
         using namespace boost::python;
-        //return boost::python::make_tuple(p.source(),p.dest());
-        return boost::python::tuple();
+        return boost::python::make_tuple(p.definition());
     }
 };
 
@@ -60,10 +59,7 @@ mapnik::coord2d forward_transform_c(mapnik::proj_transform& t, mapnik::coord2d c
     double z = 0.0;
     if (!t.forward(x,y,z)) {
         std::ostringstream s;
-        /*
-        s << "Failed to forward project "
-          << "from " << t.source().params() << " to: " << t.dest().params();
-        */
+        s << "Failed to forward project " << t.definition();
         throw std::runtime_error(s.str());
     }
     return mapnik::coord2d(x,y);
@@ -76,10 +72,7 @@ mapnik::coord2d backward_transform_c(mapnik::proj_transform& t, mapnik::coord2d 
     double z = 0.0;
     if (!t.backward(x,y,z)) {
         std::ostringstream s;
-        /*
-        s << "Failed to back project "
-          << "from " <<  t.dest().params() << " to: " << t.source().params();
-        */
+        s << "Failed to back project " << t.definition();
         throw std::runtime_error(s.str());
     }
     return mapnik::coord2d(x,y);
@@ -90,10 +83,7 @@ mapnik::box2d<double> forward_transform_env(mapnik::proj_transform& t, mapnik::b
     mapnik::box2d<double> new_box = box;
     if (!t.forward(new_box)) {
         std::ostringstream s;
-        /*
-        s << "Failed to forward project "
-          << "from " << t.source().params() << " to: " << t.dest().params();
-        */
+        s << "Failed to forward project " << t.definition();
         throw std::runtime_error(s.str());
     }
     return new_box;
@@ -104,10 +94,7 @@ mapnik::box2d<double> backward_transform_env(mapnik::proj_transform& t, mapnik::
     mapnik::box2d<double> new_box = box;
     if (!t.backward(new_box)){
         std::ostringstream s;
-        /*
-        s << "Failed to back project "
-          << "from " <<  t.dest().params() << " to: " << t.source().params();
-        */
+        s << "Failed to back project " << t.definition();
         throw std::runtime_error(s.str());
     }
     return new_box;
@@ -118,10 +105,7 @@ mapnik::box2d<double> forward_transform_env_p(mapnik::proj_transform& t, mapnik:
     mapnik::box2d<double> new_box = box;
     if (!t.forward(new_box,points)) {
         std::ostringstream s;
-        /*
-        s << "Failed to forward project "
-          << "from " << t.source().params() << " to: " << t.dest().params();
-        */
+        s << "Failed to forward project " << t.definition();
         throw std::runtime_error(s.str());
     }
     return new_box;
@@ -132,10 +116,7 @@ mapnik::box2d<double> backward_transform_env_p(mapnik::proj_transform& t, mapnik
     mapnik::box2d<double> new_box = box;
     if (!t.backward(new_box,points)){
         std::ostringstream s;
-        /*
-        s << "Failed to back project "
-          << "from " <<  t.dest().params() << " to: " << t.source().params();
-        */
+        s << "Failed to back project " <<  t.definition();
         throw std::runtime_error(s.str());
     }
     return new_box;
@@ -147,7 +128,7 @@ void export_proj_transform ()
 {
     using namespace boost::python;
 
-    class_<proj_transform, boost::noncopyable>("ProjTransform", init< projection const&, projection const& >())
+    class_<proj_transform, boost::noncopyable>("ProjTransform", init<projection const&, projection const&>())
         .def_pickle(proj_transform_pickle_suite())
         .def("forward", forward_transform_c)
         .def("backward",backward_transform_c)
@@ -155,6 +136,7 @@ void export_proj_transform ()
         .def("backward",backward_transform_env)
         .def("forward", forward_transform_env_p)
         .def("backward",backward_transform_env_p)
+        .def("definition",&proj_transform::definition)
         ;
 
 }

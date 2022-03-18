@@ -165,9 +165,9 @@ void export_map()
     class_<Map>("Map","The map object.",init<int,int,optional<std::string const&> >(
                     ( arg("width"),arg("height"),arg("srs") ),
                     "Create a Map with a width and height as integers and, optionally,\n"
-                    "an srs string either with a Proj.4 epsg code ('+init=epsg:<code>')\n"
-                    "or with a Proj.4 literal ('+proj=<literal>').\n"
-                    "If no srs is specified the map will default to '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'\n"
+                    "an srs string either with a Proj epsg code ('epsg:<code>')\n"
+                    "or with a Proj literal ('+proj=<literal>').\n"
+                    "If no srs is specified the map will default to 'epsg:4326'\n"
                     "\n"
                     "Usage:\n"
                     ">>> from mapnik import Map\n"
@@ -175,7 +175,7 @@ void export_map()
                     ">>> m\n"
                     "<mapnik._mapnik.Map object at 0x6a240>\n"
                     ">>> m.srs\n"
-                    "'+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'\n"
+                    "'epsg:4326'\n"
                     ))
 
         .def("append_style",insert_style,
@@ -502,22 +502,22 @@ void export_map()
         .add_property("srs",
                       make_function(&Map::srs,return_value_policy<copy_const_reference>()),
                       &Map::set_srs,
-                      "Spatial reference in Proj.4 format.\n"
+                      "Spatial reference in Proj format.\n"
                       "Either an epsg code or proj literal.\n"
                       "For example, a proj literal:\n"
-                      "\t'+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'\n"
+                      "\t'epsg:4326'\n"
                       "and a proj epsg code:\n"
-                      "\t'+init=epsg:4326'\n"
+                      "\t'epsg:4326'\n"
                       "\n"
                       "Note: using epsg codes requires the installation of\n"
-                      "the Proj.4 'epsg' data file normally found in '/usr/local/share/proj'\n"
+                      "the Proj 'epsg' data file normally found in '/usr/local/share/proj'\n"
                       "\n"
                       "Usage:\n"
                       ">>> m.srs\n"
-                      "'+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs' # The default srs if not initialized with custom srs\n"
+                      "'epsg:4326' # The default srs if not initialized with custom srs\n"
                       ">>> # set to google mercator with Proj.4 literal\n"
                       "... \n"
-                      ">>> m.srs = '+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over'\n"
+                      ">>> m.srs = 'epsg:3857'\n"
             )
 
         .add_property("width",

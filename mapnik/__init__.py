@@ -156,7 +156,7 @@ class _Coord(Coord, _injector()):
         Example: Project the geographic coordinates of the
                  city center of Stuttgart into the local
                  map projection (GK Zone 3/DHDN, EPSG 31467)
-        >>> p = Projection('+init=epsg:31467')
+        >>> p = Projection('epsg:31467')
         >>> Coord(9.1, 48.7).forward(p)
         Coord(3507360.12813,5395719.2749)
         """
@@ -176,7 +176,7 @@ class _Coord(Coord, _injector()):
                  city center of Stuttgart in the local
                  map projection (GK Zone 3/DHDN, EPSG 31467)
                  into geographic coordinates:
-        >>> p = Projection('+init=epsg:31467')
+        >>> p = Projection('epsg:31467')
         >>> Coord(3507360.12813,5395719.2749).inverse(p)
         Coord(9.1, 48.7)
         """

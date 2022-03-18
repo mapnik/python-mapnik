@@ -32,7 +32,7 @@ if 'ogr' in mapnik.DatasourceCache.plugin_names():
         assert_almost_equal(e.maxy, 1649661.267, places=3)
         meta = ds.describe()
         eq_(meta['geometry_type'], mapnik.DataGeometryType.Polygon)
-        eq_('+proj=lcc' in meta['proj4'], True)
+        eq_('+proj=lcc' in meta['proj'], True)
 
     # Shapefile properties
     def test_shapefile_properties():
@@ -98,7 +98,7 @@ if 'ogr' in mapnik.DatasourceCache.plugin_names():
         eq_(e.maxy, 1)
         meta = ds.describe()
         eq_(meta['geometry_type'], mapnik.DataGeometryType.Polygon)
-        eq_('+proj=merc' in meta['proj4'], True)
+        eq_('+proj=merc' in meta['proj'], True)
 
     def test_ogr_reading_gpx_waypoint():
         ds = mapnik.Ogr(file='../data/gpx/empty.gpx', layer='waypoints')
@@ -109,7 +109,7 @@ if 'ogr' in mapnik.DatasourceCache.plugin_names():
         eq_(e.maxy, 48)
         meta = ds.describe()
         eq_(meta['geometry_type'], mapnik.DataGeometryType.Point)
-        eq_('+proj=longlat' in meta['proj4'], True)
+        eq_('+proj=longlat' in meta['proj'], True)
 
     def test_ogr_empty_data_should_not_throw():
         default_logging_severity = mapnik.logger.get_severity()
@@ -125,7 +125,7 @@ if 'ogr' in mapnik.DatasourceCache.plugin_names():
         mapnik.logger.set_severity(default_logging_severity)
         meta = ds.describe()
         eq_(meta['geometry_type'], mapnik.DataGeometryType.Point)
-        eq_('+proj=longlat' in meta['proj4'], True)
+        eq_('+proj=longlat' in meta['proj'], True)
 
     # disabled because OGR prints an annoying error: ERROR 1: Invalid Point object. Missing 'coordinates' member.
     # def test_handling_of_null_features():
@@ -142,7 +142,7 @@ if 'ogr' in mapnik.DatasourceCache.plugin_names():
         assert_almost_equal(e.maxy, 45.0, places=1)
         meta = ds.describe()
         eq_(meta['geometry_type'], mapnik.DataGeometryType.Point)
-        #eq_('+proj=longlat' in meta['proj4'],True)
+        #eq_('+proj=longlat' in meta['proj'],True)
         fs = ds.featureset()
         feat = fs.next()
         actual = json.loads(feat.to_geojson())
