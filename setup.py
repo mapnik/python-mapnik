@@ -42,12 +42,15 @@ class CMakeBuild(build_ext):
         # Can be set with Conda-Build, for example.
         cmake_generator = os.environ.get("CMAKE_GENERATOR", "")
 
+        vcpkg_toolchain_file = os.environ.get("VCPKG_TOOLCHAIN_FILE", "vcpkg/scripts/buildsystems/vcpkg.cmake")
+
         # Set Python_EXECUTABLE instead if you use PYBIND11_FINDPYTHON
         # EXAMPLE_VERSION_INFO shows you how to pass a value into the C++ code
         # from Python.
         cmake_args = [
             "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY={}".format(extdir),
             "-DCMAKE_BUILD_TYPE={}".format(cfg),  # not used on MSVC, but no harm
+            "-DCMAKE_TOOLCHAIN_FILE={}".format(vcpkg_toolchain_file)
         ]
         build_args = []
 

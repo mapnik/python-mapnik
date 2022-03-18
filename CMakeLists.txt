@@ -1,14 +1,11 @@
 cmake_minimum_required(VERSION 3.15)
-if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-    set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_LIST_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake")
-endif()
 project(python-mapnik)
 
 find_package(PkgConfig REQUIRED) 
 find_package(Python COMPONENTS Interpreter Development REQUIRED)
 find_package(Boost COMPONENTS log python${Python_VERSION_MAJOR}${Python_VERSION_MINOR} REQUIRED)
 find_package(mapnik CONFIG REQUIRED)
-find_path(MAPBOX_GEOMETRY_INCLUDE_DIRS "mapbox/geometry.hpp" REQUIRED HINTS ${MAPNIK_INCLUDE_DIR})
+find_path(MAPBOX_GEOMETRY_INCLUDE_DIRS "mapbox/geometry.hpp" REQUIRED HINTS "${MAPNIK_INCLUDE_DIR}")
 
 set(PYTHON_MAPNIK_COMPILE_DEFS "")
 set(PYTHON_MAPNIK_OPTIONAL_LIBS "")
@@ -112,6 +109,8 @@ set(MODULE_LIB_DIR "${MODULE_PATH}/lib/mapnik")
 set(MODULE_FONTS_DIR "${MODULE_LIB_DIR}/fonts")
 set(MODULE_PLUGINS_DIR "${MODULE_LIB_DIR}/input")
 file(COPY "${MAPNIK_FONTS_DIR}/" DESTINATION "${MODULE_FONTS_DIR}/")
+
+mapnik_find_plugin_dir(MAPNIK_PLUGINS_DIR)
 file(COPY "${MAPNIK_PLUGINS_DIR}/" DESTINATION "${MODULE_PLUGINS_DIR}/" PATTERN "*.input")
 
 # copy dlls on windows
@@ -121,25 +120,26 @@ if(WIN32)
         RESOLVED_DEPENDENCIES_VAR RESOLVED_DEPS
         UNRESOLVED_DEPENDENCIES_VAR UNRESOLVED_DEPS
         LIBRARIES 
-            ${MODULE_PLUGINS_DIR}/csv.input 
-            ${MODULE_PLUGINS_DIR}/gdal.input
-            ${MODULE_PLUGINS_DIR}/geobuf.input
-            ${MODULE_PLUGINS_DIR}/geojson.input
-            ${MODULE_PLUGINS_DIR}/ogr.input
-            ${MODULE_PLUGINS_DIR}/pgraster.input
-            ${MODULE_PLUGINS_DIR}/postgis.input
-            ${MODULE_PLUGINS_DIR}/raster.input
-            ${MODULE_PLUGINS_DIR}/shape.input
-            ${MODULE_PLUGINS_DIR}/sqlite.input
-            ${MODULE_PLUGINS_DIR}/topojson.input
+            \"${MODULE_PLUGINS_DIR}/csv.input\"
+            \"${MODULE_PLUGINS_DIR}/gdal.input\"
+            \"${MODULE_PLUGINS_DIR}/geobuf.input\"
+            \"${MODULE_PLUGINS_DIR}/geojson.input\"
+            \"${MODULE_PLUGINS_DIR}/ogr.input\"
+            \"${MODULE_PLUGINS_DIR}/pgraster.input\"
+            \"${MODULE_PLUGINS_DIR}/postgis.input\"
+            \"${MODULE_PLUGINS_DIR}/raster.input\"
+            \"${MODULE_PLUGINS_DIR}/shape.input\"
+            \"${MODULE_PLUGINS_DIR}/sqlite.input\"
+            \"${MODULE_PLUGINS_DIR}/topojson.input\"
             ${MODULE_FILE_PATH}
         DIRECTORIES \"${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/bin/\"
         PRE_EXCLUDE_REGEXES \"api-ms-*\" \"ext-ms-*\"
         POST_EXCLUDE_REGEXES \".*system32/.*\\\\.dll\"
     )
-    foreach(dep \${RESOLVED_DEPS})
-        file(COPY \${dep} DESTINATION \"${MODULE_PATH}\")
-    endforeach()
+    message(STATUS \"X \${RESOLVED_DEPS}\")
+    #foreach(dep \${RESOLVED_DEPS})
+    #    file(COPY \${dep} DESTINATION \"${MODULE_PATH}\")
+    #endforeach()
     foreach(dep \${UNRESOLVED_DEPS})
         message(WARNING \"Runtime dependency \${dep} could not be resolved.\")
     endforeach()

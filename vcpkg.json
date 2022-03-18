@@ -1,6 +1,6 @@
 {
     "name": "python-mapnik",
-    "version-string": "4.0.0",
+    "version-string": "master",
     "description": "",
     "dependencies":[
       "mapbox-geometry",
