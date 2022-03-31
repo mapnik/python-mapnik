@@ -1,0 +1,29 @@
+name: Publish Python distributions to PyPI and TestPyPI
+env:
+  BOOST_PYTHON_LIB: boost_python
+  BOOST_SYSTEM_LIB: boost_system
+  MASON_BUILD: true
+on: [push, pull_request]
+jobs:
+  build-n-publish:
+    runs-on: ubuntu-20.04
+    name: Build and publish Python distribution
+    steps:
+      - uses: actions/checkout@v3
+      - name: install dependencies
+        run: |
+          sudo apt-get install libboost-python-dev
+      - name: Initialize Python 2.7
+        uses: actions/setup-python@v3
+        with:
+          python-version: 2.7
+      - name: Build binary wheel and a source tarball
+        run: |
+          pip install wheel
+          python setup.py sdist bdist_wheel
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ./dist/*.whl
+      - name: Run tests
+        run: |
+          python setup.py test
