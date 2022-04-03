@@ -2,28 +2,60 @@ name: Publish Python distributions to PyPI and TestPyPI
 env:
   BOOST_PYTHON_LIB: boost_python
   BOOST_SYSTEM_LIB: boost_system
+  BOOST_THREAD_LIB: boost_thread
   MASON_BUILD: true
+  CCACHE_TEMPDIR: /tmp/.ccache-temp
+  CCACHE_COMPRESS: 1
+  PYTHONUSERBASE: $(pwd)/mason_packages/.link
+  PYTHONPATH: $(pwd)/mason_packages/.link/lib/python2.7/site-packages
 on: [push, pull_request]
 jobs:
-  build-n-publish:
-    runs-on: ubuntu-20.04
+  build-and-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version:
+        - "2.7"
+        - "3.6"
+        - "3.8"
+        system:
+        - ubuntu-18.04
+        - ubuntu-20.04
+    runs-on: ${{matrix.system}}
     name: Build and publish Python distribution
     steps:
       - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Git Sumbodule Update
+        run: |
+          git pull --recurse-submodules
+          git submodule update --remote --recursive
       - name: install dependencies
         run: |
-          sudo apt-get install libboost-python-dev
-      - name: Initialize Python 2.7
+          sudo apt-get install libboost-python-dev python3-cairo-dev python-cairo-dev clang postgresql
+      - name: Initialize Python {{matrix.python-version}}
         uses: actions/setup-python@v3
         with:
-          python-version: 2.7
+          python-version: ${{ matrix.python-version }}
       - name: Build binary wheel and a source tarball
         run: |
-          pip install wheel
+          pip install wheel pycairo nose PyPDF2
           python setup.py sdist bdist_wheel
-      - uses: actions/upload-artifact@v2
-        with:
-          path: ./dist/*.whl
       - name: Run tests
         run: |
-          python setup.py test
+          source scripts/setup_mason.sh          
+          export PATH=$(pwd)/mason_packages/.link/bin:${PYTHONUSERBASE}/bin:${PATH}
+          mkdir -p ${PYTHONPATH}
+          python setup.py install --prefix ${PYTHONUSERBASE}
+          
+          
+          source mason-config.env
+          ./mason_packages/.link/bin/postgres -k ${PGHOST} > postgres.log &
+          python test/run_tests.py
+          python test/visual.py -q
+          ./mason_packages/.link/bin/pg_ctl -w stop
+      - uses: actions/upload-artifact@v3
+        with:
+          name: python_{{ matrix.python-version }}-${{matrix.system}}
+          path: ./dist/*.whl
