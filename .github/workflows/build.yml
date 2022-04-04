@@ -34,7 +34,7 @@ jobs:
       - name: install dependencies
         run: |
           sudo apt-get install libboost-python-dev python3-cairo-dev python-cairo-dev clang postgresql
-      - name: Initialize Python {{matrix.python-version}}
+      - name: Initialize Python ${{ matrix.python-version }}
         uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
@@ -48,8 +48,6 @@ jobs:
           export PATH=$(pwd)/mason_packages/.link/bin:${PYTHONUSERBASE}/bin:${PATH}
           mkdir -p ${PYTHONPATH}
           python setup.py install --prefix ${PYTHONUSERBASE}
-          
-          
           source mason-config.env
           ./mason_packages/.link/bin/postgres -k ${PGHOST} > postgres.log &
           python test/run_tests.py
@@ -57,5 +55,5 @@ jobs:
           ./mason_packages/.link/bin/pg_ctl -w stop
       - uses: actions/upload-artifact@v3
         with:
-          name: python_{{ matrix.python-version }}-${{matrix.system}}
+          name: python_${{ matrix.python-version }}-${{matrix.system}}
           path: ./dist/*.whl
