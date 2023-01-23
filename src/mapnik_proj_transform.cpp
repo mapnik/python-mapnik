@@ -23,11 +23,9 @@
 #include <mapnik/config.hpp>
 #include "boost_std_shared_shim.hpp"
 
-#pragma GCC diagnostic push
 #include <mapnik/warning_ignore.hpp>
 #include <boost/python.hpp>
 #include <boost/noncopyable.hpp>
-#pragma GCC diagnostic pop
 
 // mapnik
 #include <mapnik/proj_transform.hpp>
@@ -61,8 +59,7 @@ mapnik::coord2d forward_transform_c(mapnik::proj_transform& t, mapnik::coord2d c
     double z = 0.0;
     if (!t.forward(x,y,z)) {
         std::ostringstream s;
-        s << "Failed to forward project "
-          << t.definition();
+        s << "Failed to forward project " << t.definition();
         throw std::runtime_error(s.str());
     }
     return mapnik::coord2d(x,y);
@@ -75,8 +72,7 @@ mapnik::coord2d backward_transform_c(mapnik::proj_transform& t, mapnik::coord2d 
     double z = 0.0;
     if (!t.backward(x,y,z)) {
         std::ostringstream s;
-        s << "Failed to back project "
-         << t.definition();
+        s << "Failed to back project " << t.definition();
         throw std::runtime_error(s.str());
     }
     return mapnik::coord2d(x,y);
@@ -87,8 +83,7 @@ mapnik::box2d<double> forward_transform_env(mapnik::proj_transform& t, mapnik::b
     mapnik::box2d<double> new_box = box;
     if (!t.forward(new_box)) {
         std::ostringstream s;
-        s << "Failed to forward project "
-          << t.definition();
+        s << "Failed to forward project " << t.definition();
         throw std::runtime_error(s.str());
     }
     return new_box;
@@ -99,8 +94,7 @@ mapnik::box2d<double> backward_transform_env(mapnik::proj_transform& t, mapnik::
     mapnik::box2d<double> new_box = box;
     if (!t.backward(new_box)){
         std::ostringstream s;
-        s << "Failed to back project "
-          << t.definition();
+        s << "Failed to back project " << t.definition();
         throw std::runtime_error(s.str());
     }
     return new_box;
@@ -111,8 +105,7 @@ mapnik::box2d<double> forward_transform_env_p(mapnik::proj_transform& t, mapnik:
     mapnik::box2d<double> new_box = box;
     if (!t.forward(new_box,points)) {
         std::ostringstream s;
-        s << "Failed to forward project "
-          << t.definition();
+        s << "Failed to forward project " << t.definition();
         throw std::runtime_error(s.str());
     }
     return new_box;
@@ -123,8 +116,7 @@ mapnik::box2d<double> backward_transform_env_p(mapnik::proj_transform& t, mapnik
     mapnik::box2d<double> new_box = box;
     if (!t.backward(new_box,points)){
         std::ostringstream s;
-        s << "Failed to back project "
-          <<  t.definition();
+        s << "Failed to back project " <<  t.definition();
         throw std::runtime_error(s.str());
     }
     return new_box;
