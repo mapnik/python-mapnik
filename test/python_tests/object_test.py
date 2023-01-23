@@ -331,7 +331,7 @@
 
 #     eq_(m.width, 256)
 #     eq_(m.height, 256)
-#     eq_(m.srs, '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs')
+#     eq_(m.srs, 'epsg:4326')
 #     eq_(m.base, '')
 #     eq_(m.maximum_extent, None)
 #     eq_(m.background_image, None)
@@ -361,7 +361,7 @@
 
 # # Map initialization from string
 # def test_map_init_from_string():
-#     map_string = '''<Map background-color="steelblue" base="./" srs="+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs">
+#     map_string = '''<Map background-color="steelblue" base="./" srs="epsg:4326">
 #      <Style name="My Style">
 #       <Rule>
 #        <PolygonSymbolizer fill="#f2eff9"/>

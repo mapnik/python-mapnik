@@ -29,7 +29,7 @@ def test_that_datasources_exist():
 
 @raises(RuntimeError)
 def test_vrt_referring_to_missing_files():
-    srs = '+init=epsg:32630'
+    srs = 'epsg:32630'
     if 'gdal' in mapnik.DatasourceCache.plugin_names():
         lyr = mapnik.Layer('dataraster')
         lyr.datasource = mapnik.Gdal(

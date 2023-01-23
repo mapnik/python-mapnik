@@ -27,7 +27,7 @@ geojson = {"type": "Feature",
 
 def test_that_coordinates_do_not_overflow_and_polygon_is_rendered_memory():
     expected_color = mapnik.Color('white')
-    projection = '+init=epsg:4326'
+    projection = 'epsg:4326'
     ds = mapnik.MemoryDatasource()
     context = mapnik.Context()
     feat = mapnik.Feature.from_geojson(json.dumps(geojson), context)
@@ -57,7 +57,7 @@ def test_that_coordinates_do_not_overflow_and_polygon_is_rendered_memory():
 
 def test_that_coordinates_do_not_overflow_and_polygon_is_rendered_csv():
     expected_color = mapnik.Color('white')
-    projection = '+init=epsg:4326'
+    projection = 'epsg:4326'
     ds = mapnik.MemoryDatasource()
     context = mapnik.Context()
     feat = mapnik.Feature.from_geojson(json.dumps(geojson), context)
