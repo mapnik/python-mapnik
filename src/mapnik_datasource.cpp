@@ -38,11 +38,11 @@
 #include <mapnik/datasource.hpp>
 #include <mapnik/datasource_cache.hpp>
 #include <mapnik/feature_layer_desc.hpp>
-#include <mapnik/memory_datasource.hpp>
+//#include <mapnik/memory_datasource.hpp>
 
 
 using mapnik::datasource;
-using mapnik::memory_datasource;
+//using mapnik::memory_datasource;
 using mapnik::layer_descriptor;
 using mapnik::attribute_descriptor;
 using mapnik::parameters;
@@ -197,7 +197,7 @@ void export_datasource()
         ;
 
     def("CreateDatasource",&create_datasource);
-
+    /*
     class_<memory_datasource,
            bases<datasource>, std::shared_ptr<memory_datasource>,
            boost::noncopyable>("MemoryDatasourceBase", init<parameters>())
@@ -210,4 +210,5 @@ void export_datasource()
         ;
 
     implicitly_convertible<std::shared_ptr<memory_datasource>,std::shared_ptr<datasource> >();
+    */
 }

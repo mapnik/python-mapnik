@@ -40,10 +40,10 @@ using mapnik::colorizer_stop;
 using mapnik::colorizer_stops;
 using mapnik::colorizer_mode_enum;
 using mapnik::color;
-using mapnik::COLORIZER_INHERIT;
-using mapnik::COLORIZER_LINEAR;
-using mapnik::COLORIZER_DISCRETE;
-using mapnik::COLORIZER_EXACT;
+using mapnik::colorizer_mode_enum::COLORIZER_INHERIT;
+using mapnik::colorizer_mode_enum::COLORIZER_LINEAR;
+using mapnik::colorizer_mode_enum::COLORIZER_DISCRETE;
+using mapnik::colorizer_mode_enum::COLORIZER_EXACT;
 
 
 namespace {
