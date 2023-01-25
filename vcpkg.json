@@ -1,0 +1,12 @@
+{
+    "name": "python-mapnik",
+    "dependencies": [
+        {
+            "name": "boost-python",
+            "features": [
+                "python3"
+            ]
+        },
+        "mapnik"
+    ]
+}

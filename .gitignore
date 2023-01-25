@@ -12,9 +12,9 @@
 *.dylib
 build/
 dist/
-mapnik/paths.py
 *.egg-info/
 .eggs/
 .mason/
 mason_packages/
 mapnik/plugins
+_skbuild/
