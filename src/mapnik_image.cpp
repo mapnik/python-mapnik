@@ -47,7 +47,7 @@
 #define PYCAIRO_NO_IMPORT
 #include <py3cairo.h>
 #else
-#include <pycairo.h>
+#include <pycairo/pycairo.h>
 #endif
 #include <cairo.h>
 #endif

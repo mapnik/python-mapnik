@@ -146,7 +146,7 @@ void clear_cache()
 #if PY_MAJOR_VERSION >= 3
 #include <py3cairo.h>
 #else
-#include <pycairo.h>
+#include <pycairo/pycairo.h>
 static Pycairo_CAPI_t *Pycairo_CAPI;
 #endif
 
