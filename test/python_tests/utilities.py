@@ -4,10 +4,6 @@
 import os
 import sys
 import traceback
-
-from nose.plugins.errorclass import ErrorClass, ErrorClassPlugin
-from nose.tools import assert_almost_equal
-
 import mapnik
 
 PYTHON3 = sys.version_info[0] == 3
@@ -21,17 +17,6 @@ HERE = os.path.dirname(__file__)
 def execution_path(filename):
     return os.path.join(os.path.dirname(
         sys._getframe(1).f_code.co_filename), filename)
-
-
-class Todo(Exception):
-    pass
-
-
-class TodoPlugin(ErrorClassPlugin):
-    name = "todo"
-
-    todo = ErrorClass(Todo, label='TODO', isfailure=False)
-
 
 def contains_word(word, bytestring_):
     """
