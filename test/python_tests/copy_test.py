@@ -1,20 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-import os
-
-from nose.tools import eq_
-
 import mapnik
-
-from .utilities import execution_path, run_all
-
-
-def setup():
-    # All of the paths used are relative, if we run the tests
-    # from another directory we need to chdir()
-    os.chdir(execution_path('.'))
-
 
 def test_image_16_8_simple():
     im = mapnik.Image(2, 2, mapnik.ImageType.gray16)
@@ -23,16 +7,16 @@ def test_image_16_8_simple():
     im.set_pixel(1, 0, 5)
     im.set_pixel(1, 1, 2)
     im2 = im.copy(mapnik.ImageType.gray8)
-    eq_(im2.get_pixel(0, 0), 255)
-    eq_(im2.get_pixel(0, 1), 255)
-    eq_(im2.get_pixel(1, 0), 5)
-    eq_(im2.get_pixel(1, 1), 2)
+    assert im2.get_pixel(0, 0) ==  255
+    assert im2.get_pixel(0, 1) ==  255
+    assert im2.get_pixel(1, 0) ==  5
+    assert im2.get_pixel(1, 1) ==  2
     # Cast back!
     im = im2.copy(mapnik.ImageType.gray16)
-    eq_(im.get_pixel(0, 0), 255)
-    eq_(im.get_pixel(0, 1), 255)
-    eq_(im.get_pixel(1, 0), 5)
-    eq_(im.get_pixel(1, 1), 2)
+    assert im.get_pixel(0, 0) ==  255
+    assert im.get_pixel(0, 1) ==  255
+    assert im.get_pixel(1, 0) ==  5
+    assert im.get_pixel(1, 1) ==  2
 
 
 def test_image_32f_8_simple():
@@ -42,20 +26,20 @@ def test_image_32f_8_simple():
     im.set_pixel(1, 0, 120.6)
     im.set_pixel(1, 1, 360.2)
     im2 = im.copy(mapnik.ImageType.gray8)
-    eq_(im2.get_pixel(0, 0), 120)
-    eq_(im2.get_pixel(0, 1), 0)
-    eq_(im2.get_pixel(1, 0), 120)  # Notice this is truncated!
-    eq_(im2.get_pixel(1, 1), 255)
+    assert im2.get_pixel(0, 0) ==  120
+    assert im2.get_pixel(0, 1) ==  0
+    assert im2.get_pixel(1, 0) ==  120  # Notice this is truncated!
+    assert im2.get_pixel(1, 1) ==  255
 
 
 def test_image_offset_and_scale():
     im = mapnik.Image(2, 2, mapnik.ImageType.gray16)
-    eq_(im.offset, 0.0)
-    eq_(im.scaling, 1.0)
+    assert im.offset ==  0.0
+    assert im.scaling ==  1.0
     im.offset = 1.0
     im.scaling = 2.0
-    eq_(im.offset, 1.0)
-    eq_(im.scaling, 2.0)
+    assert im.offset ==  1.0
+    assert im.scaling ==  2.0
 
 
 def test_image_16_8_scale_and_offset():
@@ -67,17 +51,17 @@ def test_image_16_8_scale_and_offset():
     offset = 255
     scaling = 3
     im2 = im.copy(mapnik.ImageType.gray8, offset, scaling)
-    eq_(im2.get_pixel(0, 0), 0)
-    eq_(im2.get_pixel(0, 1), 1)
-    eq_(im2.get_pixel(1, 0), 255)
-    eq_(im2.get_pixel(1, 1), 120)
+    assert im2.get_pixel(0, 0) ==  0
+    assert im2.get_pixel(0, 1) ==  1
+    assert im2.get_pixel(1, 0) ==  255
+    assert im2.get_pixel(1, 1) ==  120
     # pixels will be a little off due to offsets in reverting!
     im3 = im2.copy(mapnik.ImageType.gray16)
-    eq_(im3.get_pixel(0, 0), 255)  # Rounding error with ints
-    eq_(im3.get_pixel(0, 1), 258)  # same
+    assert im3.get_pixel(0, 0) ==  255  # Rounding error with ints
+    assert im3.get_pixel(0, 1) ==  258  # same
     # The other one was way out of range for our scale/offset
-    eq_(im3.get_pixel(1, 0), 1020)
-    eq_(im3.get_pixel(1, 1), 615)  # same
+    assert im3.get_pixel(1, 0) ==  1020
+    assert im3.get_pixel(1, 1) ==  615  # same
 
 
 def test_image_16_32f_scale_and_offset():
@@ -89,16 +73,12 @@ def test_image_16_32f_scale_and_offset():
     offset = 255
     scaling = 3.2
     im2 = im.copy(mapnik.ImageType.gray32f, offset, scaling)
-    eq_(im2.get_pixel(0, 0), 0.3125)
-    eq_(im2.get_pixel(0, 1), 0.9375)
-    eq_(im2.get_pixel(1, 0), -79.6875)
-    eq_(im2.get_pixel(1, 1), 112.5)
+    assert im2.get_pixel(0, 0) ==  0.3125
+    assert im2.get_pixel(0, 1) ==  0.9375
+    assert im2.get_pixel(1, 0) ==  -79.6875
+    assert im2.get_pixel(1, 1) ==  112.5
     im3 = im2.copy(mapnik.ImageType.gray16)
-    eq_(im3.get_pixel(0, 0), 256)
-    eq_(im3.get_pixel(0, 1), 258)
-    eq_(im3.get_pixel(1, 0), 0)
-    eq_(im3.get_pixel(1, 1), 615)
-
-if __name__ == "__main__":
-    setup()
-    exit(run_all(eval(x) for x in dir() if x.startswith("test_")))
+    assert im3.get_pixel(0, 0) ==  256
+    assert im3.get_pixel(0, 1) ==  258
+    assert im3.get_pixel(1, 0) ==  0
+    assert im3.get_pixel(1, 1) ==  615
