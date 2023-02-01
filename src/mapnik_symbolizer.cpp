@@ -196,6 +196,17 @@ boost::python::object __getitem__(mapnik::symbolizer_base const& sym, std::strin
     return boost::python::object();
 }
 
+boost::python::object symbolizer_keys(mapnik::symbolizer_base const& sym)
+{
+    using const_iterator = symbolizer_base::cont_type::const_iterator;
+    boost::python::list keys;
+    for (auto const& kv : sym.properties)
+    {
+        std::string name = std::get<0>(mapnik::get_meta(kv.first));
+        keys.append(name);
+    }
+    return keys;
+}
 /*
 std::string __str__(mapnik::symbolizer const& sym)
 {
@@ -268,6 +279,7 @@ void export_symbolizer()
         .def("__setattr__",&__setitem__)
         .def("__getitem__",&__getitem__)
         .def("__getattr__",&__getitem__)
+        .def("keys", &symbolizer_keys)
         //.def("__str__", &__str__)
         .def(self == self) // __eq__
         ;
