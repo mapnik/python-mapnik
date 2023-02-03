@@ -69,8 +69,8 @@ void export_style()
     using namespace boost::python;
 
     mapnik::enumeration_<mapnik::filter_mode_e>("filter_mode")
-        .value("ALL",mapnik::FILTER_ALL)
-        .value("FIRST",mapnik::FILTER_FIRST)
+        .value("ALL",mapnik::filter_mode_enum::FILTER_ALL)
+        .value("FIRST",mapnik::filter_mode_enum::FILTER_FIRST)
         ;
 
     class_<rules>("Rules",init<>("default ctor"))

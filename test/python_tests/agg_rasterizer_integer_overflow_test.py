@@ -1,13 +1,5 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import json
-
-from nose.tools import eq_
-
 import mapnik
-
-from .utilities import run_all
 
 # geojson box of the world
 geojson = {"type": "Feature",
@@ -23,7 +15,6 @@ geojson = {"type": "Feature",
                                           -6300857.11560364998877],
                                          [-17963313.143242701888084,
                                           -6300857.11560364998877]]]}}
-
 
 def test_that_coordinates_do_not_overflow_and_polygon_is_rendered_memory():
     expected_color = mapnik.Color('white')
@@ -52,8 +43,7 @@ def test_that_coordinates_do_not_overflow_and_polygon_is_rendered_memory():
     # m.zoom_to_box(mapnik.Box2d(-13658379.710221574,6195679.764683247,-13655933.72531645,6198125.749588372))
     im = mapnik.Image(256, 256)
     mapnik.render(m, im)
-    eq_(im.get_pixel(128, 128), expected_color.packed())
-
+    assert im.get_pixel(128, 128) ==  expected_color.packed()
 
 def test_that_coordinates_do_not_overflow_and_polygon_is_rendered_csv():
     expected_color = mapnik.Color('white')
@@ -84,7 +74,4 @@ def test_that_coordinates_do_not_overflow_and_polygon_is_rendered_csv():
     # m.zoom_to_box(mapnik.Box2d(-13658379.710221574,6195679.764683247,-13655933.72531645,6198125.749588372))
     im = mapnik.Image(256, 256)
     mapnik.render(m, im)
-    eq_(im.get_pixel(128, 128), expected_color.packed())
-
-if __name__ == "__main__":
-    exit(run_all(eval(x) for x in dir() if x.startswith("test_")))
+    assert im.get_pixel(128, 128) == expected_color.packed()

@@ -1,22 +1,6 @@
-#!/usr/bin/env python
-
-from __future__ import print_function
-
 import os
 import shutil
-
-from nose.tools import eq_
-
 import mapnik
-
-from .utilities import execution_path, run_all
-
-
-def setup():
-    # All of the paths used are relative, if we run the tests
-    # from another directory we need to chdir()
-    os.chdir(execution_path('.'))
-
 
 def make_tmp_map():
     m = mapnik.Map(512, 512)
@@ -41,13 +25,12 @@ def make_tmp_map():
     m.layers.append(lyr)
     return m
 
-
 def draw_title(m, ctx, text, size=10, color=mapnik.Color('black')):
     """ Draw a Map Title near the top of a page."""
     middle = m.width / 2.0
     ctx.set_source_rgba(*cairo_color(color))
     ctx.select_font_face(
-        "DejaVu Sans Book",
+        "Helvetica",
         cairo.FONT_SLANT_NORMAL,
         cairo.FONT_WEIGHT_NORMAL)
     ctx.set_font_size(size)
@@ -97,7 +80,7 @@ if mapnik.has_pycairo():
         m.zoom_to_box(mapnik.Box2d(-180, -90, 180, 90))
         test_cairo_file = '/tmp/mapnik-cairo-context-test.svg'
         surface = cairo.SVGSurface(test_cairo_file, m.width, m.height)
-        expected_cairo_file = './images/pycairo/cairo-cairo-expected.svg'
+        expected_cairo_file = './test/python_tests/images/pycairo/cairo-cairo-expected.svg'
         context = cairo.Context(surface)
         mapnik.render(m, context)
         draw_title(m, context, "Hello Map", size=20)
@@ -111,7 +94,7 @@ if mapnik.has_pycairo():
             os.stat(test_cairo_file).st_size)
         msg = 'diff in size (%s) between actual (%s) and expected(%s)' % (
             diff, test_cairo_file, 'tests/python_tests/' + expected_cairo_file)
-        eq_(diff < 1500, True, msg)
+        assert diff < 1500,  msg
         os.remove(test_cairo_file)
 
     def test_passing_pycairo_context_pdf():
@@ -119,7 +102,7 @@ if mapnik.has_pycairo():
         m.zoom_to_box(mapnik.Box2d(-180, -90, 180, 90))
         test_cairo_file = '/tmp/mapnik-cairo-context-test.pdf'
         surface = cairo.PDFSurface(test_cairo_file, m.width, m.height)
-        expected_cairo_file = './images/pycairo/cairo-cairo-expected.pdf'
+        expected_cairo_file = './test/python_tests/images/pycairo/cairo-cairo-expected.pdf'
         context = cairo.Context(surface)
         mapnik.render(m, context)
         draw_title(m, context, "Hello Map", size=20)
@@ -133,7 +116,7 @@ if mapnik.has_pycairo():
             os.stat(test_cairo_file).st_size)
         msg = 'diff in size (%s) between actual (%s) and expected(%s)' % (
             diff, test_cairo_file, 'tests/python_tests/' + expected_cairo_file)
-        eq_(diff < 1500, True, msg)
+        assert diff < 1500, msg
         os.remove(test_cairo_file)
 
     def test_passing_pycairo_context_png():
@@ -141,8 +124,8 @@ if mapnik.has_pycairo():
         m.zoom_to_box(mapnik.Box2d(-180, -90, 180, 90))
         test_cairo_file = '/tmp/mapnik-cairo-context-test.png'
         surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, m.width, m.height)
-        expected_cairo_file = './images/pycairo/cairo-cairo-expected.png'
-        expected_cairo_file2 = './images/pycairo/cairo-cairo-expected-reduced.png'
+        expected_cairo_file = './test/python_tests/images/pycairo/cairo-cairo-expected.png'
+        expected_cairo_file2 = './test/python_tests/images/pycairo/cairo-cairo-expected-reduced.png'
         context = cairo.Context(surface)
         mapnik.render(m, context)
         draw_title(m, context, "Hello Map", size=20)
@@ -160,7 +143,7 @@ if mapnik.has_pycairo():
             os.stat(test_cairo_file).st_size)
         msg = 'diff in size (%s) between actual (%s) and expected(%s)' % (
             diff, test_cairo_file, 'tests/python_tests/' + expected_cairo_file)
-        eq_(diff < 500, True, msg)
+        assert diff < 500, msg
         os.remove(test_cairo_file)
         if not os.path.exists(
                 expected_cairo_file2) or os.environ.get('UPDATE'):
@@ -173,17 +156,17 @@ if mapnik.has_pycairo():
             os.stat(reduced_color_image).st_size)
         msg = 'diff in size (%s) between actual (%s) and expected(%s)' % (
             diff, reduced_color_image, 'tests/python_tests/' + expected_cairo_file2)
-        eq_(diff < 500, True, msg)
+        assert diff < 500,  msg
         os.remove(reduced_color_image)
 
     if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         def _pycairo_surface(type, sym):
             test_cairo_file = '/tmp/mapnik-cairo-surface-test.%s.%s' % (
                 sym, type)
-            expected_cairo_file = './images/pycairo/cairo-surface-expected.%s.%s' % (
+            expected_cairo_file = './test/python_tests/images/pycairo/cairo-surface-expected.%s.%s' % (
                 sym, type)
             m = mapnik.Map(256, 256)
-            mapnik.load_map(m, '../data/good_maps/%s_symbolizer.xml' % sym)
+            mapnik.load_map(m, './test/data/good_maps/%s_symbolizer.xml' % sym)
             m.zoom_all()
             if hasattr(cairo, '%sSurface' % type.upper()):
                 surface = getattr(
@@ -207,9 +190,9 @@ if mapnik.has_pycairo():
                 msg = 'diff in size (%s) between actual (%s) and expected(%s)' % (
                     diff, test_cairo_file, 'tests/python_tests/' + expected_cairo_file)
                 if os.uname()[0] == 'Darwin':
-                    eq_(diff < 2100, True, msg)
+                    assert diff < 2100, msg
                 else:
-                    eq_(diff < 23000, True, msg)
+                    assert diff < 23000, msg
                 os.remove(test_cairo_file)
                 return True
             else:
@@ -219,23 +202,19 @@ if mapnik.has_pycairo():
                 return True
 
         def test_pycairo_svg_surface1():
-            eq_(_pycairo_surface('svg', 'point'), True)
+            assert _pycairo_surface('svg', 'point')
 
         def test_pycairo_svg_surface2():
-            eq_(_pycairo_surface('svg', 'building'), True)
+            assert _pycairo_surface('svg', 'building')
 
         def test_pycairo_svg_surface3():
-            eq_(_pycairo_surface('svg', 'polygon'), True)
+            assert _pycairo_surface('svg', 'polygon')
 
         def test_pycairo_pdf_surface1():
-            eq_(_pycairo_surface('pdf', 'point'), True)
+            assert _pycairo_surface('pdf', 'point')
 
         def test_pycairo_pdf_surface2():
-            eq_(_pycairo_surface('pdf', 'building'), True)
+            assert _pycairo_surface('pdf', 'building')
 
         def test_pycairo_pdf_surface3():
-            eq_(_pycairo_surface('pdf', 'polygon'), True)
-
-if __name__ == "__main__":
-    setup()
-    exit(run_all(eval(x) for x in dir() if x.startswith("test_")))
+            assert _pycairo_surface('pdf', 'polygon')

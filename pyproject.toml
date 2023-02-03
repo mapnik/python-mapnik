@@ -1,0 +1,27 @@
+[project]
+name = "mapnik"
+version = "4.0.0"
+authors = [
+  { name="Blake Thompson", email="flippmoke@gmail.com" },
+]
+description = "Python bindings for Mapnik"
+readme = "README.md"
+requires-python = ">=3.7"
+
+[project.urls]
+"Homepage" = "https://github.com/mapnik/python-mapnik"
+"Bug Tracker" = "https://github.com/mapnik/python-mapnik/issues"
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[build-system]
+requires = ["scikit-build-core"]
+build-backend = "scikit_build_core.build"
+
+[tool.scikit-build]
+cmake.minimum-version = "3.15"
+cmake.build-type = "Release"
+sdist.reproducible = true
+wheel.packages = ["mapnik"]
+#build-dir = "build"

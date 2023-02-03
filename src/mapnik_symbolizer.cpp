@@ -196,6 +196,17 @@ boost::python::object __getitem__(mapnik::symbolizer_base const& sym, std::strin
     return boost::python::object();
 }
 
+boost::python::object symbolizer_keys(mapnik::symbolizer_base const& sym)
+{
+    using const_iterator = symbolizer_base::cont_type::const_iterator;
+    boost::python::list keys;
+    for (auto const& kv : sym.properties)
+    {
+        std::string name = std::get<0>(mapnik::get_meta(kv.first));
+        keys.append(name);
+    }
+    return keys;
+}
 /*
 std::string __str__(mapnik::symbolizer const& sym)
 {
@@ -268,6 +279,7 @@ void export_symbolizer()
         .def("__setattr__",&__setitem__)
         .def("__getitem__",&__getitem__)
         .def("__getattr__",&__getitem__)
+        .def("keys", &symbolizer_keys)
         //.def("__str__", &__str__)
         .def(self == self) // __eq__
         ;
@@ -277,38 +289,38 @@ void export_text_symbolizer()
 {
     using namespace boost::python;
     mapnik::enumeration_<mapnik::label_placement_e>("label_placement")
-        .value("LINE_PLACEMENT", mapnik::LINE_PLACEMENT)
-        .value("POINT_PLACEMENT", mapnik::POINT_PLACEMENT)
-        .value("VERTEX_PLACEMENT", mapnik::VERTEX_PLACEMENT)
-        .value("INTERIOR_PLACEMENT", mapnik::INTERIOR_PLACEMENT);
+        .value("LINE_PLACEMENT", mapnik::label_placement_enum::LINE_PLACEMENT)
+        .value("POINT_PLACEMENT", mapnik::label_placement_enum::POINT_PLACEMENT)
+        .value("VERTEX_PLACEMENT", mapnik::label_placement_enum::VERTEX_PLACEMENT)
+        .value("INTERIOR_PLACEMENT", mapnik::label_placement_enum::INTERIOR_PLACEMENT);
 
     mapnik::enumeration_<mapnik::vertical_alignment_e>("vertical_alignment")
-        .value("TOP", mapnik::V_TOP)
-        .value("MIDDLE", mapnik::V_MIDDLE)
-        .value("BOTTOM", mapnik::V_BOTTOM)
-        .value("AUTO", mapnik::V_AUTO);
+        .value("TOP", mapnik::vertical_alignment_enum::V_TOP)
+        .value("MIDDLE", mapnik::vertical_alignment_enum::V_MIDDLE)
+        .value("BOTTOM", mapnik::vertical_alignment_enum::V_BOTTOM)
+        .value("AUTO", mapnik::vertical_alignment_enum::V_AUTO);
 
     mapnik::enumeration_<mapnik::horizontal_alignment_e>("horizontal_alignment")
-        .value("LEFT", mapnik::H_LEFT)
-        .value("MIDDLE", mapnik::H_MIDDLE)
-        .value("RIGHT", mapnik::H_RIGHT)
-        .value("AUTO", mapnik::H_AUTO);
+        .value("LEFT", mapnik::horizontal_alignment_enum::H_LEFT)
+        .value("MIDDLE", mapnik::horizontal_alignment_enum::H_MIDDLE)
+        .value("RIGHT", mapnik::horizontal_alignment_enum::H_RIGHT)
+        .value("AUTO", mapnik::horizontal_alignment_enum::H_AUTO);
 
     mapnik::enumeration_<mapnik::justify_alignment_e>("justify_alignment")
-        .value("LEFT", mapnik::J_LEFT)
-        .value("MIDDLE", mapnik::J_MIDDLE)
-        .value("RIGHT", mapnik::J_RIGHT)
-        .value("AUTO", mapnik::J_AUTO);
+        .value("LEFT", mapnik::justify_alignment_enum::J_LEFT)
+        .value("MIDDLE", mapnik::justify_alignment_enum::J_MIDDLE)
+        .value("RIGHT", mapnik::justify_alignment_enum::J_RIGHT)
+        .value("AUTO", mapnik::justify_alignment_enum::J_AUTO);
 
     mapnik::enumeration_<mapnik::text_transform_e>("text_transform")
-        .value("NONE", mapnik::NONE)
-        .value("UPPERCASE", mapnik::UPPERCASE)
-        .value("LOWERCASE", mapnik::LOWERCASE)
-        .value("CAPITALIZE", mapnik::CAPITALIZE);
+        .value("NONE", mapnik::text_transform_enum::NONE)
+        .value("UPPERCASE", mapnik::text_transform_enum::UPPERCASE)
+        .value("LOWERCASE", mapnik::text_transform_enum::LOWERCASE)
+        .value("CAPITALIZE", mapnik::text_transform_enum::CAPITALIZE);
 
     mapnik::enumeration_<mapnik::halo_rasterizer_e>("halo_rasterizer")
-        .value("FULL", mapnik::HALO_RASTERIZER_FULL)
-        .value("FAST", mapnik::HALO_RASTERIZER_FAST);
+        .value("FULL", mapnik::halo_rasterizer_enum::HALO_RASTERIZER_FULL)
+        .value("FAST", mapnik::halo_rasterizer_enum::HALO_RASTERIZER_FAST);
 
     class_< text_symbolizer, bases<symbolizer_base> >("TextSymbolizer",
                                                       init<>("Default ctor"))
@@ -343,8 +355,8 @@ void export_polygon_pattern_symbolizer()
     using namespace boost::python;
 
     mapnik::enumeration_<mapnik::pattern_alignment_e>("pattern_alignment")
-        .value("LOCAL",mapnik::LOCAL_ALIGNMENT)
-        .value("GLOBAL",mapnik::GLOBAL_ALIGNMENT)
+        .value("LOCAL",mapnik::pattern_alignment_enum::LOCAL_ALIGNMENT)
+        .value("GLOBAL",mapnik::pattern_alignment_enum::GLOBAL_ALIGNMENT)
         ;
 
     class_<polygon_pattern_symbolizer>("PolygonPatternSymbolizer",
@@ -367,8 +379,8 @@ void export_point_symbolizer()
     using namespace boost::python;
 
     mapnik::enumeration_<mapnik::point_placement_e>("point_placement")
-        .value("CENTROID",mapnik::CENTROID_POINT_PLACEMENT)
-        .value("INTERIOR",mapnik::INTERIOR_POINT_PLACEMENT)
+        .value("CENTROID",mapnik::point_placement_enum::CENTROID_POINT_PLACEMENT)
+        .value("INTERIOR",mapnik::point_placement_enum::INTERIOR_POINT_PLACEMENT)
         ;
 
     class_<point_symbolizer, bases<symbolizer_base> >("PointSymbolizer",
@@ -382,15 +394,15 @@ void export_markers_symbolizer()
     using namespace boost::python;
 
     mapnik::enumeration_<mapnik::marker_placement_e>("marker_placement")
-        .value("POINT_PLACEMENT",mapnik::MARKER_POINT_PLACEMENT)
-        .value("INTERIOR_PLACEMENT",mapnik::MARKER_INTERIOR_PLACEMENT)
-        .value("LINE_PLACEMENT",mapnik::MARKER_LINE_PLACEMENT)
+        .value("POINT_PLACEMENT",mapnik::marker_placement_enum::MARKER_POINT_PLACEMENT)
+        .value("INTERIOR_PLACEMENT",mapnik::marker_placement_enum::MARKER_INTERIOR_PLACEMENT)
+        .value("LINE_PLACEMENT",mapnik::marker_placement_enum::MARKER_LINE_PLACEMENT)
         ;
 
     mapnik::enumeration_<mapnik::marker_multi_policy_e>("marker_multi_policy")
-        .value("EACH",mapnik::MARKER_EACH_MULTI)
-        .value("WHOLE",mapnik::MARKER_WHOLE_MULTI)
-        .value("LARGEST",mapnik::MARKER_LARGEST_MULTI)
+        .value("EACH",mapnik::marker_multi_policy_enum::MARKER_EACH_MULTI)
+        .value("WHOLE",mapnik::marker_multi_policy_enum::MARKER_WHOLE_MULTI)
+        .value("LARGEST",mapnik::marker_multi_policy_enum::MARKER_LARGEST_MULTI)
         ;
 
     class_<markers_symbolizer, bases<symbolizer_base> >("MarkersSymbolizer",
@@ -405,25 +417,25 @@ void export_line_symbolizer()
     using namespace boost::python;
 
     mapnik::enumeration_<mapnik::line_rasterizer_e>("line_rasterizer")
-        .value("FULL",mapnik::RASTERIZER_FULL)
-        .value("FAST",mapnik::RASTERIZER_FAST)
+        .value("FULL",mapnik::line_rasterizer_enum::RASTERIZER_FULL)
+        .value("FAST",mapnik::line_rasterizer_enum::RASTERIZER_FAST)
         ;
 
     mapnik::enumeration_<mapnik::line_cap_e>("stroke_linecap",
                              "The possible values for a line cap used when drawing\n"
                              "with a stroke.\n")
-        .value("BUTT_CAP",mapnik::BUTT_CAP)
-        .value("SQUARE_CAP",mapnik::SQUARE_CAP)
-        .value("ROUND_CAP",mapnik::ROUND_CAP)
+        .value("BUTT_CAP",mapnik::line_cap_enum::BUTT_CAP)
+        .value("SQUARE_CAP",mapnik::line_cap_enum::SQUARE_CAP)
+        .value("ROUND_CAP",mapnik::line_cap_enum::ROUND_CAP)
         ;
 
     mapnik::enumeration_<mapnik::line_join_e>("stroke_linejoin",
                                       "The possible values for the line joining mode\n"
                                       "when drawing with a stroke.\n")
-        .value("MITER_JOIN",mapnik::MITER_JOIN)
-        .value("MITER_REVERT_JOIN",mapnik::MITER_REVERT_JOIN)
-        .value("ROUND_JOIN",mapnik::ROUND_JOIN)
-        .value("BEVEL_JOIN",mapnik::BEVEL_JOIN)
+        .value("MITER_JOIN",mapnik::line_join_enum::MITER_JOIN)
+        .value("MITER_REVERT_JOIN",mapnik::line_join_enum::MITER_REVERT_JOIN)
+        .value("ROUND_JOIN",mapnik::line_join_enum::ROUND_JOIN)
+        .value("BEVEL_JOIN",mapnik::line_join_enum::BEVEL_JOIN)
         ;
 
 
@@ -448,8 +460,8 @@ void export_debug_symbolizer()
     using namespace boost::python;
 
     mapnik::enumeration_<mapnik::debug_symbolizer_mode_e>("debug_symbolizer_mode")
-        .value("COLLISION",mapnik::DEBUG_SYM_MODE_COLLISION)
-        .value("VERTEX",mapnik::DEBUG_SYM_MODE_VERTEX)
+        .value("COLLISION",mapnik::debug_symbolizer_mode_enum::DEBUG_SYM_MODE_COLLISION)
+        .value("VERTEX",mapnik::debug_symbolizer_mode_enum::DEBUG_SYM_MODE_VERTEX)
         ;
 
     class_<debug_symbolizer, bases<symbolizer_base> >("DebugSymbolizer",

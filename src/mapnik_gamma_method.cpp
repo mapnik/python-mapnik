@@ -36,11 +36,11 @@ void export_gamma_method()
     using namespace boost::python;
 
     mapnik::enumeration_<mapnik::gamma_method_e>("gamma_method")
-        .value("POWER", mapnik::GAMMA_POWER)
-        .value("LINEAR",mapnik::GAMMA_LINEAR)
-        .value("NONE", mapnik::GAMMA_NONE)
-        .value("THRESHOLD", mapnik::GAMMA_THRESHOLD)
-        .value("MULTIPLY", mapnik::GAMMA_MULTIPLY)
+        .value("POWER", mapnik::gamma_method_enum::GAMMA_POWER)
+        .value("LINEAR",mapnik::gamma_method_enum::GAMMA_LINEAR)
+        .value("NONE", mapnik::gamma_method_enum::GAMMA_NONE)
+        .value("THRESHOLD", mapnik::gamma_method_enum::GAMMA_THRESHOLD)
+        .value("MULTIPLY", mapnik::gamma_method_enum::GAMMA_MULTIPLY)
         ;
 
 }
