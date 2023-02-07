@@ -1,23 +1,10 @@
-#!/usr/bin/env python
-
-import os
-
-from nose.tools import eq_
-
 import mapnik
-
-from .utilities import execution_path, run_all
 
 try:
     import itertools.izip as zip
 except ImportError:
     pass
 
-
-def setup():
-    # All of the paths used are relative, if we run the tests
-    # from another directory we need to chdir()
-    os.chdir(execution_path('.'))
 
 # TODO - fix truncation in shapefile...
 polys = ["POLYGON ((30 10, 10 20, 20 40, 40 40, 30 10))",
@@ -37,17 +24,12 @@ if 'shape' in plugins and 'ogr' in plugins:
         count = 0
         for feat1, feat2 in zip(fs1, fs2):
             count += 1
-            eq_(feat1.attributes, feat2.attributes)
-            # TODO - revisit this: https://github.com/mapnik/mapnik/issues/1093
-            # eq_(feat1.to_geojson(),feat2.to_geojson())
-            # eq_(feat1.geometries().to_wkt(),feat2.geometries().to_wkt())
-            # eq_(feat1.geometries().to_wkb(mapnik.wkbByteOrder.NDR),feat2.geometries().to_wkb(mapnik.wkbByteOrder.NDR))
-            # eq_(feat1.geometries().to_wkb(mapnik.wkbByteOrder.XDR),feat2.geometries().to_wkb(mapnik.wkbByteOrder.XDR))
+            assert feat1.attributes == feat2.attributes
+            assert feat1.to_geojson() == feat2.to_geojson()
+            assert feat1.geometry.to_wkt() == feat2.geometry.to_wkt()
+            assert feat1.geometry.to_wkb(mapnik.wkbByteOrder.NDR) == feat2.geometry.to_wkb(mapnik.wkbByteOrder.NDR)
+            assert feat1.geometry.to_wkb(mapnik.wkbByteOrder.XDR) == feat2.geometry.to_wkb(mapnik.wkbByteOrder.XDR)
 
     def test_simple_polys():
         ensure_geometries_are_interpreted_equivalently(
-            '../data/shp/wkt_poly.shp')
-
-if __name__ == "__main__":
-    setup()
-    exit(run_all(eval(x) for x in dir() if x.startswith("test_")))
+            './test/data/shp/wkt_poly.shp')
