@@ -2,11 +2,8 @@
 
 """Mapnik classes to assist in creating printable maps."""
 
-from __future__ import absolute_import, print_function
-
 import logging
 import math
-
 from mapnik import Box2d, Coord, Geometry, Layer, Map, Projection, Style, render
 from mapnik.printing.conversions import m2pt, m2px
 from mapnik.printing.formats import pagesizes
@@ -25,12 +22,12 @@ except ImportError:
     HAS_PANGOCAIRO_MODULE = False
 
 try:
-    from PyPDF2 import PdfFileReader, PdfFileWriter
-    from PyPDF2.generic import (ArrayObject, DecodedStreamObject, DictionaryObject, FloatObject, NameObject,
-        NumberObject, TextStringObject)
-    HAS_PYPDF2 = True
+    from pypdf import PdfReader, PdfWriter
+    from pypdf.generic import (ArrayObject, DecodedStreamObject, DictionaryObject, FloatObject, NameObject,
+                                 NumberObject, TextStringObject)
+    HAS_PYPDF = True
 except ImportError:
-    HAS_PYPDF2 = False
+    HAS_PYPDF = False
 
 """
 Style of centering to use with the map.
@@ -90,7 +87,7 @@ class PDFPrinter(object):
         Args:
             pagesize: tuple of page size in meters, see predefined sizes in mapnik.formats module
             margin: page margin in meters
-            box: the box to render the map into. Must be within page area, margin excluded. 
+            box: the box to render the map into. Must be within page area, margin excluded.
                 This should be a Mapnik Box2d object. Default is the full page without margin.
             percent_box: similar to box argument but specified as a percent (0->1) of the full page size.
                 If both box and percent_box are specified percent_box will be used.
@@ -104,7 +101,7 @@ class PDFPrinter(object):
                 be a value from the mapnik.utils.centering class. The default is to center on the maps constrained
                 axis. Typically this will be horizontal for portrait pages and vertical for landscape pages.
             is_latlon: whether the map is in lat lon degrees or not.
-            use_ocg_layers: create OCG layers in the PDF, requires PyPDF2
+            use_ocg_layers: create OCG layers in the PDF, requires pypdf
             font_name: the font name used each time text is written (e.g., legend titles, representative fraction, etc.)
         """
         self._pagesize = pagesize
@@ -563,7 +560,7 @@ class PDFPrinter(object):
 
         Args:
             m: the Map object to render the scale for
-            ctx: A cairo context to render the scale into. If this is None, we create a context and find out 
+            ctx: A cairo context to render the scale into. If this is None, we create a context and find out
                 the best location for the scale bar
             width: the width of area available for rendering the scale bar (in meters)
             num_divisions: the number of divisions for the scale bar
@@ -737,7 +734,7 @@ class PDFPrinter(object):
 
         # renders the vertical graticule axes
         self._render_graticule_axes_and_text(
-            m, 
+            m,
             p2,
             latlon_bounds,
             latlon_buffer,
@@ -1119,7 +1116,7 @@ class PDFPrinter(object):
         Takes a multi pages PDF as input and converts each page to a layer in a single page PDF.
 
         Note:
-            requires PyPDF2 to be available
+            requires pypdf to be available
 
         Args:
             layer_names should be a sequence of the user visible names of the layers, if not given
@@ -1128,17 +1125,17 @@ class PDFPrinter(object):
             if output_name is not provided a temporary file will be used for the conversion which
             will then be copied back over the source file.
         """
-        if not HAS_PYPDF2:
-            raise RuntimeError("PyPDF2 not available; PyPDF2 required to convert pdf pages to layers")
+        if not HAS_PYPDF:
+            raise RuntimeError("pypdf not available; pypdf required to convert pdf pages to layers")
 
         with open(filename, "rb+") as f:
-            file_reader = PdfFileReader(f)
-            file_writer = PdfFileWriter()
+            file_reader = PdfReader(f)
+            file_writer = PdfWriter()
 
-            template_page_size = file_reader.pages[0].mediaBox
-            output_pdf = file_writer.addBlankPage(
-                width=template_page_size.getWidth(),
-                height=template_page_size.getHeight())
+            template_page_size = file_reader.pages[0].mediabox
+            output_pdf = file_writer.add_blank_page(
+                width=template_page_size.width,
+                height=template_page_size.height)
 
             content_key = NameObject('/Contents')
             output_pdf[content_key] = ArrayObject()
@@ -1149,15 +1146,15 @@ class PDFPrinter(object):
             (properties, ocgs) = self._make_ocg_layers(file_reader, file_writer, output_pdf, layer_names)
 
             properties_key = NameObject('/Properties')
-            output_pdf[resource_key][properties_key] = file_writer._addObject(properties)
+            output_pdf[resource_key][properties_key] = file_writer._add_object(properties)
 
             ocproperties = DictionaryObject()
             ocproperties[NameObject('/OCGs')] = ocgs
 
             default_view = self._get_pdf_default_view(ocgs, reverse_all_but_last)
-            ocproperties[NameObject('/D')] = file_writer._addObject(default_view)
+            ocproperties[NameObject('/D')] = file_writer._add_object(default_view)
 
-            file_writer._root_object[NameObject('/OCProperties')] = file_writer._addObject(ocproperties)
+            file_writer._root_object[NameObject('/OCProperties')] = file_writer._add_object(ocproperties)
 
             f.seek(0)
             file_writer.write(f)
@@ -1189,7 +1186,7 @@ class PDFPrinter(object):
                 page[NameObject(
                     '/Contents')] = ArrayObject((ocgs_start, page['/Contents'], ocg_end))
 
-            output_pdf.mergePage(page)
+            output_pdf.merge_page(page)
 
             ocg = DictionaryObject()
             ocg[NameObject('/Type')] = NameObject('/OCG')
@@ -1199,7 +1196,7 @@ class PDFPrinter(object):
             else:
                 ocg[NameObject('/Name')] = TextStringObject('Layer %d' % (idx + 1))
 
-            indirect_ocg = file_writer._addObject(ocg)
+            indirect_ocg = file_writer._add_object(ocg)
             properties[ocg_name] = indirect_ocg
             ocgs.append(indirect_ocg)
 
@@ -1238,20 +1235,20 @@ class PDFPrinter(object):
             The epsg code or the wkt text of the projection must be provided.
             Must be called *after* the page has had .finish() called.
         """
-        if not HAS_PYPDF2:
-            raise RuntimeError("PyPDF2 not available; PyPDF2 required to add geospatial header to PDF")
+        if not HAS_PYPDF:
+            raise RuntimeError("pypdf not available; pypdf required to add geospatial header to PDF")
 
         if not any((epsg,wkt)):
             raise RuntimeError("EPSG or WKT required to add geospatial header to PDF")
 
         with open(filename, "rb+") as f:
-            file_reader = PdfFileReader(f)
-            file_writer = PdfFileWriter()
+            file_reader = PdfReader(f)
+            file_writer = PdfWriter()
 
             # preserve OCProperties at document root if we have one
-            if file_reader.trailer['/Root'].has_key(NameObject('/OCProperties')):
+            if NameObject('/OCProperties') in file_reader.trailer['/Root']:
                 file_writer._root_object[NameObject('/OCProperties')] = file_reader.trailer[
-                    '/Root'].getObject()[NameObject('/OCProperties')]
+                    '/Root'].get_object()[NameObject('/OCProperties')]
 
             for page in file_reader.pages:
                 gcs = DictionaryObject()
@@ -1265,7 +1262,7 @@ class PDFPrinter(object):
                 measure = self._get_pdf_measure(m, gcs)
                 page[NameObject('/VP')] = self._get_pdf_vp(measure)
 
-                file_writer.addPage(page)
+                file_writer.add_page(page)
 
             f.seek(0)
             file_writer.write(f)
