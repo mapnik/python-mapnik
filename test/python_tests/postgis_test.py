@@ -5,10 +5,11 @@ import threading
 from subprocess import PIPE, Popen
 import mapnik
 import pytest
+from .utilities import execution_path
 
 MAPNIK_TEST_DBNAME = 'mapnik-tmp-postgis-test-db'
 POSTGIS_TEMPLATE_DBNAME = 'template_postgis'
-SHAPEFILE = './test/data/shp/world_merc.shp'
+SHAPEFILE = os.path.join(execution_path('.'), '../data/shp/world_merc.shp')
 
 def call(cmd, silent=False):
     stdin, stderr = Popen(cmd, shell=True, stdout=PIPE,

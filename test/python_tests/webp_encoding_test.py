@@ -1,20 +1,6 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import, print_function
-
-import os
-
-from nose.tools import eq_, raises
-
 import mapnik
-
-from .utilities import execution_path, run_all
-
-
-def setup():
-    # All of the paths used are relative, if we run the tests
-    # from another directory we need to chdir()
-    os.chdir(execution_path('.'))
+import os
+import pytest
 
 if mapnik.has_webp():
     tmp_dir = '/tmp/mapnik-webp/'
@@ -45,7 +31,7 @@ if mapnik.has_webp():
     ]
 
     def gen_filepath(name, format):
-        return os.path.join('images/support/encoding-opts',
+        return os.path.join('./test/python_tests/images/support/encoding-opts',
                             name + '-' + format.replace(":", "+") + '.webp')
 
     def test_quality_threshold():
@@ -54,20 +40,22 @@ if mapnik.has_webp():
         im.tostring('webp:quality=0')
         im.tostring('webp:quality=0.001')
 
-    @raises(RuntimeError)
+
     def test_quality_threshold_invalid():
         im = mapnik.Image(256, 256)
-        im.tostring('webp:quality=101')
+        with pytest.raises(RuntimeError):
+            im.tostring('webp:quality=101')
 
-    @raises(RuntimeError)
+
     def test_quality_threshold_invalid2():
         im = mapnik.Image(256, 256)
-        im.tostring('webp:quality=-1')
+        with pytest.raises(RuntimeError):
+            im.tostring('webp:quality=-1')
 
-    @raises(RuntimeError)
     def test_quality_threshold_invalid3():
         im = mapnik.Image(256, 256)
-        im.tostring('webp:quality=101.1')
+        with pytest.raises(RuntimeError):
+            im.tostring('webp:quality=101.1')
 
     generate = os.environ.get('UPDATE')
 
@@ -139,7 +127,7 @@ if mapnik.has_webp():
                         '%s (actual) not == to %s (expected)' %
                         (actual, expected))
             # disabled to avoid failures on ubuntu when using old webp packages
-            # eq_(fails,[],'\n'+'\n'.join(fails))
+            # assert fails,[] == '\n'+'\n'.join(fails)
         except RuntimeError as e:
             print(e)
 
@@ -175,11 +163,6 @@ if mapnik.has_webp():
                 print(
                     'warning, cannot open webp expected image (your libwebp is likely too old)')
                 return
-            eq_(t0_len, len(expected_bytes))
+            assert t0_len ==  len(expected_bytes)
         except RuntimeError as e:
             print(e)
-
-
-if __name__ == "__main__":
-    setup()
-    exit(run_all(eval(x) for x in dir() if x.startswith("test_")))
