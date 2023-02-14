@@ -5,8 +5,7 @@ import os
 from timeit import Timer, time
 
 import mapnik
-
-from .utilities import execution_path, run_all
+from .utilities import execution_path
 
 
 def setup():
@@ -58,7 +57,7 @@ tiles = [
 iterations = 10
 
 
-def do_encoding():
+def test_encoding():
 
     global image
 
@@ -83,7 +82,7 @@ def do_encoding():
         blank_im = mapnik.Image(512, 512)
         for c in combinations:
             t = Timer(blank)
-            run(blank, blank_im, c, t)
+            yield run, blank, blank_im, c, t
 
     if 'solid' in tiles:
         def solid():
@@ -92,7 +91,7 @@ def do_encoding():
         solid_im.fill(mapnik.Color("#f2efe9"))
         for c in combinations:
             t = Timer(solid)
-            run(solid, solid_im, c, t)
+            yield run, solid, solid_im, c, t
 
     if 'many_colors' in tiles:
         def many_colors():
@@ -101,7 +100,7 @@ def do_encoding():
         many_colors_im = mapnik.Image.open('../data/images/13_4194_2747.png')
         for c in combinations:
             t = Timer(many_colors)
-            run(many_colors, many_colors_im, c, t)
+            yield run, many_colors, many_colors_im, c, t
 
     if 'aerial_24' in tiles:
         def aerial_24():
@@ -109,7 +108,7 @@ def do_encoding():
         aerial_24_im = mapnik.Image.open('../data/images/12_654_1580.png')
         for c in combinations:
             t = Timer(aerial_24)
-            run(aerial_24, aerial_24_im, c, t)
+            yield run, aerial_24, aerial_24_im, c, t
 
     for key, value in sorted(sortable.items(), key=lambda i: (i[1], i[0])):
         s = results[key]
@@ -121,9 +120,3 @@ def do_encoding():
         print(
             'min: %sms | avg: %sms | total: %sms | len: %s <-- %s' %
             (min_, avg, elapsed, size, name))
-
-
-if __name__ == "__main__":
-    setup()
-    do_encoding()
-    exit(run_all(eval(x) for x in dir() if x.startswith("test_")))
