@@ -198,7 +198,6 @@ boost::python::object __getitem__(mapnik::symbolizer_base const& sym, std::strin
 
 boost::python::object symbolizer_keys(mapnik::symbolizer_base const& sym)
 {
-    using const_iterator = symbolizer_base::cont_type::const_iterator;
     boost::python::list keys;
     for (auto const& kv : sym.properties)
     {
