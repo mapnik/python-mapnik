@@ -1,5 +1,14 @@
 import mapnik
 import os
+import pytest
+from .utilities import execution_path
+
+@pytest.fixture(scope="module")
+def setup():
+    # All of the paths used are relative, if we run the tests
+    # from another directory we need to chdir()
+    os.chdir(execution_path('.'))
+    yield
 
 def make_map_from_xml(source_xml):
         m = mapnik.Map(100, 100)
@@ -21,15 +30,15 @@ def make_pdf(m, output_pdf, esri_wkt):
 if mapnik.has_pycairo():
         import mapnik.printing
 
-        def test_pdf_printing():
-                source_xml = './test/data/good_maps/marker-text-line.xml'.encode('utf-8')
+        def test_pdf_printing(setup):
+                source_xml = '../data/good_maps/marker-text-line.xml'.encode('utf-8')
                 m = make_map_from_xml(source_xml)
 
                 actual_pdf = "/tmp/pdf-printing-actual.pdf"
                 esri_wkt = 'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]]'
                 make_pdf(m, actual_pdf, esri_wkt)
 
-                expected_pdf = './test/python_tests/images/pycairo/pdf-printing-expected.pdf'
+                expected_pdf = 'images/pycairo/pdf-printing-expected.pdf'
 
                 diff = abs(os.stat(expected_pdf).st_size - os.stat(actual_pdf).st_size)
                 msg = 'diff in size (%s) between actual (%s) and expected(%s)' % (diff, actual_pdf, 'tests/python_tests/' + expected_pdf)

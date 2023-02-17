@@ -1,29 +1,24 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-#from __future__ import absolute_import, print_function
-
-#from nose.tools import assert_almost_equal, eq_
-
 import mapnik
 import pytest
-#import os
+import os
 
-#from .utilities import execution_path, run_all
+from .utilities import execution_path
 
-#def setup():
+@pytest.fixture(scope="module")
+def setup():
     # All of the paths used are relative, if we run the tests
     # from another directory we need to chdir()
-#    os.chdir(execution_path('.'))
+    os.chdir(execution_path('.'))
+    yield
 
 if 'topojson' in mapnik.DatasourceCache.plugin_names():
 
-    def test_topojson_init():
+    def test_topojson_init(setup):
         # topojson tests/data/json/escaped.geojson -o tests/data/topojson/escaped.topojson --properties
         # topojson version 1.4.2
         ds = mapnik.Datasource(
             type='topojson',
-            file='./test/data/topojson/escaped.topojson')
+            file='../data/topojson/escaped.topojson')
         e = ds.envelope()
         assert e.minx == pytest.approx(-81.705583, 1e-7)
         assert e.miny == pytest.approx( 41.480573, 1e-6)
@@ -33,7 +28,7 @@ if 'topojson' in mapnik.DatasourceCache.plugin_names():
     def test_topojson_properties():
          ds = mapnik.Datasource(
              type='topojson',
-             file='./test/data/topojson/escaped.topojson')
+             file='../data/topojson/escaped.topojson')
 
          f = list(ds.features_at_point(ds.envelope().center()))[0]
          assert len(ds.fields()) ==  11
@@ -53,7 +48,7 @@ if 'topojson' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.Datasource(
             type='topojson',
             inline=open(
-                './test/data/topojson/escaped.topojson',
+                '../data/topojson/escaped.topojson',
                 'r').read())
         f = list(ds.features_at_point(ds.envelope().center()))[0]
         assert len(ds.fields()) ==  11
@@ -74,7 +69,7 @@ if 'topojson' in mapnik.DatasourceCache.plugin_names():
         #with pytest.raises(RuntimeError):
         ds = mapnik.Datasource(
             type='topojson',
-            file='./test/data/topojson/escaped.topojson')
+            file='../data/topojson/escaped.topojson')
         assert len(ds.fields()) ==  11
         # TODO - this sorting is messed up
         assert ds.fields() == ['name', 'int', 'description',

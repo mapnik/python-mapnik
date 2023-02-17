@@ -1,22 +1,14 @@
-# encoding: utf8
-
-from __future__ import print_function
-
 import os
-
-from nose.tools import eq_
-
 import mapnik
+import pytest
+from .utilities import (get_unique_colors, pixel2channels, side_by_side_image, execution_path)
 
-from .utilities import (execution_path, get_unique_colors, pixel2channels,
-                        run_all, side_by_side_image)
-
-
+@pytest.fixture(scope="module")
 def setup():
     # All of the paths used are relative, if we run the tests
     # from another directory we need to chdir()
     os.chdir(execution_path('.'))
-
+    yield
 
 def is_pre(color, alpha):
     return (color * 255.0 / alpha) <= 255
@@ -93,14 +85,14 @@ def validate_pixels_are_premultiplied(image):
     return (num_bad == 0, bad_pixels)
 
 
-def test_compare_images():
-    b = mapnik.Image.open('./images/support/b.png')
+def test_compare_images(setup):
+    b = mapnik.Image.open('images/support/b.png')
     b.premultiply()
     num_ops = len(mapnik.CompositeOp.names)
     successes = []
     fails = []
     for name in mapnik.CompositeOp.names:
-        a = mapnik.Image.open('./images/support/a.png')
+        a = mapnik.Image.open('images/support/a.png')
         a.premultiply()
         a.composite(b, getattr(mapnik.CompositeOp, name))
         actual = '/tmp/mapnik-comp-op-test-' + name + '.png'
@@ -132,53 +124,53 @@ def test_compare_images():
                 name +
                 '.fail.png',
                 'png32')
-    eq_(len(successes), num_ops, '\n' + '\n'.join(fails))
+    assert len(successes) == num_ops, '\n' + '\n'.join(fails)
     b.demultiply()
     # b will be slightly modified by pre and then de multiplication rounding errors
     # TODO - write test to ensure the image is 99% the same.
     #expected_b = mapnik.Image.open('./images/support/b.png')
     # b.save('/tmp/mapnik-comp-op-test-original-mask.png')
-    #eq_(b.tostring('png32'),expected_b.tostring('png32'), '/tmp/mapnik-comp-op-test-original-mask.png is no longer equivalent to original mask: ./images/support/b.png')
+    #assert b.tostring('png32') == expected_b.tostring('png32'), '/tmp/mapnik-comp-op-test-original-mask.png is no longer equivalent to original mask: ./images/support/b.png'
 
 
 def test_pre_multiply_status():
-    b = mapnik.Image.open('./images/support/b.png')
+    b = mapnik.Image.open('images/support/b.png')
     # not premultiplied yet, should appear that way
     result = validate_pixels_are_not_premultiplied(b)
-    eq_(result, True)
+    assert result
     # not yet premultiplied therefore should return false
     result = validate_pixels_are_premultiplied(b)
-    eq_(result[0], False)
+    assert not result[0]
     # now actually premultiply the pixels
     b.premultiply()
     # now checking if premultiplied should succeed
     result = validate_pixels_are_premultiplied(b)
-    eq_(result[0], True)
+    assert result[0]
     # should now not appear to look not premultiplied
     result = validate_pixels_are_not_premultiplied(b)
-    eq_(result, False)
+    assert not result
     # now actually demultiply the pixels
     b.demultiply()
     # should now appear demultiplied
     result = validate_pixels_are_not_premultiplied(b)
-    eq_(result, True)
+    assert result
 
 
 def test_pre_multiply_status_of_map1():
     m = mapnik.Map(256, 256)
     im = mapnik.Image(m.width, m.height)
-    eq_(validate_pixels_are_not_premultiplied(im), True)
+    assert validate_pixels_are_not_premultiplied(im)
     mapnik.render(m, im)
-    eq_(validate_pixels_are_not_premultiplied(im), True)
+    assert validate_pixels_are_not_premultiplied(im)
 
 
 def test_pre_multiply_status_of_map2():
     m = mapnik.Map(256, 256)
     m.background = mapnik.Color(1, 1, 1, 255)
     im = mapnik.Image(m.width, m.height)
-    eq_(validate_pixels_are_not_premultiplied(im), True)
+    assert validate_pixels_are_not_premultiplied(im)
     mapnik.render(m, im)
-    eq_(validate_pixels_are_not_premultiplied(im), True)
+    assert validate_pixels_are_not_premultiplied(im)
 
 if 'shape' in mapnik.DatasourceCache.plugin_names():
     def test_style_level_comp_op():
@@ -215,7 +207,7 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
                     name +
                     '.fail.png',
                     'png32')
-        eq_(len(fails), 0, '\n' + '\n'.join(fails))
+        assert len(fails) == 0, '\n' + '\n'.join(fails)
 
     def test_style_level_opacity():
         m = mapnik.Map(512, 512)
@@ -228,10 +220,8 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
         expected = 'images/support/mapnik-style-level-opacity.png'
         im.save(actual, 'png32')
         expected_im = mapnik.Image.open(expected)
-        eq_(im.tostring('png32'),
-            expected_im.tostring('png32'),
-            'failed comparing actual (%s) and expected (%s)' % (actual,
-                                                                'tests/python_tests/' + expected))
+        assert im.tostring('png32') == expected_im.tostring('png32'), 'failed comparing actual (%s) and expected (%s)' % (actual,
+                                                                                                                          'tests/python_tests/' + expected)
 
 
 def test_rounding_and_color_expectations():
@@ -239,24 +229,24 @@ def test_rounding_and_color_expectations():
     m.background = mapnik.Color('rgba(255,255,255,.4999999)')
     im = mapnik.Image(m.width, m.height)
     mapnik.render(m, im)
-    eq_(get_unique_colors(im), ['rgba(255,255,255,127)'])
+    assert get_unique_colors(im) == ['rgba(255,255,255,127)']
     m = mapnik.Map(1, 1)
     m.background = mapnik.Color('rgba(255,255,255,.5)')
     im = mapnik.Image(m.width, m.height)
     mapnik.render(m, im)
-    eq_(get_unique_colors(im), ['rgba(255,255,255,128)'])
+    assert get_unique_colors(im) == ['rgba(255,255,255,128)']
     im_file = mapnik.Image.open('../data/images/stripes_pattern.png')
-    eq_(get_unique_colors(im_file), ['rgba(0,0,0,0)', 'rgba(74,74,74,255)'])
+    assert get_unique_colors(im_file) == ['rgba(0,0,0,0)', 'rgba(74,74,74,255)']
     # should have no effect
     im_file.premultiply()
-    eq_(get_unique_colors(im_file), ['rgba(0,0,0,0)', 'rgba(74,74,74,255)'])
+    assert get_unique_colors(im_file) == ['rgba(0,0,0,0)', 'rgba(74,74,74,255)']
     im_file.apply_opacity(.5)
     # should have effect now that image has transparency
     im_file.premultiply()
-    eq_(get_unique_colors(im_file), ['rgba(0,0,0,0)', 'rgba(37,37,37,127)'])
+    assert get_unique_colors(im_file) == ['rgba(0,0,0,0)', 'rgba(37,37,37,127)']
     # should restore to original nonpremultiplied colors
     im_file.demultiply()
-    eq_(get_unique_colors(im_file), ['rgba(0,0,0,0)', 'rgba(74,74,74,127)'])
+    assert get_unique_colors(im_file) == ['rgba(0,0,0,0)', 'rgba(74,74,74,127)']
 
 
 def test_background_image_and_background_color():
@@ -265,7 +255,7 @@ def test_background_image_and_background_color():
     m.background_image = '../data/images/stripes_pattern.png'
     im = mapnik.Image(m.width, m.height)
     mapnik.render(m, im)
-    eq_(get_unique_colors(im), ['rgba(255,255,255,128)', 'rgba(74,74,74,255)'])
+    assert get_unique_colors(im) == ['rgba(255,255,255,128)', 'rgba(74,74,74,255)']
 
 
 def test_background_image_with_alpha_and_background_color():
@@ -274,7 +264,7 @@ def test_background_image_with_alpha_and_background_color():
     m.background_image = '../data/images/yellow_half_trans.png'
     im = mapnik.Image(m.width, m.height)
     mapnik.render(m, im)
-    eq_(get_unique_colors(im), ['rgba(255,255,85,191)'])
+    assert get_unique_colors(im) == ['rgba(255,255,85,191)']
 
 
 def test_background_image_with_alpha_and_background_color_against_composited_control():
@@ -295,8 +285,4 @@ def test_background_image_with_alpha_and_background_color_against_composited_con
     # compare image rendered (compositing in `agg_renderer<T>::setup`)
     # vs image composited via python bindings
     #raise Todo("looks like we need to investigate PNG color rounding when saving")
-    # eq_(get_unique_colors(im),get_unique_colors(im1))
-
-if __name__ == "__main__":
-    setup()
-    exit(run_all(eval(x) for x in dir() if x.startswith("test_")))
+    assert get_unique_colors(im) == get_unique_colors(im1)

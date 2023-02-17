@@ -1,12 +1,22 @@
+import os
 import mapnik
 import pytest
 
+from .utilities import execution_path
+
+@pytest.fixture(scope="module")
+def setup():
+    # All of the paths used are relative, if we run the tests
+    # from another directory we need to chdir()
+    os.chdir(execution_path('.'))
+    yield
+
 if 'geojson' in mapnik.DatasourceCache.plugin_names():
 
-    def test_geojson_init():
+    def test_geojson_init(setup):
         ds = mapnik.Datasource(
             type='geojson',
-            file='./test/data/json/escaped.geojson')
+            file='../data/json/escaped.geojson')
         e = ds.envelope()
         assert e.minx == pytest.approx(-81.705583, abs=1e-7)
         assert e.miny == pytest.approx(41.480573, abs=1e-6)
@@ -16,7 +26,7 @@ if 'geojson' in mapnik.DatasourceCache.plugin_names():
     def test_geojson_properties():
         ds = mapnik.Datasource(
             type='geojson',
-            file='./test/data/json/escaped.geojson')
+            file='../data/json/escaped.geojson')
         f = list(ds.features_at_point(ds.envelope().center()))[0]
         assert len(ds.fields()) ==  11
         desc = ds.describe()
@@ -33,7 +43,7 @@ if 'geojson' in mapnik.DatasourceCache.plugin_names():
 
         ds = mapnik.Datasource(
             type='geojson',
-            file='./test/data/json/escaped.geojson')
+            file='../data/json/escaped.geojson')
         f = list(ds.all_features())[0]
         assert len(ds.fields()) ==  11
 
@@ -52,7 +62,7 @@ if 'geojson' in mapnik.DatasourceCache.plugin_names():
     def test_large_geojson_properties():
         ds = mapnik.Datasource(
             type='geojson',
-            file='./test/data/json/escaped.geojson',
+            file='../data/json/escaped.geojson',
             cache_features=False)
         f = list(ds.features_at_point(ds.envelope().center()))[0]
         assert len(ds.fields()) ==  11
@@ -70,7 +80,7 @@ if 'geojson' in mapnik.DatasourceCache.plugin_names():
 
         ds = mapnik.Datasource(
             type='geojson',
-            file='./test/data/json/escaped.geojson')
+            file='../data/json/escaped.geojson')
         f = list(ds.all_features())[0]
         assert len(ds.fields()) ==  11
 
@@ -103,7 +113,7 @@ if 'geojson' in mapnik.DatasourceCache.plugin_names():
     def test_that_nonexistant_query_field_throws(**kwargs):
         ds = mapnik.Datasource(
             type='geojson',
-            file='./test/data/json/escaped.geojson')
+            file='../data/json/escaped.geojson')
         assert len(ds.fields()) ==  11
         # TODO - this sorting is messed up
         #assert ds.fields(),['name', 'int', 'double', 'description', 'boolean' ==  'NOM_FR']
@@ -119,7 +129,7 @@ if 'geojson' in mapnik.DatasourceCache.plugin_names():
     def test_parsing_feature_collection_with_top_level_properties():
         ds = mapnik.Datasource(
             type='geojson',
-            file='./test/data/json/feature_collection_level_properties.json')
+            file='../data/json/feature_collection_level_properties.json')
         f = list(ds.all_features())[0]
 
         desc = ds.describe()

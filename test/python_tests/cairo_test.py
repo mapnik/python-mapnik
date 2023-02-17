@@ -1,6 +1,16 @@
 import os
 import shutil
 import mapnik
+import pytest
+from .utilities import execution_path
+
+@pytest.fixture(scope="module")
+def setup():
+    # All of the paths used are relative, if we run the tests
+    # from another directory we need to chdir()
+    os.chdir(execution_path('.'))
+    yield
+
 
 def make_tmp_map():
     m = mapnik.Map(512, 512)
@@ -75,12 +85,12 @@ def cairo_color(c):
 if mapnik.has_pycairo():
     import cairo
 
-    def test_passing_pycairo_context_svg():
+    def test_passing_pycairo_context_svg(setup):
         m = make_tmp_map()
         m.zoom_to_box(mapnik.Box2d(-180, -90, 180, 90))
         test_cairo_file = '/tmp/mapnik-cairo-context-test.svg'
         surface = cairo.SVGSurface(test_cairo_file, m.width, m.height)
-        expected_cairo_file = './test/python_tests/images/pycairo/cairo-cairo-expected.svg'
+        expected_cairo_file = 'images/pycairo/cairo-cairo-expected.svg'
         context = cairo.Context(surface)
         mapnik.render(m, context)
         draw_title(m, context, "Hello Map", size=20)
@@ -102,7 +112,7 @@ if mapnik.has_pycairo():
         m.zoom_to_box(mapnik.Box2d(-180, -90, 180, 90))
         test_cairo_file = '/tmp/mapnik-cairo-context-test.pdf'
         surface = cairo.PDFSurface(test_cairo_file, m.width, m.height)
-        expected_cairo_file = './test/python_tests/images/pycairo/cairo-cairo-expected.pdf'
+        expected_cairo_file = 'images/pycairo/cairo-cairo-expected.pdf'
         context = cairo.Context(surface)
         mapnik.render(m, context)
         draw_title(m, context, "Hello Map", size=20)
@@ -124,8 +134,8 @@ if mapnik.has_pycairo():
         m.zoom_to_box(mapnik.Box2d(-180, -90, 180, 90))
         test_cairo_file = '/tmp/mapnik-cairo-context-test.png'
         surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, m.width, m.height)
-        expected_cairo_file = './test/python_tests/images/pycairo/cairo-cairo-expected.png'
-        expected_cairo_file2 = './test/python_tests/images/pycairo/cairo-cairo-expected-reduced.png'
+        expected_cairo_file = 'images/pycairo/cairo-cairo-expected.png'
+        expected_cairo_file2 = 'images/pycairo/cairo-cairo-expected-reduced.png'
         context = cairo.Context(surface)
         mapnik.render(m, context)
         draw_title(m, context, "Hello Map", size=20)
@@ -163,10 +173,10 @@ if mapnik.has_pycairo():
         def _pycairo_surface(type, sym):
             test_cairo_file = '/tmp/mapnik-cairo-surface-test.%s.%s' % (
                 sym, type)
-            expected_cairo_file = './test/python_tests/images/pycairo/cairo-surface-expected.%s.%s' % (
+            expected_cairo_file = 'images/pycairo/cairo-surface-expected.%s.%s' % (
                 sym, type)
             m = mapnik.Map(256, 256)
-            mapnik.load_map(m, './test/data/good_maps/%s_symbolizer.xml' % sym)
+            mapnik.load_map(m, '../data/good_maps/%s_symbolizer.xml' % sym)
             m.zoom_all()
             if hasattr(cairo, '%sSurface' % type.upper()):
                 surface = getattr(

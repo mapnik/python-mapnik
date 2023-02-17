@@ -1,25 +1,16 @@
-#!/usr/bin/env python
 import math
 import sys
-
-from nose.tools import assert_almost_equal, eq_
-
 import mapnik
+import pytest
 
-from .utilities import assert_box2d_almost_equal, run_all
-
-PYTHON3 = sys.version_info[0] == 3
-if PYTHON3:
-    xrange = range
+from .utilities import assert_box2d_almost_equal
 
 # Tests that exercise map projections.
-
 
 def test_normalizing_definition():
     p = mapnik.Projection('epsg:4326')
     expanded = p.expanded()
-    eq_('+proj=longlat' in expanded, True)
-
+    assert '+proj=longlat' in expanded
 
 # Trac Ticket #128
 def test_wgs84_inverse_forward():
@@ -31,29 +22,29 @@ def test_wgs84_inverse_forward():
     # It appears that the y component changes very slightly, is this OK?
     # so we test for 'almost equal float values'
 
-    assert_almost_equal(p.inverse(c).y, c.y)
-    assert_almost_equal(p.inverse(c).x, c.x)
+    assert p.inverse(c).y == pytest.approx(c.y)
+    assert p.inverse(c).x == pytest.approx(c.x)
 
-    assert_almost_equal(p.forward(c).y, c.y)
-    assert_almost_equal(p.forward(c).x, c.x)
+    assert p.forward(c).y == pytest.approx(c.y)
+    assert p.forward(c).x == pytest.approx(c.x)
 
-    assert_almost_equal(p.inverse(e).center().y, e.center().y)
-    assert_almost_equal(p.inverse(e).center().x, e.center().x)
+    assert p.inverse(e).center().y == pytest.approx(e.center().y)
+    assert p.inverse(e).center().x == pytest.approx(e.center().x)
 
-    assert_almost_equal(p.forward(e).center().y, e.center().y)
-    assert_almost_equal(p.forward(e).center().x, e.center().x)
+    assert p.forward(e).center().y == pytest.approx(e.center().y)
+    assert p.forward(e).center().x == pytest.approx(e.center().x)
 
-    assert_almost_equal(c.inverse(p).y, c.y)
-    assert_almost_equal(c.inverse(p).x, c.x)
+    assert c.inverse(p).y == pytest.approx(c.y)
+    assert c.inverse(p).x == pytest.approx(c.x)
 
-    assert_almost_equal(c.forward(p).y, c.y)
-    assert_almost_equal(c.forward(p).x, c.x)
+    assert c.forward(p).y == pytest.approx(c.y)
+    assert c.forward(p).x == pytest.approx(c.x)
 
-    assert_almost_equal(e.inverse(p).center().y, e.center().y)
-    assert_almost_equal(e.inverse(p).center().x, e.center().x)
+    assert e.inverse(p).center().y == pytest.approx(e.center().y)
+    assert e.inverse(p).center().x == pytest.approx(e.center().x)
 
-    assert_almost_equal(e.forward(p).center().y, e.center().y)
-    assert_almost_equal(e.forward(p).center().x, e.center().x)
+    assert e.forward(p).center().y == pytest.approx(e.center().y)
+    assert e.forward(p).center().x == pytest.approx(e.center().x)
 
 
 def wgs2merc(lon, lat):
@@ -99,33 +90,33 @@ def test_proj_transform_between_init_and_literal():
     dest = mapnik.Projection(merc)
     tr2 = mapnik.ProjTransform(src, dest)
     tr2b = mapnik.ProjTransform(dest, src)
-    for x in xrange(-180, 180, 10):
-        for y in xrange(-60, 60, 10):
+    for x in range(-180, 180, 10):
+        for y in range(-60, 60, 10):
             coord = mapnik.Coord(x, y)
             merc_coord1 = tr1.forward(coord)
             merc_coord2 = tr1b.backward(coord)
             merc_coord3 = tr2.forward(coord)
             merc_coord4 = tr2b.backward(coord)
-            eq_(math.fabs(merc_coord1.x - merc_coord1.x) < 1, True)
-            eq_(math.fabs(merc_coord1.x - merc_coord2.x) < 1, True)
-            eq_(math.fabs(merc_coord1.x - merc_coord3.x) < 1, True)
-            eq_(math.fabs(merc_coord1.x - merc_coord4.x) < 1, True)
-            eq_(math.fabs(merc_coord1.y - merc_coord1.y) < 1, True)
-            eq_(math.fabs(merc_coord1.y - merc_coord2.y) < 1, True)
-            eq_(math.fabs(merc_coord1.y - merc_coord3.y) < 1, True)
-            eq_(math.fabs(merc_coord1.y - merc_coord4.y) < 1, True)
+            assert math.fabs(merc_coord1.x - merc_coord1.x) < 1
+            assert math.fabs(merc_coord1.x - merc_coord2.x) < 1
+            assert math.fabs(merc_coord1.x - merc_coord3.x) < 1
+            assert math.fabs(merc_coord1.x - merc_coord4.x) < 1
+            assert math.fabs(merc_coord1.y - merc_coord1.y) < 1
+            assert math.fabs(merc_coord1.y - merc_coord2.y) < 1
+            assert math.fabs(merc_coord1.y - merc_coord3.y) < 1
+            assert math.fabs(merc_coord1.y - merc_coord4.y) < 1
             lon_lat_coord1 = tr1.backward(merc_coord1)
             lon_lat_coord2 = tr1b.forward(merc_coord2)
             lon_lat_coord3 = tr2.backward(merc_coord3)
             lon_lat_coord4 = tr2b.forward(merc_coord4)
-            eq_(math.fabs(coord.x - lon_lat_coord1.x) < 1, True)
-            eq_(math.fabs(coord.x - lon_lat_coord2.x) < 1, True)
-            eq_(math.fabs(coord.x - lon_lat_coord3.x) < 1, True)
-            eq_(math.fabs(coord.x - lon_lat_coord4.x) < 1, True)
-            eq_(math.fabs(coord.y - lon_lat_coord1.y) < 1, True)
-            eq_(math.fabs(coord.y - lon_lat_coord2.y) < 1, True)
-            eq_(math.fabs(coord.y - lon_lat_coord3.y) < 1, True)
-            eq_(math.fabs(coord.y - lon_lat_coord4.y) < 1, True)
+            assert math.fabs(coord.x - lon_lat_coord1.x) < 1
+            assert math.fabs(coord.x - lon_lat_coord2.x) < 1
+            assert math.fabs(coord.x - lon_lat_coord3.x) < 1
+            assert math.fabs(coord.x - lon_lat_coord4.x) < 1
+            assert math.fabs(coord.y - lon_lat_coord1.y) < 1
+            assert math.fabs(coord.y - lon_lat_coord2.y) < 1
+            assert math.fabs(coord.y - lon_lat_coord3.y) < 1
+            assert math.fabs(coord.y - lon_lat_coord4.y) < 1
 
 
 # Github Issue #2648
@@ -162,7 +153,3 @@ def test_proj_antimeridian_bbox():
     ext = mapnik.Box2d(274000, 3087000, 276000, 7173000)
     rev_ext = prj_trans_rev.backward(ext, PROJ_ENVELOPE_POINTS)
     assert_box2d_almost_equal(rev_ext, normal)
-
-
-if __name__ == "__main__":
-    exit(run_all(eval(x) for x in dir() if x.startswith("test_")))

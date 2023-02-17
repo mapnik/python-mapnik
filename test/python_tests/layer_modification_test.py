@@ -1,6 +1,17 @@
+import os
 import mapnik
+import pytest
 
-def test_adding_datasource_to_layer():
+from .utilities import execution_path
+
+@pytest.fixture(scope="module")
+def setup():
+    # All of the paths used are relative, if we run the tests
+    # from another directory we need to chdir()
+    os.chdir(execution_path('.'))
+    yield
+
+def test_adding_datasource_to_layer(setup):
     map_string = '''<?xml version="1.0" encoding="utf-8"?>
 <Map>
 
@@ -10,7 +21,7 @@ def test_adding_datasource_to_layer():
         <!-- leave datasource empty -->
         <!--
         <Datasource>
-            <Parameter name="file">./test/data/shp/world_merc.shp</Parameter>
+            <Parameter name="file">../data/shp/world_merc.shp</Parameter>
             <Parameter name="type">shape</Parameter>
         </Datasource>
         -->
@@ -42,7 +53,7 @@ def test_adding_datasource_to_layer():
         assert lyr.srs ==  'epsg:4326'
 
         # now add a datasource one...
-        ds = mapnik.Shapefile(file='./test/data/shp/world_merc.shp')
+        ds = mapnik.Shapefile(file='../data/shp/world_merc.shp')
         m.layers[0].datasource = ds
 
         # now ensure it is attached

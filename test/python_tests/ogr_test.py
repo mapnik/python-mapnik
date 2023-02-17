@@ -1,3 +1,4 @@
+import os
 import mapnik
 import pytest
 
@@ -6,11 +7,20 @@ try:
 except ImportError:
     import simplejson as json
 
+from .utilities import execution_path
+
+@pytest.fixture(scope="module")
+def setup():
+    # All of the paths used are relative, if we run the tests
+    # from another directory we need to chdir()
+    os.chdir(execution_path('.'))
+    yield
+
 if 'ogr' in mapnik.DatasourceCache.plugin_names():
 
     # Shapefile initialization
-    def test_shapefile_init():
-        ds = mapnik.Ogr(file='./test/data/shp/boundaries.shp', layer_by_index=0)
+    def test_shapefile_init(setup):
+        ds = mapnik.Ogr(file='../data/shp/boundaries.shp', layer_by_index=0)
         e = ds.envelope()
         assert e.minx == pytest.approx(-11121.6896651, abs=1e-7)
         assert e.miny == pytest.approx(-724724.216526, abs=1e-6)
@@ -22,7 +32,7 @@ if 'ogr' in mapnik.DatasourceCache.plugin_names():
 
     # Shapefile properties
     def test_shapefile_properties():
-        ds = mapnik.Ogr(file='./test/data/shp/boundaries.shp', layer_by_index=0)
+        ds = mapnik.Ogr(file='../data/shp/boundaries.shp', layer_by_index=0)
         f = list(ds.features_at_point(ds.envelope().center(), 0.001))[0]
         assert ds.geometry_type() ==  mapnik.DataGeometryType.Polygon
 
@@ -39,7 +49,7 @@ if 'ogr' in mapnik.DatasourceCache.plugin_names():
 
     def test_that_nonexistant_query_field_throws(**kwargs):
         with pytest.raises(RuntimeError):
-            ds = mapnik.Ogr(file='./test/data/shp/world_merc.shp', layer_by_index=0)
+            ds = mapnik.Ogr(file='../data/shp/world_merc.shp', layer_by_index=0)
             assert len(ds.fields()) ==  11
             assert ds.fields() == ['FIPS', 'ISO2', 'ISO3', 'UN', 'NAME',
                               'AREA', 'POP2005', 'REGION', 'SUBREGION', 'LON', 'LAT']
@@ -53,14 +63,14 @@ if 'ogr' in mapnik.DatasourceCache.plugin_names():
 
     # disabled because OGR prints an annoying error: ERROR 1: Invalid Point object. Missing 'coordinates' member.
     # def test_handling_of_null_features():
-    #     ds = mapnik.Ogr(file='./test/data/json/null_feature.geojson',layer_by_index=0)
+    #     ds = mapnik.Ogr(file='../data/json/null_feature.geojson',layer_by_index=0)
     #     fs = ds.all_features()
     #     assert len(list(fs)) == 1
 
     # OGR plugin extent parameter
     def test_ogr_extent_parameter():
         ds = mapnik.Ogr(
-            file='./test/data/shp/world_merc.shp',
+            file='../data/shp/world_merc.shp',
             layer_by_index=0,
             extent='-1,-1,1,1')
         e = ds.envelope()
@@ -73,7 +83,7 @@ if 'ogr' in mapnik.DatasourceCache.plugin_names():
         assert '+proj=merc' in meta['proj4']
 
     def test_ogr_reading_gpx_waypoint():
-        ds = mapnik.Ogr(file='./test/data/gpx/empty.gpx', layer='waypoints')
+        ds = mapnik.Ogr(file='../data/gpx/empty.gpx', layer='waypoints')
         e = ds.envelope()
         assert e.minx ==  -122
         assert e.miny ==  48
@@ -88,7 +98,7 @@ if 'ogr' in mapnik.DatasourceCache.plugin_names():
         mapnik.logger.set_severity(getattr(mapnik.severity_type, "None"))
         # use logger to silence expected warnings
         for layer in ['routes', 'tracks', 'route_points', 'track_points']:
-            ds = mapnik.Ogr(file='./test/data/gpx/empty.gpx', layer=layer)
+            ds = mapnik.Ogr(file='../data/gpx/empty.gpx', layer=layer)
             e = ds.envelope()
             assert e.minx ==  0
             assert e.miny ==  0
@@ -102,12 +112,12 @@ if 'ogr' in mapnik.DatasourceCache.plugin_names():
     # disabled because OGR prints an annoying error: ERROR 1: Invalid Point object. Missing 'coordinates' member.
     def test_handling_of_null_features():
         assert True
-        ds = mapnik.Ogr(file='./test/data/json/null_feature.geojson',layer_by_index=0)
+        ds = mapnik.Ogr(file='../data/json/null_feature.geojson',layer_by_index=0)
         fs = ds.all_features()
         assert len(list(fs)) == 1
 
     def test_geometry_type():
-        ds = mapnik.Ogr(file='./test/data/csv/wkt.csv', layer_by_index=0)
+        ds = mapnik.Ogr(file='../data/csv/wkt.csv', layer_by_index=0)
         e = ds.envelope()
         assert e.minx == pytest.approx(1.0, abs=1e-1)
         assert e.miny == pytest.approx(1.0, abs=1e-1)

@@ -1,6 +1,16 @@
+import os
 import mapnik
 import json
 import pytest
+
+from .utilities import execution_path
+
+@pytest.fixture(scope="module")
+def setup():
+    # All of the paths used are relative, if we run the tests
+    # from another directory we need to chdir()
+    os.chdir(execution_path('.'))
+    yield
 
 if mapnik.has_grid_renderer():
     def show_grids(name, g1, g2):
@@ -351,7 +361,7 @@ if mapnik.has_grid_renderer():
         m.layers.append(lyr)
         return m
 
-    def test_render_grid():
+    def test_render_grid(setup):
         """ test render_grid method"""
         width, height = 256, 256
         sym = mapnik.MarkersSymbolizer()
@@ -920,7 +930,7 @@ if mapnik.has_grid_renderer():
     def test_point_symbolizer_grid():
         width, height = 256, 256
         sym = mapnik.PointSymbolizer()
-        sym.file = './test/data/images/dummy.png'
+        sym.file = '../data/images/dummy.png'
         m = create_grid_map(width, height, sym)
         ul_lonlat = mapnik.Coord(142.30, -38.20)
         lr_lonlat = mapnik.Coord(143.40, -38.80)

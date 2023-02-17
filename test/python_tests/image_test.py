@@ -1,9 +1,17 @@
+import os
 import mapnik
 import pytest
 
-from .utilities import READ_FLAGS, get_unique_colors
+from .utilities import READ_FLAGS, get_unique_colors, execution_path
 
-def test_type():
+@pytest.fixture(scope="module")
+def setup():
+    # All of the paths used are relative, if we run the tests
+    # from another directory we need to chdir()
+    os.chdir(execution_path('.'))
+    yield
+
+def test_type(setup):
     im = mapnik.Image(256, 256)
     assert im.get_type() ==  mapnik.ImageType.rgba8
     im = mapnik.Image(256, 256, mapnik.ImageType.gray8)
@@ -352,7 +360,7 @@ def test_png_round_trip():
 
 
 def test_image_open_from_string():
-    filepath = './test/data/images/dummy.png'
+    filepath = '../data/images/dummy.png'
     im1 = mapnik.Image.open(filepath)
     with open(filepath, READ_FLAGS) as f:
         im2 = mapnik.Image.fromstring(f.read())

@@ -1,11 +1,22 @@
+import os
 import mapnik
+import pytest
+from .utilities import execution_path
 
-def test_multi_tile_policy():
+@pytest.fixture(scope="module")
+def setup():
+    # All of the paths used are relative, if we run the tests
+    # from another directory we need to chdir()
+    os.chdir(execution_path('.'))
+    yield
+
+
+def test_multi_tile_policy(setup):
     srs = 'epsg:4326'
     lyr = mapnik.Layer('raster')
     if 'raster' in mapnik.DatasourceCache.plugin_names():
         lyr.datasource = mapnik.Raster(
-            file='./test/data/raster_tiles/${x}/${y}.tif',
+            file='../data/raster_tiles/${x}/${y}.tif',
             lox=-180,
             loy=-90,
             hix=180,

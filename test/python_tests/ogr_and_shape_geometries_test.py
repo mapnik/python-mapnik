@@ -1,4 +1,14 @@
+import os
+import pytest
 import mapnik
+from .utilities import execution_path
+
+@pytest.fixture(scope="module")
+def setup():
+    # All of the paths used are relative, if we run the tests
+    # from another directory we need to chdir()
+    os.chdir(execution_path('.'))
+    yield
 
 try:
     import itertools.izip as zip
@@ -30,6 +40,6 @@ if 'shape' in plugins and 'ogr' in plugins:
             assert feat1.geometry.to_wkb(mapnik.wkbByteOrder.NDR) == feat2.geometry.to_wkb(mapnik.wkbByteOrder.NDR)
             assert feat1.geometry.to_wkb(mapnik.wkbByteOrder.XDR) == feat2.geometry.to_wkb(mapnik.wkbByteOrder.XDR)
 
-    def test_simple_polys():
+    def test_simple_polys(setup):
         ensure_geometries_are_interpreted_equivalently(
-            './test/data/shp/wkt_poly.shp')
+            '../data/shp/wkt_poly.shp')

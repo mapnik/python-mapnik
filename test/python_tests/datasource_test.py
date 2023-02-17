@@ -2,21 +2,28 @@ import os
 import sys
 import mapnik
 import pytest
-
+from .utilities import execution_path
 from itertools import groupby
+
+@pytest.fixture(scope="module")
+def setup():
+    # All of the paths used are relative, if we run the tests
+    # from another directory we need to chdir()
+    os.chdir(execution_path('.'))
+    yield
 
 def test_that_datasources_exist():
     if len(mapnik.DatasourceCache.plugin_names()) == 0:
         print('***NOTICE*** - no datasource plugins have been loaded')
 
 # adapted from raster_symboliser_test#test_dataraster_query_point
-def test_vrt_referring_to_missing_files():
+def test_vrt_referring_to_missing_files(setup):
     with pytest.raises(RuntimeError):
         srs = 'epsg:32630'
         if 'gdal' in mapnik.DatasourceCache.plugin_names():
             lyr = mapnik.Layer('dataraster')
             lyr.datasource = mapnik.Gdal(
-                file='./test/data/raster/missing_raster.vrt',
+                file='../data/raster/missing_raster.vrt',
                 band=1,
             )
             lyr.srs = srs
@@ -51,7 +58,7 @@ def test_vrt_referring_to_missing_files():
 
 def test_field_listing():
     if 'shape' in mapnik.DatasourceCache.plugin_names():
-        ds = mapnik.Shapefile(file='./test/data/shp/poly.shp')
+        ds = mapnik.Shapefile(file='../data/shp/poly.shp')
         fields = ds.fields()
         assert fields, ['AREA', 'EAS_ID' ==  'PRFEDEA']
         desc = ds.describe()
@@ -63,14 +70,14 @@ def test_field_listing():
 
 def test_total_feature_count_shp():
     if 'shape' in mapnik.DatasourceCache.plugin_names():
-        ds = mapnik.Shapefile(file='./test/data/shp/poly.shp')
+        ds = mapnik.Shapefile(file='../data/shp/poly.shp')
         features = ds.all_features()
         num_feats = len(list(features))
         assert num_feats ==  10
 
 def test_total_feature_count_json():
     if 'ogr' in mapnik.DatasourceCache.plugin_names():
-        ds = mapnik.Ogr(file='./test/data/json/points.geojson', layer_by_index=0)
+        ds = mapnik.Ogr(file='../data/json/points.geojson', layer_by_index=0)
         desc = ds.describe()
         assert desc['geometry_type'] ==  mapnik.DataGeometryType.Point
         assert desc['name'] ==  'ogr'
@@ -84,7 +91,7 @@ def test_total_feature_count_json():
 def test_sqlite_reading():
     if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.SQLite(
-            file='./test/data/sqlite/world.sqlite',
+            file='../data/sqlite/world.sqlite',
             table_by_index=0)
         desc = ds.describe()
         assert desc['geometry_type'] ==  mapnik.DataGeometryType.Polygon
@@ -97,7 +104,7 @@ def test_sqlite_reading():
 
 
 def test_reading_json_from_string():
-    with open('./test/data/json/points.geojson', 'r') as f:
+    with open('../data/json/points.geojson', 'r') as f:
         json = f.read()
     if 'ogr' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.Ogr(file=json, layer_by_index=0)
@@ -108,7 +115,7 @@ def test_reading_json_from_string():
 
 def test_feature_envelope():
     if 'shape' in mapnik.DatasourceCache.plugin_names():
-        ds = mapnik.Shapefile(file='./test/data/shp/poly.shp')
+        ds = mapnik.Shapefile(file='../data/shp/poly.shp')
         features = ds.all_features()
         for feat in features:
             env = feat.envelope()
@@ -120,7 +127,7 @@ def test_feature_envelope():
 
 def test_feature_attributes():
     if 'shape' in mapnik.DatasourceCache.plugin_names():
-        ds = mapnik.Shapefile(file='./test/data/shp/poly.shp')
+        ds = mapnik.Shapefile(file='../data/shp/poly.shp')
         features = list(ds.all_features())
         feat = features[0]
         attrs = {'PRFEDEA': u'35043411', 'EAS_ID': 168, 'AREA': 215229.266}
@@ -131,7 +138,7 @@ def test_feature_attributes():
 
 def test_ogr_layer_by_sql():
     if 'ogr' in mapnik.DatasourceCache.plugin_names():
-        ds = mapnik.Ogr(file='./test/data/shp/poly.shp',
+        ds = mapnik.Ogr(file='../data/shp/poly.shp',
                         layer_by_sql='SELECT * FROM poly WHERE EAS_ID = 168')
         features = ds.all_features()
         num_feats = len(list(features))
@@ -147,7 +154,7 @@ def test_hit_grid():
 
     m = mapnik.Map(256, 256)
     try:
-        mapnik.load_map(m, './test/data/good_maps/agg_poly_gamma_map.xml')
+        mapnik.load_map(m, '../data/good_maps/agg_poly_gamma_map.xml')
         m.zoom_all()
         join_field = 'NAME'
         fg = []  # feature grid

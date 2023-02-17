@@ -1,6 +1,14 @@
 import re, os
 import mapnik
-from .utilities import side_by_side_image
+import pytest
+from .utilities import side_by_side_image, execution_path
+
+@pytest.fixture(scope="module")
+def setup():
+    # All of the paths used are relative, if we run the tests
+    # from another directory we need to chdir()
+    os.chdir(execution_path('.'))
+    yield
 
 def replace_style(m, name, style):
     m.remove_style(name)
@@ -15,9 +23,9 @@ def test_append():
     assert s.image_filters ==  'sharpen'
 
 if 'shape' in mapnik.DatasourceCache.plugin_names():
-    def test_style_level_image_filter():
+    def test_style_level_image_filter(setup):
         m = mapnik.Map(256, 256)
-        mapnik.load_map(m, './test/data/good_maps/style_level_image_filter.xml')
+        mapnik.load_map(m, '../data/good_maps/style_level_image_filter.xml')
         m.zoom_all()
         successes = []
         fails = []
@@ -39,7 +47,7 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
             im = mapnik.Image(m.width, m.height)
             mapnik.render(m, im)
             actual = '/tmp/mapnik-style-image-filter-' + filename + '.png'
-            expected = './test/python_tests/images/style-image-filter/' + filename + '.png'
+            expected = 'images/style-image-filter/' + filename + '.png'
             im.save(actual, "png32")
             if not os.path.exists(expected) or os.environ.get('UPDATE'):
                 print('generating expected test image: %s' % expected)

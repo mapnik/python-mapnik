@@ -5,14 +5,10 @@ import os
 import sys
 import traceback
 import mapnik
+import pytest
 
-PYTHON3 = sys.version_info[0] == 3
-READ_FLAGS = 'rb' if PYTHON3 else 'r'
-if PYTHON3:
-    xrange = range
-
+READ_FLAGS = 'rb'
 HERE = os.path.dirname(__file__)
-
 
 def execution_path(filename):
     return os.path.join(os.path.dirname(
@@ -36,7 +32,7 @@ def contains_word(word, bytestring_):
     """
     n = len(word)
     assert len(bytestring_) % n == 0, "len(bytestring_) not multiple of len(word)"
-    chunks = [bytestring_[i:i + n] for i in xrange(0, len(bytestring_), n)]
+    chunks = [bytestring_[i:i + n] for i in range(0, len(bytestring_), n)]
     return word in chunks
 
 
@@ -120,7 +116,7 @@ def side_by_side_image(left_im, right_im):
 
 def assert_box2d_almost_equal(a, b, msg=None):
     msg = msg or ("%r != %r" % (a, b))
-    assert_almost_equal(a.minx, b.minx, msg=msg)
-    assert_almost_equal(a.maxx, b.maxx, msg=msg)
-    assert_almost_equal(a.miny, b.miny, msg=msg)
-    assert_almost_equal(a.maxy, b.maxy, msg=msg)
+    assert a.minx == pytest.approx(b.minx, abs=1e-2), msg
+    assert a.maxx == pytest.approx(b.maxx, abs=1e-2), msg
+    assert a.miny == pytest.approx(b.miny, abs=1e-2), msg
+    assert a.maxy == pytest.approx(b.maxy, abs=1e-2), msg

@@ -2,19 +2,27 @@ import glob
 import os
 import mapnik
 import pytest
+from .utilities import execution_path
+
+@pytest.fixture(scope="module")
+def setup():
+    # All of the paths used are relative, if we run the tests
+    # from another directory we need to chdir()
+    os.chdir(execution_path('.'))
+    yield
 
 if 'csv' in mapnik.DatasourceCache.plugin_names():
 
     def get_csv_ds(filename):
         return mapnik.Datasource(
-            type='csv', file=os.path.join('./test/data/csv/', filename))
+            type='csv', file=os.path.join('../data/csv/', filename))
 
-    def test_broken_files(visual=False):
-        broken = glob.glob("./test/data/csv/fails/*.*")
-        broken.extend(glob.glob("./test/data/csv/warns/*.*"))
+    def test_broken_files(setup, visual=False):
+        broken = glob.glob("../data/csv/fails/*.*")
+        broken.extend(glob.glob("../data/csv/warns/*.*"))
 
         # Add a filename that doesn't exist
-        broken.append("./test/data/csv/fails/does_not_exist.csv")
+        broken.append("../data/csv/fails/does_not_exist.csv")
 
         for csv in broken:
             if visual:
@@ -24,10 +32,10 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
                 except Exception:
                     print('\x1b[1;32m✓ \x1b[0m', csv)
 
-    def test_good_files(visual=False):
-        good_files = glob.glob("./test/data/csv/*.*")
-        good_files.extend(glob.glob("./test/data/csv/warns/*.*"))
-        ignorable = os.path.join('./test', 'data', 'csv', 'long_lat.vrt')
+    def test_good_files(setup, visual=False):
+        good_files = glob.glob("../data/csv/*.*")
+        good_files.extend(glob.glob("../data/csv/warns/*.*"))
+        ignorable = os.path.join('..', 'data', 'csv', 'long_lat.vrt')
         print("ignorable:", ignorable)
         good_files.remove(ignorable)
         for f in good_files:
@@ -469,7 +477,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
 
     def test_that_feature_id_only_incremented_for_valid_rows(**kwargs):
         ds = mapnik.Datasource(type='csv',
-                               file=os.path.join('./test/data/csv/warns', 'feature_id_counting.csv'))
+                               file=os.path.join('../data/csv/warns', 'feature_id_counting.csv'))
         assert len(ds.fields()) ==  3
         assert ds.fields(), ['x', 'y' ==  'id']
         assert ds.field_types(), ['int', 'int' ==  'int']
@@ -491,7 +499,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
     def test_dynamically_defining_headers1(**kwargs):
         ds = mapnik.Datasource(type='csv',
                                file=os.path.join(
-                                   './test/data/csv/fails', 'needs_headers_two_lines.csv'),
+                                   '../data/csv/fails', 'needs_headers_two_lines.csv'),
                                headers='x,y,name')
         assert len(ds.fields()) ==  3
         assert ds.fields(), ['x', 'y' ==  'name']
@@ -508,7 +516,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
     def test_dynamically_defining_headers2(**kwargs):
         ds = mapnik.Datasource(type='csv',
                                file=os.path.join(
-                                   './test/data/csv/fails', 'needs_headers_one_line.csv'),
+                                   '../data/csv/fails', 'needs_headers_one_line.csv'),
                                headers='x,y,name')
         assert len(ds.fields()) ==  3
         assert ds.fields(), ['x', 'y' ==  'name']
@@ -525,7 +533,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
     def test_dynamically_defining_headers3(**kwargs):
         ds = mapnik.Datasource(type='csv',
                                file=os.path.join(
-                                   './test/data/csv/fails', 'needs_headers_one_line_no_newline.csv'),
+                                   '../data/csv/fails', 'needs_headers_one_line_no_newline.csv'),
                                headers='x,y,name')
         assert len(ds.fields()) ==  3
         assert ds.fields(), ['x', 'y' ==  'name']

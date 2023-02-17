@@ -2,8 +2,16 @@ import sys, os
 import tempfile
 import mapnik
 import pytest
+from .utilities import execution_path
 
-def test_simplest_render():
+@pytest.fixture(scope="module")
+def setup():
+    # All of the paths used are relative, if we run the tests
+    # from another directory we need to chdir()
+    os.chdir(execution_path('.'))
+    yield
+
+def test_simplest_render(setup):
     m = mapnik.Map(256, 256)
     im = mapnik.Image(m.width, m.height)
     assert not im.painted()
@@ -105,11 +113,11 @@ def get_paired_images(w, h, mapfile):
 def test_render_from_serialization():
     try:
         im, im2 = get_paired_images(
-            100, 100, './test/data/good_maps/building_symbolizer.xml')
+            100, 100, '../data/good_maps/building_symbolizer.xml')
         assert im.tostring('png32') ==  im2.tostring('png32')
 
         im, im2 = get_paired_images(
-            100, 100, './test/data/good_maps/polygon_symbolizer.xml')
+            100, 100, '../data/good_maps/polygon_symbolizer.xml')
         assert im.tostring('png32') ==  im2.tostring('png32')
     except RuntimeError as e:
         # only test datasources that we have installed
@@ -204,7 +212,7 @@ def test_render_with_detector():
     m.zoom_to_box(mapnik.Box2d(-180, -85, 180, 85))
     im = mapnik.Image(256, 256)
     mapnik.render(m, im)
-    expected_file = './test/python_tests/images/support/marker-in-center.png'
+    expected_file = 'images/support/marker-in-center.png'
     actual_file = '/tmp/' + os.path.basename(expected_file)
     # im.save(expected_file,'png8')
     im.save(actual_file, 'png8')
@@ -221,7 +229,7 @@ def test_render_with_detector():
     assert detector.boxes() ==  [detector.extent()]
     im2 = mapnik.Image(256, 256)
     mapnik.render_with_detector(m, im2, detector)
-    expected_file_collision = './test/python_tests/images/support/marker-in-center-not-placed.png'
+    expected_file_collision = 'images/support/marker-in-center-not-placed.png'
     # im2.save(expected_file_collision,'png8')
     actual_file = '/tmp/' + os.path.basename(expected_file_collision)
     im2.save(actual_file, 'png8')
@@ -231,13 +239,13 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
 
     def test_render_with_scale_factor():
         m = mapnik.Map(256, 256)
-        mapnik.load_map(m, './test/data/good_maps/marker-text-line.xml')
+        mapnik.load_map(m, '../data/good_maps/marker-text-line.xml')
         m.zoom_all()
         sizes = [.00001, .005, .1, .899, 1, 1.5, 2, 5, 10, 100]
         for size in sizes:
             im = mapnik.Image(256, 256)
             mapnik.render(m, im, size)
-            expected_file = './test/python_tests/images/support/marker-text-line-scale-factor-%s.png' % size
+            expected_file = 'images/support/marker-text-line-scale-factor-%s.png' % size
             actual_file = '/tmp/' + os.path.basename(expected_file)
             im.save(actual_file, 'png32')
             if os.environ.get('UPDATE'):

@@ -7,6 +7,8 @@ import shutil
 import subprocess
 import sys
 import glob
+import pkg_resources
+
 from distutils import sysconfig
 from ctypes.util import find_library
 
@@ -230,19 +232,21 @@ extra_comp_args = list(filter(lambda arg: arg != "-fvisibility=hidden", extra_co
 if os.environ.get("PYCAIRO", "false") == "true":
     try:
         extra_comp_args.append('-DHAVE_PYCAIRO')
-        print("-I%s/include/pycairo".format(sys.exec_prefix))
-        extra_comp_args.append("-I{0}/include/pycairo".format(sys.exec_prefix))
+        dist = pkg_resources.get_distribution('pycairo')
+        print(dist.location)
+        print("-I%s/cairo/include".format(dist.location))
+        extra_comp_args.append("-I{0}/cairo/include".format(dist.location))
         #extra_comp_args.extend(check_output(["pkg-config", '--cflags', 'pycairo']).strip().split(' '))
         #linkflags.extend(check_output(["pkg-config", '--libs', 'pycairo']).strip().split(' '))
     except:
         raise Exception("Failed to find compiler options for pycairo")
 
 if sys.platform == 'darwin':
-    extra_comp_args.append('-mmacosx-version-min=10.11')
+    extra_comp_args.append('-mmacosx-version-min=13.0')
     # silence warning coming from boost python macros which
     # would is hard to silence via pragma
     extra_comp_args.append('-Wno-parentheses-equality')
-    linkflags.append('-mmacosx-version-min=10.11')
+    linkflags.append('-mmacosx-version-min=13.0')
 else:
     linkflags.append('-lrt')
     linkflags.append('-Wl,-z,origin')

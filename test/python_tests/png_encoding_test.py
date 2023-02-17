@@ -8,6 +8,7 @@ def setup():
     # All of the paths used are relative, if we run the tests
     # from another directory we need to chdir()
     os.chdir(execution_path('.'))
+    yield
 
 if mapnik.has_png():
     tmp_dir = '/tmp/mapnik-png/'

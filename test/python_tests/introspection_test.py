@@ -1,21 +1,32 @@
+import os
 import mapnik
+import pytest
 
-def test_introspect_symbolizers():
+from .utilities import execution_path
+
+@pytest.fixture(scope="module")
+def setup():
+    # All of the paths used are relative, if we run the tests
+    # from another directory we need to chdir()
+    os.chdir(execution_path('.'))
+    yield
+
+def test_introspect_symbolizers(setup):
     # create a symbolizer
     p = mapnik.PointSymbolizer()
-    p.file = "./test/data/images/dummy.png"
+    p.file = "../data/images/dummy.png"
     p.allow_overlap = True
     p.opacity = 0.5
 
     assert p.allow_overlap ==  True
     assert p.opacity ==  0.5
-    assert p.filename ==  './test/data/images/dummy.png'
+    assert p.filename ==  '../data/images/dummy.png'
 
     # make sure the defaults
     # are what we think they are
     assert p.allow_overlap ==  True
     assert p.opacity ==  0.5
-    assert p.filename ==  './test/data/images/dummy.png'
+    assert p.filename ==  '../data/images/dummy.png'
 
     # contruct objects to hold it
     r = mapnik.Rule()
@@ -43,4 +54,4 @@ def test_introspect_symbolizers():
 
     assert p2.allow_overlap ==  True
     assert p2.opacity ==  0.5
-    assert p2.filename ==  './test/data/images/dummy.png'
+    assert p2.filename ==  '../data/images/dummy.png'

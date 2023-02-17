@@ -1,19 +1,15 @@
-#!/usr/bin/env python
-
 import os
-
-from nose.tools import assert_almost_equal, eq_
-
 import mapnik
+import pytest
 
-from .utilities import execution_path, run_all
+from .utilities import execution_path
 
-
+@pytest.fixture
 def setup():
     # All of the paths used are relative, if we run the tests
     # from another directory we need to chdir()
     os.chdir(execution_path('.'))
-
+    yield
 
 if 'rasterlite' in mapnik.DatasourceCache.plugin_names():
 
@@ -24,19 +20,15 @@ if 'rasterlite' in mapnik.DatasourceCache.plugin_names():
         )
         e = ds.envelope()
 
-        assert_almost_equal(e.minx, -180, places=5)
-        assert_almost_equal(e.miny, -90, places=5)
-        assert_almost_equal(e.maxx, 180, places=5)
-        assert_almost_equal(e.maxy, 90, places=5)
-        eq_(len(ds.fields()), 0)
+        assert e.minx == pytest.approx(-180,abs=1e-5)
+        assert e.miny == pytest.approx(-90, abs=1e-5)
+        assert e.maxx == pytest.approx(180, abs=1e-5)
+        assert e.maxy == pytest.approx( 90, abs=1e-5)
+        assert len(ds.fields()) == 0
         query = mapnik.Query(ds.envelope())
         for fld in ds.fields():
             query.add_property_name(fld)
         fs = ds.features(query)
         feat = fs.next()
-        eq_(feat.id(), 1)
-        eq_(feat.attributes, {})
-
-if __name__ == "__main__":
-    setup()
-    exit(run_all(eval(x) for x in dir() if x.startswith("test_")))
+        assert feat.id() == 1
+        assert feat.attributes == {}

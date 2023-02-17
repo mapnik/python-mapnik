@@ -1,12 +1,20 @@
+import os
 import hashlib
 import mapnik
+import pytest
+from .utilities import READ_FLAGS, execution_path
 
-from .utilities import READ_FLAGS
+@pytest.fixture(scope="module")
+def setup():
+    # All of the paths used are relative, if we run the tests
+    # from another directory we need to chdir()
+    os.chdir(execution_path('.'))
+    yield
 
 def hashstr(var):
     return hashlib.md5(var).hexdigest()
 
-def test_tiff_round_trip_scanline():
+def test_tiff_round_trip_scanline(setup):
     filepath = '/tmp/mapnik-tiff-io-scanline.tiff'
     im = mapnik.Image(255, 267)
     im.fill(mapnik.Color('rgba(12,255,128,.5)'))
@@ -170,7 +178,7 @@ def test_tiff_round_trip_tiled():
 
 
 def test_tiff_rgb8_compare():
-    filepath1 = './test/data/tiff/ndvi_256x256_rgb8_striped.tif'
+    filepath1 = '../data/tiff/ndvi_256x256_rgb8_striped.tif'
     filepath2 = '/tmp/mapnik-tiff-rgb8.tiff'
     im = mapnik.Image.open(filepath1)
     im.save(filepath2, 'tiff')
@@ -184,7 +192,7 @@ def test_tiff_rgb8_compare():
 
 
 def test_tiff_rgba8_compare_scanline():
-    filepath1 = './test/data/tiff/ndvi_256x256_rgba8_striped.tif'
+    filepath1 = '../data/tiff/ndvi_256x256_rgba8_striped.tif'
     filepath2 = '/tmp/mapnik-tiff-rgba8-scanline.tiff'
     im = mapnik.Image.open(filepath1)
     im.save(filepath2, 'tiff:method=scanline')
@@ -198,7 +206,7 @@ def test_tiff_rgba8_compare_scanline():
 
 
 def test_tiff_rgba8_compare_stripped():
-    filepath1 = './test/data/tiff/ndvi_256x256_rgba8_striped.tif'
+    filepath1 = '../data/tiff/ndvi_256x256_rgba8_striped.tif'
     filepath2 = '/tmp/mapnik-tiff-rgba8-stripped.tiff'
     im = mapnik.Image.open(filepath1)
     im.save(filepath2, 'tiff:method=stripped')
@@ -212,7 +220,7 @@ def test_tiff_rgba8_compare_stripped():
 
 
 def test_tiff_rgba8_compare_tiled():
-    filepath1 = './test/data/tiff/ndvi_256x256_rgba8_striped.tif'
+    filepath1 = '../data/tiff/ndvi_256x256_rgba8_striped.tif'
     filepath2 = '/tmp/mapnik-tiff-rgba8-tiled.tiff'
     im = mapnik.Image.open(filepath1)
     im.save(filepath2, 'tiff:method=tiled')
@@ -226,7 +234,7 @@ def test_tiff_rgba8_compare_tiled():
 
 
 def test_tiff_gray8_compare_scanline():
-    filepath1 = './test/data/tiff/ndvi_256x256_gray8_striped.tif'
+    filepath1 = '../data/tiff/ndvi_256x256_gray8_striped.tif'
     filepath2 = '/tmp/mapnik-tiff-gray8-scanline.tiff'
     im = mapnik.Image.open(filepath1)
     im.save(filepath2, 'tiff:method=scanline')
@@ -239,7 +247,7 @@ def test_tiff_gray8_compare_scanline():
     assert hashstr(im.tostring("tiff")) != hashstr(mapnik.Image(im.width(), im.height(), mapnik.ImageType.gray8).tostring("tiff"))
 
 def test_tiff_gray8_compare_stripped():
-    filepath1 = './test/data/tiff/ndvi_256x256_gray8_striped.tif'
+    filepath1 = '../data/tiff/ndvi_256x256_gray8_striped.tif'
     filepath2 = '/tmp/mapnik-tiff-gray8-stripped.tiff'
     im = mapnik.Image.open(filepath1)
     im.save(filepath2, 'tiff:method=stripped')
@@ -253,7 +261,7 @@ def test_tiff_gray8_compare_stripped():
 
 
 def test_tiff_gray8_compare_tiled():
-    filepath1 = './test/data/tiff/ndvi_256x256_gray8_striped.tif'
+    filepath1 = '../data/tiff/ndvi_256x256_gray8_striped.tif'
     filepath2 = '/tmp/mapnik-tiff-gray8-tiled.tiff'
     im = mapnik.Image.open(filepath1)
     im.save(filepath2, 'tiff:method=tiled')
@@ -267,7 +275,7 @@ def test_tiff_gray8_compare_tiled():
 
 
 def test_tiff_gray16_compare_scanline():
-    filepath1 = './test/data/tiff/ndvi_256x256_gray16_striped.tif'
+    filepath1 = '../data/tiff/ndvi_256x256_gray16_striped.tif'
     filepath2 = '/tmp/mapnik-tiff-gray16-scanline.tiff'
     im = mapnik.Image.open(filepath1)
     im.save(filepath2, 'tiff:method=scanline')
@@ -280,7 +288,7 @@ def test_tiff_gray16_compare_scanline():
     assert hashstr(im.tostring("tiff")) != hashstr(mapnik.Image(im.width(), im.height(), mapnik.ImageType.gray16).tostring("tiff"))
 
 def test_tiff_gray16_compare_stripped():
-    filepath1 = './test/data/tiff/ndvi_256x256_gray16_striped.tif'
+    filepath1 = '../data/tiff/ndvi_256x256_gray16_striped.tif'
     filepath2 = '/tmp/mapnik-tiff-gray16-stripped.tiff'
     im = mapnik.Image.open(filepath1)
     im.save(filepath2, 'tiff:method=stripped')
@@ -294,7 +302,7 @@ def test_tiff_gray16_compare_stripped():
 
 
 def test_tiff_gray16_compare_tiled():
-    filepath1 = './test/data/tiff/ndvi_256x256_gray16_striped.tif'
+    filepath1 = '../data/tiff/ndvi_256x256_gray16_striped.tif'
     filepath2 = '/tmp/mapnik-tiff-gray16-tiled.tiff'
     im = mapnik.Image.open(filepath1)
     im.save(filepath2, 'tiff:method=tiled')
@@ -308,7 +316,7 @@ def test_tiff_gray16_compare_tiled():
 
 
 def test_tiff_gray32f_compare_scanline():
-    filepath1 = './test/data/tiff/ndvi_256x256_gray32f_striped.tif'
+    filepath1 = '../data/tiff/ndvi_256x256_gray32f_striped.tif'
     filepath2 = '/tmp/mapnik-tiff-gray32f-scanline.tiff'
     im = mapnik.Image.open(filepath1)
     im.save(filepath2, 'tiff:method=scanline')
@@ -322,7 +330,7 @@ def test_tiff_gray32f_compare_scanline():
 
 
 def test_tiff_gray32f_compare_stripped():
-    filepath1 = './test/data/tiff/ndvi_256x256_gray32f_striped.tif'
+    filepath1 = '../data/tiff/ndvi_256x256_gray32f_striped.tif'
     filepath2 = '/tmp/mapnik-tiff-gray32f-stripped.tiff'
     im = mapnik.Image.open(filepath1)
     im.save(filepath2, 'tiff:method=stripped')
@@ -336,7 +344,7 @@ def test_tiff_gray32f_compare_stripped():
 
 
 def test_tiff_gray32f_compare_tiled():
-    filepath1 = './test/data/tiff/ndvi_256x256_gray32f_striped.tif'
+    filepath1 = '../data/tiff/ndvi_256x256_gray32f_striped.tif'
     filepath2 = '/tmp/mapnik-tiff-gray32f-tiled.tiff'
     im = mapnik.Image.open(filepath1)
     im.save(filepath2, 'tiff:method=tiled')

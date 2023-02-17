@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import atexit
 import os
 import re
@@ -7,12 +5,9 @@ import sys
 import time
 from binascii import hexlify
 from subprocess import PIPE, Popen
-
-from nose.tools import assert_almost_equal, eq_
-
 import mapnik
-
-from .utilities import execution_path, run_all, side_by_side_image
+import pytest
+from .utilities import execution_path, side_by_side_image
 
 MAPNIK_TEST_DBNAME = 'mapnik-tmp-pgraster-test-db'
 POSTGIS_TEMPLATE_DBNAME = 'template_postgis'
@@ -23,7 +18,7 @@ def log(msg):
     if DEBUG_OUTPUT:
         print(msg)
 
-
+@pytest.fixture(scope="module")
 def setup():
     # All of the paths used are relative, if we run the tests
     # from another directory we need to chdir()
@@ -825,15 +820,8 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
 
     atexit.register(postgis_takedown)
 
-
 def enabled(tname):
     enabled = len(sys.argv) < 2 or tname in sys.argv
     if not enabled:
         print("Skipping " + tname + " as not explicitly enabled")
     return enabled
-
-if __name__ == "__main__":
-    setup()
-    fail = run_all(eval(x)
-                   for x in dir() if x.startswith("test_") and enabled(x))
-    exit(fail)

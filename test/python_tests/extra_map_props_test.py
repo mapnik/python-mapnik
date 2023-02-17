@@ -1,8 +1,19 @@
+import os
 import mapnik
+import pytest
+from .utilities import execution_path
 
-def test_arbitrary_parameters_attached_to_map():
+@pytest.fixture(scope="module")
+def setup():
+    # All of the paths used are relative, if we run the tests
+    # from another directory we need to chdir()
+    os.chdir(execution_path('.'))
+    yield
+
+
+def test_arbitrary_parameters_attached_to_map(setup):
     m = mapnik.Map(256, 256)
-    mapnik.load_map(m, './test/data/good_maps/extra_arbitary_map_parameters.xml')
+    mapnik.load_map(m, '../data/good_maps/extra_arbitary_map_parameters.xml')
     assert len(m.parameters) ==  5
     assert m.parameters['key'] ==  'value2'
     assert m.parameters['key3'] ==  'value3'
