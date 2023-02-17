@@ -255,6 +255,7 @@ void export_symbolizer()
     implicitly_convertible<std::string, mapnik::symbolizer_base::value_type>();
     implicitly_convertible<mapnik::color, mapnik::symbolizer_base::value_type>();
     implicitly_convertible<mapnik::expression_ptr, mapnik::symbolizer_base::value_type>();
+    implicitly_convertible<mapnik::path_expression_ptr, mapnik::symbolizer_base::value_type>();
     implicitly_convertible<mapnik::enumeration_wrapper, mapnik::symbolizer_base::value_type>();
     implicitly_convertible<std::shared_ptr<mapnik::group_symbolizer_properties>, mapnik::symbolizer_base::value_type>();
 
