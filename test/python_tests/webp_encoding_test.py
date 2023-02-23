@@ -2,6 +2,15 @@ import mapnik
 import os
 import pytest
 
+from .utilities import execution_path
+
+@pytest.fixture(scope="module")
+def setup():
+    # All of the paths used are relative, if we run the tests
+    # from another directory we need to chdir()
+    os.chdir(execution_path('.'))
+    yield
+
 if mapnik.has_webp():
     tmp_dir = '/tmp/mapnik-webp/'
     if not os.path.exists(tmp_dir):
@@ -31,10 +40,10 @@ if mapnik.has_webp():
     ]
 
     def gen_filepath(name, format):
-        return os.path.join('./test/python_tests/images/support/encoding-opts',
+        return os.path.join('images/support/encoding-opts',
                             name + '-' + format.replace(":", "+") + '.webp')
 
-    def test_quality_threshold():
+    def test_quality_threshold(setup):
         im = mapnik.Image(256, 256)
         im.tostring('webp:quality=99.99000')
         im.tostring('webp:quality=0')
