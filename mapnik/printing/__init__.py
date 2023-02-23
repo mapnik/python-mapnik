@@ -4,7 +4,7 @@
 
 import logging
 import math
-from mapnik import Box2d, Coord, Geometry, Layer, Map, Projection, Style, render
+from mapnik import Box2d, Coord, Geometry, Layer, Map, Projection, ProjTransform, Style, render
 from mapnik.printing.conversions import m2pt, m2px
 from mapnik.printing.formats import pagesizes
 from mapnik.printing.scales import any_scale, default_scale, deg_min_sec_scale, sequence_scale
@@ -1315,11 +1315,11 @@ class PDFPrinter(object):
         """
         gpts = ArrayObject()
 
-        proj = Projection(m.srs)
+        tr = ProjTransform(Projection(m.srs), Projection("epsg:4326"))
         env = m.envelope()
-        for x in ((env.minx, env.miny), (env.minx, env.maxy),
+        for p in ((env.minx, env.miny), (env.minx, env.maxy),
                   (env.maxx, env.maxy), (env.maxx, env.miny)):
-            latlon_corner = proj.inverse(Coord(*x))
+            latlon_corner = tr.forward(Coord(*p))
             # these are in lat,lon order according to the specification
             gpts.append(FloatObject(str(latlon_corner.y)))
             gpts.append(FloatObject(str(latlon_corner.x)))
