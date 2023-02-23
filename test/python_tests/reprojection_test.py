@@ -20,8 +20,7 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
     def test_zoom_all_will_work_with_max_extent():
         m = mapnik.Map(512, 512)
         mapnik.load_map(m, '../data/good_maps/wgs842merc_reprojection.xml')
-        merc_bounds = mapnik.Box2d(-20037508.34, -
-                                   20037508.34, 20037508.34, 20037508.34)
+        merc_bounds = mapnik.Box2d(-20037508.34, -20037508.34, 20037508.34, 20037508.34)
         m.maximum_extent = merc_bounds
         m.zoom_all()
         # note - fixAspectRatio is being called, then re-clipping to maxextent
@@ -37,8 +36,7 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
     def test_visual_zoom_all_rendering1():
         m = mapnik.Map(512, 512)
         mapnik.load_map(m, '../data/good_maps/wgs842merc_reprojection.xml')
-        merc_bounds = mapnik.Box2d(-20037508.34, -
-                                   20037508.34, 20037508.34, 20037508.34)
+        merc_bounds = mapnik.Box2d(-20037508.34, -20037508.34, 20037508.34, 20037508.34)
         m.maximum_extent = merc_bounds
         m.zoom_all()
         im = mapnik.Image(512, 512)
