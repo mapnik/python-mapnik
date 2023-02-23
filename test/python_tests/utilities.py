@@ -58,29 +58,6 @@ def get_unique_colors(im):
     pixels = sorted(pixels)
     return list(map(pixel2rgba, pixels))
 
-
-def run_all(iterable):
-    failed = 0
-    for test in iterable:
-        try:
-            test()
-            sys.stderr.write("\x1b[32m✓ \x1b[m" + test.__name__ + "\x1b[m\n")
-        except:
-            exc_type, exc_value, exc_tb = sys.exc_info()
-            failed += 1
-            sys.stderr.write("\x1b[31m✘ \x1b[m" + test.__name__ + "\x1b[m\n")
-            for mline in traceback.format_exception_only(exc_type, exc_value):
-                for line in mline.rstrip().split("\n"):
-                    sys.stderr.write("  \x1b[31m" + line + "\x1b[m\n")
-            sys.stderr.write("  Traceback:\n")
-            for mline in traceback.format_tb(exc_tb):
-                for line in mline.rstrip().split("\n"):
-                    if not 'utilities.py' in line and not 'trivial.py' in line and not line.strip() == 'test()':
-                        sys.stderr.write("  " + line + "\n")
-        sys.stderr.flush()
-    return failed
-
-
 def side_by_side_image(left_im, right_im):
     width = left_im.width() + 1 + right_im.width()
     height = max(left_im.height(), right_im.height())
