@@ -97,3 +97,15 @@ def assert_box2d_almost_equal(a, b, msg=None):
     assert a.maxx == pytest.approx(b.maxx, abs=1e-2), msg
     assert a.miny == pytest.approx(b.miny, abs=1e-2), msg
     assert a.maxy == pytest.approx(b.maxy, abs=1e-2), msg
+
+
+def images_almost_equal(image1, image2, tolerance = 1):
+    def rgba(p):
+        return p & 0xff,(p >> 8) & 0xff,(p >> 16) & 0xff, p >> 24
+    assert image1.width()  == image2.width()
+    assert image1.height() == image2.height()
+    for x in range(image1.width()):
+        for y in range(image1.height()):
+            p1 = image1.get_pixel(x, y)
+            p2 = image2.get_pixel(x, y)
+            assert rgba(p1) == pytest.approx(rgba(p2), abs = tolerance)
