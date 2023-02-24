@@ -106,8 +106,10 @@ void export_projection ()
         .def ("params", make_function(&projection::params,
                                       return_value_policy<copy_const_reference>()),
               "Returns the PROJ string for this projection.\n")
-        .def ("expanded",&projection::expanded,
-              "normalize PROJ definition by expanding epsg:XXXX syntax\n")
+        .def ("definition",&projection::definition,
+              "Return projection definition\n")
+        .def ("description", &projection::description,
+              "Returns projection description")
         .add_property ("geographic", &projection::is_geographic,
                        "This property is True if the projection is a geographic projection\n"
                        "(i.e. it uses lon/lat coordinates)\n")
