@@ -7,45 +7,32 @@ from .utilities import assert_box2d_almost_equal
 
 # Tests that exercise map projections.
 
-def test_normalizing_definition():
+def test_projection_description():
     p = mapnik.Projection('epsg:4326')
-    expanded = p.expanded()
-    assert '+proj=longlat' in expanded
+    assert 'WGS 84' == p.description()
 
 # Trac Ticket #128
 def test_wgs84_inverse_forward():
-    p = mapnik.Projection('epsg:4326')
-
+    p1 = mapnik.Projection('epsg:4326')
+    p2 = mapnik.Projection('epsg:4326')
+    tr = mapnik.ProjTransform(p1, p2)
     c = mapnik.Coord(3.01331418311, 43.3333092669)
     e = mapnik.Box2d(-122.54345245, 45.12312553, 68.2335581353, 48.231231233)
 
     # It appears that the y component changes very slightly, is this OK?
     # so we test for 'almost equal float values'
 
-    assert p.inverse(c).y == pytest.approx(c.y)
-    assert p.inverse(c).x == pytest.approx(c.x)
+    assert tr.backward(c).y == pytest.approx(c.y)
+    assert tr.backward(c).x == pytest.approx(c.x)
 
-    assert p.forward(c).y == pytest.approx(c.y)
-    assert p.forward(c).x == pytest.approx(c.x)
+    assert tr.forward(c).y == pytest.approx(c.y)
+    assert tr.forward(c).x == pytest.approx(c.x)
 
-    assert p.inverse(e).center().y == pytest.approx(e.center().y)
-    assert p.inverse(e).center().x == pytest.approx(e.center().x)
+    assert tr.backward(e).center().y == pytest.approx(e.center().y)
+    assert tr.backward(e).center().x == pytest.approx(e.center().x)
 
-    assert p.forward(e).center().y == pytest.approx(e.center().y)
-    assert p.forward(e).center().x == pytest.approx(e.center().x)
-
-    assert c.inverse(p).y == pytest.approx(c.y)
-    assert c.inverse(p).x == pytest.approx(c.x)
-
-    assert c.forward(p).y == pytest.approx(c.y)
-    assert c.forward(p).x == pytest.approx(c.x)
-
-    assert e.inverse(p).center().y == pytest.approx(e.center().y)
-    assert e.inverse(p).center().x == pytest.approx(e.center().x)
-
-    assert e.forward(p).center().y == pytest.approx(e.center().y)
-    assert e.forward(p).center().x == pytest.approx(e.center().x)
-
+    assert tr.forward(e).center().y == pytest.approx(e.center().y)
+    assert tr.forward(e).center().x == pytest.approx(e.center().x)
 
 def wgs2merc(lon, lat):
     x = lon * 20037508.34 / 180
