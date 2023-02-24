@@ -68,7 +68,7 @@ private:
             using namespace boost::python::converter;
             return base_type::base::to_python(
                 registered<native_type>::converters.m_class_object
-                ,  static_cast<long>( v ));
+                ,  static_cast<long>(native_type(v)));
 
         }
     };
@@ -76,11 +76,9 @@ private:
     void init() {
         boost::python::implicitly_convertible<native_type, EnumWrapper>();
         boost::python::to_python_converter<EnumWrapper, converter >();
-
-        for (unsigned i = 0; i < EnumWrapper::MAX; ++i)
+        for (auto const& kv : EnumWrapper::lookupMap())
         {
-            // Register the strings already defined for this enum.
-            base_type::value( EnumWrapper::get_string( i ), native_type( i ) );
+            base_type::value(kv.second.c_str(), kv.first);
         }
     }
 

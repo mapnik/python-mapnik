@@ -1,18 +1,5 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-import os
 from timeit import Timer, time
-
 import mapnik
-
-from .utilities import execution_path, run_all
-
-
-def setup():
-    # All of the paths used are relative, if we run the tests
-    # from another directory we need to chdir()
-    os.chdir(execution_path('.'))
 
 combinations = ['png',
                 'png8',
@@ -121,9 +108,3 @@ def do_encoding():
         print(
             'min: %sms | avg: %sms | total: %sms | len: %s <-- %s' %
             (min_, avg, elapsed, size, name))
-
-
-if __name__ == "__main__":
-    setup()
-    do_encoding()
-    exit(run_all(eval(x) for x in dir() if x.startswith("test_")))

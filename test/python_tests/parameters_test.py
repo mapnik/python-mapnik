@@ -1,71 +1,52 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-import os
 import sys
-
-from nose.tools import eq_
-
 import mapnik
-
-from .utilities import execution_path, run_all
-
-
-def setup():
-    os.chdir(execution_path('.'))
-
 
 def test_parameter_null():
     p = mapnik.Parameter('key', None)
-    eq_(p[0], 'key')
-    eq_(p[1], None)
+    assert p[0] ==  'key'
+    assert p[1] ==  None
 
 
 def test_parameter_string():
     p = mapnik.Parameter('key', 'value')
-    eq_(p[0], 'key')
-    eq_(p[1], 'value')
+    assert p[0] ==  'key'
+    assert p[1] ==  'value'
 
 
 def test_parameter_unicode():
     p = mapnik.Parameter('key', u'value')
-    eq_(p[0], 'key')
-    eq_(p[1], u'value')
+    assert p[0] ==  'key'
+    assert p[1] ==  u'value'
 
 
 def test_parameter_integer():
     p = mapnik.Parameter('int', sys.maxsize)
-    eq_(p[0], 'int')
-    eq_(p[1], sys.maxsize)
+    assert p[0] ==  'int'
+    assert p[1] ==  sys.maxsize
 
 
 def test_parameter_double():
     p = mapnik.Parameter('double', float(sys.maxsize))
-    eq_(p[0], 'double')
-    eq_(p[1], float(sys.maxsize))
+    assert p[0] ==  'double'
+    assert p[1] ==  float(sys.maxsize)
 
 
 def test_parameter_boolean():
     p = mapnik.Parameter('boolean', True)
-    eq_(p[0], 'boolean')
-    eq_(p[1], True)
-    eq_(bool(p[1]), True)
+    assert p[0] ==  'boolean'
+    assert p[1] ==  True
+    assert bool(p[1]) ==  True
 
 
 def test_parameters():
     params = mapnik.Parameters()
     p = mapnik.Parameter('float', 1.0777)
-    eq_(p[0], 'float')
-    eq_(p[1], 1.0777)
+    assert p[0] ==  'float'
+    assert p[1] ==  1.0777
 
     params.append(p)
 
-    eq_(params[0][0], 'float')
-    eq_(params[0][1], 1.0777)
+    assert params[0][0] ==  'float'
+    assert params[0][1] ==  1.0777
 
-    eq_(params.get('float'), 1.0777)
-
-
-if __name__ == "__main__":
-    setup()
-    exit(run_all(eval(x) for x in dir() if x.startswith("test_")))
+    assert params.get('float') ==  1.0777

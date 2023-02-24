@@ -1,28 +1,6 @@
-﻿#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-from __future__ import print_function
-
-import os
+﻿import os
 from glob import glob
-
 import mapnik
-
-from .utilities import execution_path, run_all
-
-
-default_logging_severity = mapnik.logger.get_severity()
-
-
-def setup():
-    mapnik.logger.set_severity(getattr(mapnik.severity_type, "None"))
-    # All of the paths used are relative, if we run the tests
-    # from another directory we need to chdir()
-    os.chdir(execution_path('.'))
-
-
-def teardown():
-    mapnik.logger.set_severity(default_logging_severity)
 
 plugin_mapping = {
     '.csv': ['csv'],
@@ -55,7 +33,7 @@ def test_opening_data():
                 else:
                     for plugin in plugin_mapping[ext]:
                         kwargs = {'type': plugin, 'file': filepath}
-                        if plugin is 'ogr':
+                        if plugin == 'ogr':
                             kwargs['layer_by_index'] = 0
                         try:
                             mapnik.Datasource(**kwargs)
@@ -63,7 +41,3 @@ def test_opening_data():
                             print('could not open, %s: %s' % (kwargs, e))
             # else:
             #    print 'skipping opening %s' % filepath
-
-if __name__ == "__main__":
-    setup()
-    exit(run_all(eval(x) for x in dir() if x.startswith("test_")))

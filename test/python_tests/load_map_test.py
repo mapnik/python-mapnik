@@ -1,32 +1,23 @@
-#!/usr/bin/env python
-
-import glob
-import os
-
-from nose.tools import eq_
-
+import glob,os
 import mapnik
+import pytest
 
-from .utilities import execution_path, run_all
-
+from .utilities import execution_path
 
 default_logging_severity = mapnik.logger.get_severity()
 
-
-def setup():
-    # make the tests silent to suppress unsupported params from harfbuzz tests
-    # TODO: remove this after harfbuzz branch merges
-    mapnik.logger.set_severity(getattr(mapnik.severity_type, "None"))
+@pytest.fixture(scope="module")
+def setup_and_teardown():
     # All of the paths used are relative, if we run the tests
     # from another directory we need to chdir()
     os.chdir(execution_path('.'))
-
-
-def teardown():
+    # make the tests silent to suppress unsupported params from harfbuzz tests
+    # TODO: remove this after harfbuzz branch merges
+    mapnik.logger.set_severity(getattr(mapnik.severity_type, "None"))
+    yield
     mapnik.logger.set_severity(default_logging_severity)
 
-
-def test_broken_files():
+def test_broken_files(setup_and_teardown):
     default_logging_severity = mapnik.logger.get_severity()
     mapnik.logger.set_severity(getattr(mapnik.severity_type, "None"))
     broken_files = glob.glob("../data/broken_maps/*.xml")
@@ -44,7 +35,7 @@ def test_broken_files():
                 filename)
         except RuntimeError:
             pass
-    eq_(len(failures), 0, '\n' + '\n'.join(failures))
+    assert len(failures) ==  0, '\n' + '\n'.join(failures)
     mapnik.logger.set_severity(default_logging_severity)
 
 
@@ -75,7 +66,7 @@ def test_can_parse_xml_with_deprecated_properties():
                 failures.append(
                     'Failed to load valid map %s (%s)' %
                     (filename, e))
-    eq_(len(failures), 0, '\n' + '\n'.join(failures))
+    assert len(failures) == 0, '\n' + '\n'.join(failures)
     mapnik.logger.set_severity(default_logging_severity)
 
 
@@ -100,8 +91,4 @@ def test_good_files():
                 failures.append(
                     'Failed to load valid map %s (%s)' %
                     (filename, e))
-    eq_(len(failures), 0, '\n' + '\n'.join(failures))
-
-if __name__ == "__main__":
-    setup()
-    exit(run_all(eval(x) for x in dir() if x.startswith("test_")))
+    assert len(failures) == 0, '\n' + '\n'.join(failures)

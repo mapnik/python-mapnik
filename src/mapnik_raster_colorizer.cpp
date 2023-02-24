@@ -40,11 +40,6 @@ using mapnik::colorizer_stop;
 using mapnik::colorizer_stops;
 using mapnik::colorizer_mode_enum;
 using mapnik::color;
-using mapnik::COLORIZER_INHERIT;
-using mapnik::COLORIZER_LINEAR;
-using mapnik::COLORIZER_DISCRETE;
-using mapnik::COLORIZER_EXACT;
-
 
 namespace {
 void add_stop(raster_colorizer_ptr & rc, colorizer_stop & stop)
@@ -196,10 +191,10 @@ void export_raster_colorizer()
         ;
 
     enum_<colorizer_mode_enum>("ColorizerMode")
-        .value("COLORIZER_INHERIT", COLORIZER_INHERIT)
-        .value("COLORIZER_LINEAR", COLORIZER_LINEAR)
-        .value("COLORIZER_DISCRETE", COLORIZER_DISCRETE)
-        .value("COLORIZER_EXACT", COLORIZER_EXACT)
+        .value("COLORIZER_INHERIT", colorizer_mode_enum::COLORIZER_INHERIT)
+        .value("COLORIZER_LINEAR", colorizer_mode_enum::COLORIZER_LINEAR)
+        .value("COLORIZER_DISCRETE", colorizer_mode_enum::COLORIZER_DISCRETE)
+        .value("COLORIZER_EXACT", colorizer_mode_enum::COLORIZER_EXACT)
         .export_values()
         ;
 

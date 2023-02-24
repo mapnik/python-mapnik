@@ -1,28 +1,21 @@
-#!/usr/bin/env python
-
 import os
-
-from nose.tools import eq_, raises
-
 import mapnik
+import pytest
+from .utilities import execution_path
 
-from .utilities import execution_path, run_all
-
-
-def setup():
+@pytest.fixture(scope="module")
+def setup_and_teardown():
     # All of the paths used are relative, if we run the tests
     # from another directory we need to chdir()
     os.chdir(execution_path('.'))
-
-
-def teardown():
+    yield
     index = '../data/sqlite/world.sqlite.index'
     if os.path.exists(index):
         os.unlink(index)
 
 if 'sqlite' in mapnik.DatasourceCache.plugin_names():
 
-    def test_attachdb_with_relative_file():
+    def test_attachdb_with_relative_file(setup_and_teardown):
         # The point table and index is in the qgis_spatiallite.sqlite
         # database.  If either is not found, then this fails
         ds = mapnik.SQLite(file='../data/sqlite/world.sqlite',
@@ -31,7 +24,7 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
                            )
         fs = ds.featureset()
         feature = fs.next()
-        eq_(feature['pkuid'], 1)
+        assert feature['pkuid'] == 1
 
     test_attachdb_with_relative_file.requires_data = True
 
@@ -52,7 +45,7 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         except StopIteration:
             pass
         # the above should not throw but will result in no features
-        eq_(feature, None)
+        assert feature == None
 
     test_attachdb_with_multiple_files.requires_data = True
 
@@ -65,7 +58,7 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
                            )
         fs = ds.featureset()
         feature = fs.next()
-        eq_(feature['pkuid'], 1)
+        assert feature['pkuid'] ==  1
 
     test_attachdb_with_absolute_file.requires_data = True
 
@@ -86,7 +79,7 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
             feature = fs.next()
         except StopIteration:
             pass
-        eq_(feature, None)
+        assert feature ==  None
 
     test_attachdb_with_index.requires_data = True
 
@@ -107,7 +100,7 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
             feature = fs.next()
         except StopIteration:
             pass
-        eq_(feature, None)
+        assert feature ==  None
 
     test_attachdb_with_explicit_index.requires_data = True
 
@@ -116,70 +109,68 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
                            table='(select * from world_merc INNER JOIN business on world_merc.iso3 = business.ISO3 limit 100)',
                            attachdb='busines@business.sqlite'
                            )
-        eq_(len(ds.fields()), 29)
-        eq_(ds.fields(),
-            ['OGC_FID',
-             'fips',
-             'iso2',
-             'iso3',
-             'un',
-             'name',
-             'area',
-             'pop2005',
-             'region',
-             'subregion',
-             'lon',
-             'lat',
-             'ISO3:1',
-             '1995',
-             '1996',
-             '1997',
-             '1998',
-             '1999',
-             '2000',
-             '2001',
-             '2002',
-             '2003',
-             '2004',
-             '2005',
-             '2006',
-             '2007',
-             '2008',
-             '2009',
-             '2010'])
-        eq_(ds.field_types(),
-            ['int',
-             'str',
-             'str',
-             'str',
-             'int',
-             'str',
-             'int',
-             'int',
-             'int',
-             'int',
-             'float',
-             'float',
-             'str',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int'])
+        assert len(ds.fields()) ==  29
+        assert ds.fields() == ['OGC_FID',
+                               'fips',
+                               'iso2',
+                               'iso3',
+                               'un',
+                               'name',
+                               'area',
+                               'pop2005',
+                               'region',
+                               'subregion',
+                               'lon',
+                               'lat',
+                               'ISO3:1',
+                               '1995',
+                               '1996',
+                               '1997',
+                               '1998',
+                               '1999',
+                               '2000',
+                               '2001',
+                               '2002',
+                               '2003',
+                               '2004',
+                               '2005',
+                               '2006',
+                               '2007',
+                               '2008',
+                               '2009',
+                               '2010']
+        assert ds.field_types() == ['int',
+                                    'str',
+                                    'str',
+                                    'str',
+                                    'int',
+                                    'str',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'float',
+                                    'float',
+                                    'str',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int']
         fs = ds.featureset()
         feature = fs.next()
-        eq_(feature.id(), 1)
+        assert feature.id() ==  1
         expected = {
             1995: 0,
             1996: 0,
@@ -215,7 +206,7 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         }
         for k, v in expected.items():
             try:
-                eq_(feature[str(k)], v)
+                assert feature[str(k)] ==  v
             except:
                 #import pdb;pdb.set_trace()
                 print('invalid key/v %s/%s for: %s' % (k, v, feature))
@@ -227,68 +218,66 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
                            table='(select * from world_merc INNER JOIN business on world_merc.iso3 = business.ISO3 limit 100)',
                            attachdb='busines@business.sqlite'
                            )
-        eq_(len(ds.fields()), 29)
-        eq_(ds.fields(),
-            ['OGC_FID',
-             'fips',
-             'iso2',
-             'iso3',
-             'un',
-             'name',
-             'area',
-             'pop2005',
-             'region',
-             'subregion',
-             'lon',
-             'lat',
-             'ISO3:1',
-             '1995',
-             '1996',
-             '1997',
-             '1998',
-             '1999',
-             '2000',
-             '2001',
-             '2002',
-             '2003',
-             '2004',
-             '2005',
-             '2006',
-             '2007',
-             '2008',
-             '2009',
-             '2010'])
-        eq_(ds.field_types(),
-            ['int',
-             'str',
-             'str',
-             'str',
-             'int',
-             'str',
-             'int',
-             'int',
-             'int',
-             'int',
-             'float',
-             'float',
-             'str',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int'])
-        eq_(len(list(ds.all_features())), 100)
+        assert len(ds.fields()) ==  29
+        assert ds.fields() == ['OGC_FID',
+                               'fips',
+                               'iso2',
+                               'iso3',
+                               'un',
+                               'name',
+                               'area',
+                               'pop2005',
+                               'region',
+                               'subregion',
+                               'lon',
+                               'lat',
+                               'ISO3:1',
+                               '1995',
+                               '1996',
+                               '1997',
+                               '1998',
+                               '1999',
+                               '2000',
+                               '2001',
+                               '2002',
+                               '2003',
+                               '2004',
+                               '2005',
+                               '2006',
+                               '2007',
+                               '2008',
+                               '2009',
+                               '2010']
+        assert ds.field_types() == ['int',
+                                    'str',
+                                    'str',
+                                    'str',
+                                    'int',
+                                    'str',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'float',
+                                    'float',
+                                    'str',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int']
+        assert len(list(ds.all_features())) ==  100
 
     test_attachdb_with_sql_join_count.requires_data = True
 
@@ -302,68 +291,66 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
                            table='(select * from world_merc INNER JOIN business on world_merc.iso3 = business.ISO3)',
                            attachdb='busines@business.sqlite'
                            )
-        eq_(len(ds.fields()), 29)
-        eq_(ds.fields(),
-            ['OGC_FID',
-             'fips',
-             'iso2',
-             'iso3',
-             'un',
-             'name',
-             'area',
-             'pop2005',
-             'region',
-             'subregion',
-             'lon',
-             'lat',
-             'ISO3:1',
-             '1995',
-             '1996',
-             '1997',
-             '1998',
-             '1999',
-             '2000',
-             '2001',
-             '2002',
-             '2003',
-             '2004',
-             '2005',
-             '2006',
-             '2007',
-             '2008',
-             '2009',
-             '2010'])
-        eq_(ds.field_types(),
-            ['int',
-             'str',
-             'str',
-             'str',
-             'int',
-             'str',
-             'int',
-             'int',
-             'int',
-             'int',
-             'float',
-             'float',
-             'str',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int'])
-        eq_(len(list(ds.all_features())), 192)
+        assert len(ds.fields()) ==  29
+        assert ds.fields() == ['OGC_FID',
+                               'fips',
+                               'iso2',
+                               'iso3',
+                               'un',
+                               'name',
+                               'area',
+                               'pop2005',
+                               'region',
+                               'subregion',
+                               'lon',
+                               'lat',
+                               'ISO3:1',
+                               '1995',
+                               '1996',
+                               '1997',
+                               '1998',
+                               '1999',
+                               '2000',
+                               '2001',
+                               '2002',
+                               '2003',
+                               '2004',
+                               '2005',
+                               '2006',
+                               '2007',
+                               '2008',
+                               '2009',
+                               '2010']
+        assert ds.field_types() == ['int',
+                                    'str',
+                                    'str',
+                                    'str',
+                                    'int',
+                                    'str',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'float',
+                                    'float',
+                                    'str',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int']
+        assert len(list(ds.all_features())) ==  192
 
     test_attachdb_with_sql_join_count2.requires_data = True
 
@@ -375,68 +362,66 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
                            table='(select * from (select * from world_merc where !intersects!) as world_merc INNER JOIN business on world_merc.iso3 = business.ISO3)',
                            attachdb='busines@business.sqlite'
                            )
-        eq_(len(ds.fields()), 29)
-        eq_(ds.fields(),
-            ['OGC_FID',
-             'fips',
-             'iso2',
-             'iso3',
-             'un',
-             'name',
-             'area',
-             'pop2005',
-             'region',
-             'subregion',
-             'lon',
-             'lat',
-             'ISO3:1',
-             '1995',
-             '1996',
-             '1997',
-             '1998',
-             '1999',
-             '2000',
-             '2001',
-             '2002',
-             '2003',
-             '2004',
-             '2005',
-             '2006',
-             '2007',
-             '2008',
-             '2009',
-             '2010'])
-        eq_(ds.field_types(),
-            ['int',
-             'str',
-             'str',
-             'str',
-             'int',
-             'str',
-             'int',
-             'int',
-             'int',
-             'int',
-             'float',
-             'float',
-             'str',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int'])
-        eq_(len(list(ds.all_features())), 192)
+        assert len(ds.fields()) ==  29
+        assert ds.fields() == ['OGC_FID',
+                               'fips',
+                               'iso2',
+                               'iso3',
+                               'un',
+                               'name',
+                               'area',
+                               'pop2005',
+                               'region',
+                               'subregion',
+                               'lon',
+                               'lat',
+                               'ISO3:1',
+                               '1995',
+                               '1996',
+                               '1997',
+                               '1998',
+                               '1999',
+                               '2000',
+                               '2001',
+                               '2002',
+                               '2003',
+                               '2004',
+                               '2005',
+                               '2006',
+                               '2007',
+                               '2008',
+                               '2009',
+                               '2010']
+        assert ds.field_types() == ['int',
+                                    'str',
+                                    'str',
+                                    'str',
+                                    'int',
+                                    'str',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'float',
+                                    'float',
+                                    'str',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int']
+        assert len(list(ds.all_features())) ==  192
 
     test_attachdb_with_sql_join_count3.requires_data = True
 
@@ -448,68 +433,66 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
                            table='(select * from (select * from world_merc where !intersects! limit 1) as world_merc INNER JOIN business on world_merc.iso3 = business.ISO3)',
                            attachdb='busines@business.sqlite'
                            )
-        eq_(len(ds.fields()), 29)
-        eq_(ds.fields(),
-            ['OGC_FID',
-             'fips',
-             'iso2',
-             'iso3',
-             'un',
-             'name',
-             'area',
-             'pop2005',
-             'region',
-             'subregion',
-             'lon',
-             'lat',
-             'ISO3:1',
-             '1995',
-             '1996',
-             '1997',
-             '1998',
-             '1999',
-             '2000',
-             '2001',
-             '2002',
-             '2003',
-             '2004',
-             '2005',
-             '2006',
-             '2007',
-             '2008',
-             '2009',
-             '2010'])
-        eq_(ds.field_types(),
-            ['int',
-             'str',
-             'str',
-             'str',
-             'int',
-             'str',
-             'int',
-             'int',
-             'int',
-             'int',
-             'float',
-             'float',
-             'str',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int',
-             'int'])
-        eq_(len(list(ds.all_features())), 1)
+        assert len(ds.fields()) ==  29
+        assert ds.fields() == ['OGC_FID',
+                               'fips',
+                               'iso2',
+                               'iso3',
+                               'un',
+                               'name',
+                               'area',
+                               'pop2005',
+                               'region',
+                               'subregion',
+                               'lon',
+                               'lat',
+                               'ISO3:1',
+                               '1995',
+                               '1996',
+                               '1997',
+                               '1998',
+                               '1999',
+                               '2000',
+                               '2001',
+                               '2002',
+                               '2003',
+                               '2004',
+                               '2005',
+                               '2006',
+                               '2007',
+                               '2008',
+                               '2009',
+                               '2010']
+        assert ds.field_types() == ['int',
+                                    'str',
+                                    'str',
+                                    'str',
+                                    'int',
+                                    'str',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'float',
+                                    'float',
+                                    'str',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int']
+        assert len(list(ds.all_features())) ==  1
 
     test_attachdb_with_sql_join_count4.requires_data = True
 
@@ -523,34 +506,32 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
                            )
         # nothing is able to join to business so we don't pick up business
         # schema
-        eq_(len(ds.fields()), 12)
-        eq_(ds.fields(),
-            ['OGC_FID',
-             'fips',
-             'iso2',
-             'iso3',
-             'un',
-             'name',
-             'area',
-             'pop2005',
-             'region',
-             'subregion',
-             'lon',
-             'lat'])
-        eq_(ds.field_types(),
-            ['int',
-             'str',
-             'str',
-             'str',
-             'int',
-             'str',
-             'int',
-             'int',
-             'int',
-             'int',
-             'float',
-             'float'])
-        eq_(len(list(ds.all_features())), 0)
+        assert len(ds.fields()) ==  12
+        assert ds.fields() == ['OGC_FID',
+                               'fips',
+                               'iso2',
+                               'iso3',
+                               'un',
+                               'name',
+                               'area',
+                               'pop2005',
+                               'region',
+                               'subregion',
+                               'lon',
+                               'lat']
+        assert ds.field_types() == ['int',
+                                    'str',
+                                    'str',
+                                    'str',
+                                    'int',
+                                    'str',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'int',
+                                    'float',
+                                    'float']
+        assert len(list(ds.all_features())) ==  0
 
     test_attachdb_with_sql_join_count5.requires_data = True
 
@@ -560,52 +541,52 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
                            )
         fs = ds.featureset()
         feature = fs.next()
-        eq_(feature['OGC_FID'], 1)
-        eq_(feature['fips'], u'AC')
-        eq_(feature['iso2'], u'AG')
-        eq_(feature['iso3'], u'ATG')
-        eq_(feature['un'], 28)
-        eq_(feature['name'], u'Antigua and Barbuda')
-        eq_(feature['area'], 44)
-        eq_(feature['pop2005'], 83039)
-        eq_(feature['region'], 19)
-        eq_(feature['subregion'], 29)
-        eq_(feature['lon'], -61.783)
-        eq_(feature['lat'], 17.078)
+        assert feature['OGC_FID'] ==  1
+        assert feature['fips'] ==  u'AC'
+        assert feature['iso2'] ==  u'AG'
+        assert feature['iso3'] ==  u'ATG'
+        assert feature['un'] ==  28
+        assert feature['name'] ==  u'Antigua and Barbuda'
+        assert feature['area'] ==  44
+        assert feature['pop2005'] ==  83039
+        assert feature['region'] ==  19
+        assert feature['subregion'] ==  29
+        assert feature['lon'] ==  -61.783
+        assert feature['lat'] ==  17.078
 
         ds = mapnik.SQLite(file='../data/sqlite/world.sqlite',
                            table='(select * from world_merc)',
                            )
         fs = ds.featureset()
         feature = fs.next()
-        eq_(feature['OGC_FID'], 1)
-        eq_(feature['fips'], u'AC')
-        eq_(feature['iso2'], u'AG')
-        eq_(feature['iso3'], u'ATG')
-        eq_(feature['un'], 28)
-        eq_(feature['name'], u'Antigua and Barbuda')
-        eq_(feature['area'], 44)
-        eq_(feature['pop2005'], 83039)
-        eq_(feature['region'], 19)
-        eq_(feature['subregion'], 29)
-        eq_(feature['lon'], -61.783)
-        eq_(feature['lat'], 17.078)
+        assert feature['OGC_FID'] ==  1
+        assert feature['fips'] ==  u'AC'
+        assert feature['iso2'] ==  u'AG'
+        assert feature['iso3'] ==  u'ATG'
+        assert feature['un'] ==  28
+        assert feature['name'] ==  u'Antigua and Barbuda'
+        assert feature['area'] ==  44
+        assert feature['pop2005'] ==  83039
+        assert feature['region'] ==  19
+        assert feature['subregion'] ==  29
+        assert feature['lon'] ==  -61.783
+        assert feature['lat'] ==  17.078
 
         ds = mapnik.SQLite(file='../data/sqlite/world.sqlite',
                            table='(select OGC_FID,GEOMETRY from world_merc)',
                            )
         fs = ds.featureset()
         feature = fs.next()
-        eq_(feature['OGC_FID'], 1)
-        eq_(len(feature), 1)
+        assert feature['OGC_FID'] ==  1
+        assert len(feature) ==  1
 
         ds = mapnik.SQLite(file='../data/sqlite/world.sqlite',
                            table='(select GEOMETRY,OGC_FID,fips from world_merc)',
                            )
         fs = ds.featureset()
         feature = fs.next()
-        eq_(feature['OGC_FID'], 1)
-        eq_(feature['fips'], u'AC')
+        assert feature['OGC_FID'] ==  1
+        assert feature['fips'] ==  u'AC'
 
         # same as above, except with alias like postgres requires
         # TODO - should we try to make this work?
@@ -615,16 +596,16 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         #    )
         #fs = ds.featureset()
         #feature = fs.next()
-        # eq_(feature['aliased_id'],1)
-        # eq_(feature['fips'],u'AC')
+        # assert feature['aliased_id'] == 1
+        # assert feature['fips'] == u'AC'
 
         ds = mapnik.SQLite(file='../data/sqlite/world.sqlite',
                            table='(select GEOMETRY,OGC_FID,OGC_FID as rowid,fips from world_merc)',
                            )
         fs = ds.featureset()
         feature = fs.next()
-        eq_(feature['rowid'], 1)
-        eq_(feature['fips'], u'AC')
+        assert feature['rowid'] ==  1
+        assert feature['fips'] ==  u'AC'
 
     test_subqueries.requires_data = True
 
@@ -638,74 +619,73 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
             feature = fs.next()
         except StopIteration:
             pass
-        eq_(feature, None)
+        assert feature ==  None
 
     test_empty_db.requires_data = True
 
-    @raises(RuntimeError)
+
     def test_that_nonexistant_query_field_throws(**kwargs):
         ds = mapnik.SQLite(file='../data/sqlite/empty.db',
                            table='empty',
                            )
-        eq_(len(ds.fields()), 25)
-        eq_(ds.fields(),
-            ['OGC_FID',
-             'scalerank',
-             'labelrank',
-             'featurecla',
-             'sovereignt',
-             'sov_a3',
-             'adm0_dif',
-             'level',
-             'type',
-             'admin',
-             'adm0_a3',
-             'geou_dif',
-             'name',
-             'abbrev',
-             'postal',
-             'name_forma',
-             'terr_',
-             'name_sort',
-             'map_color',
-             'pop_est',
-             'gdp_md_est',
-             'fips_10_',
-             'iso_a2',
-             'iso_a3',
-             'iso_n3'])
-        eq_(ds.field_types(),
-            ['int',
-             'int',
-             'int',
-             'str',
-             'str',
-             'str',
-             'float',
-             'float',
-             'str',
-             'str',
-             'str',
-             'float',
-             'str',
-             'str',
-             'str',
-             'str',
-             'str',
-             'str',
-             'float',
-             'float',
-             'float',
-             'float',
-             'str',
-             'str',
-             'float'])
+        assert len(ds.fields()) ==  25
+        assert ds.fields() == ['OGC_FID',
+                               'scalerank',
+                               'labelrank',
+                               'featurecla',
+                               'sovereignt',
+                               'sov_a3',
+                               'adm0_dif',
+                               'level',
+                               'type',
+                               'admin',
+                               'adm0_a3',
+                               'geou_dif',
+                               'name',
+                               'abbrev',
+                               'postal',
+                               'name_forma',
+                               'terr_',
+                               'name_sort',
+                               'map_color',
+                               'pop_est',
+                               'gdp_md_est',
+                               'fips_10_',
+                               'iso_a2',
+                               'iso_a3',
+                               'iso_n3']
+        assert ds.field_types() ==  ['int',
+                                     'int',
+                                     'int',
+                                     'str',
+                                     'str',
+                                     'str',
+                                     'float',
+                                     'float',
+                                     'str',
+                                     'str',
+                                     'str',
+                                     'float',
+                                     'str',
+                                     'str',
+                                     'str',
+                                     'str',
+                                     'str',
+                                     'str',
+                                     'float',
+                                     'float',
+                                     'float',
+                                     'float',
+                                     'str',
+                                     'str',
+                                     'float']
         query = mapnik.Query(ds.envelope())
         for fld in ds.fields():
             query.add_property_name(fld)
         # also add an invalid one, triggering throw
         query.add_property_name('bogus')
-        ds.features(query)
+        with pytest.raises(RuntimeError):
+            ds.features(query)
 
     test_that_nonexistant_query_field_throws.requires_data = True
 
@@ -719,7 +699,7 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
             feature = fs.next()
         except StopIteration:
             pass
-        eq_(feature, None)
+        assert feature ==  None
 
     test_intersects_token1.requires_data = True
 
@@ -733,7 +713,7 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
             feature = fs.next()
         except StopIteration:
             pass
-        eq_(feature, None)
+        assert feature ==  None
 
     test_intersects_token2.requires_data = True
 
@@ -747,7 +727,7 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
             feature = fs.next()
         except StopIteration:
             pass
-        eq_(feature, None)
+        assert feature ==  None
 
     test_intersects_token3.requires_data = True
 
@@ -766,15 +746,15 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
                            use_spatial_index=False,
                            key_field='alias'
                            )
-        eq_(len(ds.fields()), 1)
-        eq_(ds.fields(), ['alias'])
-        eq_(ds.field_types(), ['str'])
+        assert len(ds.fields()) ==  1
+        assert ds.fields() ==  ['alias']
+        assert ds.field_types() ==  ['str']
         fs = list(ds.all_features())
-        eq_(len(fs), 1)
+        assert len(fs) ==  1
         feat = fs[0]
-        eq_(feat.id(), 0)  # should be 1?
-        eq_(feat['alias'], 'test')
-        eq_(feat.geometry.to_wkt(), 'POINT(0 0)')
+        assert feat.id() ==  0  # should be 1?
+        assert feat['alias'] ==  'test'
+        assert feat.geometry.to_wkt() ==  'POINT(0 0)'
 
     def test_db_with_one_untyped_column():
         # form up an in-memory test db
@@ -791,9 +771,9 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
                            )
 
         # ensure the untyped column is found
-        eq_(len(ds.fields()), 2)
-        eq_(ds.fields(), ['rowid', 'untyped'])
-        eq_(ds.field_types(), ['int', 'str'])
+        assert len(ds.fields()) ==  2
+        assert ds.fields(), ['rowid' ==  'untyped']
+        assert ds.field_types(), ['int' ==  'str']
 
     def test_db_with_one_untyped_column_using_subquery():
         # form up an in-memory test db
@@ -810,27 +790,27 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
                            )
 
         # ensure the untyped column is found
-        eq_(len(ds.fields()), 3)
-        eq_(ds.fields(), ['rowid', 'untyped', 'rowid'])
-        eq_(ds.field_types(), ['int', 'str', 'int'])
+        assert len(ds.fields()) ==  3
+        assert ds.fields(), ['rowid', 'untyped' ==  'rowid']
+        assert ds.field_types(), ['int', 'str' ==  'int']
 
     def test_that_64bit_int_fields_work():
         ds = mapnik.SQLite(file='../data/sqlite/64bit_int.sqlite',
                            table='int_table',
                            use_spatial_index=False
                            )
-        eq_(len(ds.fields()), 3)
-        eq_(ds.fields(), ['OGC_FID', 'id', 'bigint'])
-        eq_(ds.field_types(), ['int', 'int', 'int'])
+        assert len(ds.fields()) ==  3
+        assert ds.fields(), ['OGC_FID', 'id' ==  'bigint']
+        assert ds.field_types(), ['int', 'int' ==  'int']
         fs = ds.featureset()
         feat = fs.next()
-        eq_(feat.id(), 1)
-        eq_(feat['OGC_FID'], 1)
-        eq_(feat['bigint'], 2147483648)
+        assert feat.id() ==  1
+        assert feat['OGC_FID'] ==  1
+        assert feat['bigint'] ==  2147483648
         feat = fs.next()
-        eq_(feat.id(), 2)
-        eq_(feat['OGC_FID'], 2)
-        eq_(feat['bigint'], 922337203685477580)
+        assert feat.id() ==  2
+        assert feat['OGC_FID'] ==  2
+        assert feat['bigint'] ==  922337203685477580
 
     test_that_64bit_int_fields_work.requires_data = True
 
@@ -860,11 +840,5 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
             feature = fs.next()
         except StopIteration:
             pass
-        eq_(feature, None)
+        assert feature ==  None
         mapnik.logger.set_severity(default_logging_severity)
-
-if __name__ == "__main__":
-    setup()
-    result = run_all(eval(x) for x in dir() if x.startswith("test_"))
-    teardown()
-    exit(result)

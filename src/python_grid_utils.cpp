@@ -105,7 +105,7 @@ void grid2utf(T const& grid_type,
         }
         l.append(boost::python::object(
                      boost::python::handle<>(
-                         PyUnicode_FromUnicode(line.get(), array_size))));
+                         PyUnicode_FromKindAndData(PyUnicode_4BYTE_KIND, line.get(), array_size))));
     }
 }
 
@@ -168,7 +168,7 @@ void grid2utf(T const& grid_type,
         }
         l.append(boost::python::object(
                      boost::python::handle<>(
-                         PyUnicode_FromUnicode(line.get(), array_size))));
+                         PyUnicode_FromKindAndData(PyUnicode_4BYTE_KIND, line.get(), array_size))));
     }
 }
 
