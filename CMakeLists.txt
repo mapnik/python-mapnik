@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-include(cmake/vcpkg_setup.cmake)
+# include(cmake/vcpkg_setup.cmake)
 project(${SKBUILD_PROJECT_NAME} LANGUAGES CXX VERSION ${SKBUILD_PROJECT_VERSION})
 
 find_package(Python COMPONENTS Interpreter Development.Module)
