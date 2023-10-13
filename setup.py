@@ -228,14 +228,30 @@ extra_comp_args = check_output([mapnik_config, '--cflags']).split(' ')
 extra_comp_args = list(filter(lambda arg: arg != "-fvisibility=hidden", extra_comp_args))
 
 if os.environ.get("PYCAIRO", "false") == "true":
-    try:
-        extra_comp_args.append('-DHAVE_PYCAIRO')
-        print("-I%s/include/pycairo".format(sys.exec_prefix))
-        extra_comp_args.append("-I{0}/include/pycairo".format(sys.exec_prefix))
-        #extra_comp_args.extend(check_output(["pkg-config", '--cflags', 'pycairo']).strip().split(' '))
-        #linkflags.extend(check_output(["pkg-config", '--libs', 'pycairo']).strip().split(' '))
-    except:
-        raise Exception("Failed to find compiler options for pycairo")
+    pycairo_library_name = None
+    pycairo_default_cflags = "-I{0}/include/pycairo".format(sys.exec_prefix)
+    for name in ("py3cairo", "pycairo"):
+        try:
+            check_output(["pkg-config", "--exists", name])
+        except subprocess.CalledProcessError:
+            continue
+        else:
+            pycairo_library_name = name
+
+    pycairo_flags_set = False
+    if pycairo_library_name:
+        try:
+            extra_comp_args.extend(check_output(["pkg-config", "--cflags", pycairo_library_name]).strip().split(" "))
+            linkflags.extend(check_output(["pkg-config", "--libs", pycairo_library_name]).strip().split(" "))
+            pycairo_flags_set = True
+        except subprocess.CalledProcessError:
+            pass
+
+    if not pycairo_flags_set:
+        extra_comp_args.append(pycairo_default_cflags)
+        print("Failed to find compiler options for pycairo; using default CFLAGS:", pycairo_default_cflags)
+
+    extra_comp_args.append('-DHAVE_PYCAIRO')
 
 if sys.platform == 'darwin':
     extra_comp_args.append('-mmacosx-version-min=10.11')
