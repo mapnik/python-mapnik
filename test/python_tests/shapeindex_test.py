@@ -1,24 +1,24 @@
-#!/usr/bin/env python
-
 import fnmatch
 import os
 import shutil
 from subprocess import PIPE, Popen
 
-from nose.tools import eq_
-
 import mapnik
+import pytest
 
-from .utilities import execution_path, run_all
+from .utilities import execution_path
 
-
+@pytest.fixture(scope="module")
 def setup():
     # All of the paths used are relative, if we run the tests
     # from another directory we need to chdir()
     os.chdir(execution_path('.'))
+    yield
+    index = '../data/sqlite/world.sqlite.index'
+    if os.path.exists(index):
+        os.unlink(index)
 
-
-def test_shapeindex():
+def test_shapeindex(setup):
     # first copy shapefiles to tmp directory
     source_dir = '../data/shp/'
     working_dir = '/tmp/mapnik-shp-tmp/'
@@ -53,8 +53,4 @@ def test_shapeindex():
                 count2 = count2 + 1
         except StopIteration:
             pass
-        eq_(count, count2)
-
-if __name__ == "__main__":
-    setup()
-    exit(run_all(eval(x) for x in dir() if x.startswith("test_")))
+        assert count == count2

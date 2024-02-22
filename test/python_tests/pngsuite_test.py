@@ -1,24 +1,20 @@
-#!/usr/bin/env python
-
 import os
-
-from nose.tools import assert_raises
-
 import mapnik
-
-from .utilities import execution_path, run_all
+import pytest
+from .utilities import execution_path
 
 datadir = '../data/pngsuite'
 
-
+@pytest.fixture(scope="module")
 def setup():
     # All of the paths used are relative, if we run the tests
     # from another directory we need to chdir()
     os.chdir(execution_path('.'))
-
+    yield
 
 def assert_broken_file(fname):
-    assert_raises(RuntimeError, lambda: mapnik.Image.open(fname))
+    with pytest.raises(RuntimeError):
+        mapnik.Image.open(fname)
 
 
 def assert_good_file(fname):
@@ -31,15 +27,11 @@ def get_pngs(good):
             for x in files if good != x.startswith('x')]
 
 
-def test_good_pngs():
+def test_good_pngs(setup):
     for x in get_pngs(True):
-        yield assert_good_file, x
+        assert_good_file, x
 
 
 def test_broken_pngs():
     for x in get_pngs(False):
-        yield assert_broken_file, x
-
-if __name__ == "__main__":
-    setup()
-    exit(run_all(eval(x) for x in dir() if x.startswith("test_")))
+        assert_broken_file, x

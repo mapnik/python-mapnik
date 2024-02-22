@@ -1,24 +1,16 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import os
-
-from nose.tools import eq_, raises
-
 import mapnik
+import json
+import pytest
 
-from .utilities import execution_path, run_all
+from .utilities import execution_path
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
-
-
+@pytest.fixture(scope="module")
 def setup():
     # All of the paths used are relative, if we run the tests
     # from another directory we need to chdir()
     os.chdir(execution_path('.'))
+    yield
 
 if mapnik.has_grid_renderer():
     def show_grids(name, g1, g2):
@@ -369,7 +361,7 @@ if mapnik.has_grid_renderer():
         m.layers.append(lyr)
         return m
 
-    def test_render_grid():
+    def test_render_grid(setup):
         """ test render_grid method"""
         width, height = 256, 256
         sym = mapnik.MarkersSymbolizer()
@@ -384,27 +376,26 @@ if mapnik.has_grid_renderer():
         grid = mapnik.Grid(m.width, m.height, key='Name')
         mapnik.render_layer(m, grid, layer=0, fields=['Name'])
         utf1 = grid.encode('utf', resolution=4)
-        eq_(utf1, grid_correct_new3, show_grids(
-            'new-markers', utf1, grid_correct_new3))
+        assert utf1 == grid_correct_new3, show_grids('new-markers', utf1, grid_correct_new3)
 
         # check a full view is the same as a full image
         grid_view = grid.view(0, 0, width, height)
         # for kicks check at full res too
         utf3 = grid.encode('utf', resolution=1)
         utf4 = grid_view.encode('utf', resolution=1)
-        eq_(utf3['grid'], utf4['grid'])
-        eq_(utf3['keys'], utf4['keys'])
-        eq_(utf3['data'], utf4['data'])
+        assert utf3['grid'] ==  utf4['grid']
+        assert utf3['keys'] ==  utf4['keys']
+        assert utf3['data'] ==  utf4['data']
 
-        eq_(resolve(utf4, 0, 0), None)
+        assert resolve(utf4, 0, 0) ==  None
 
         # resolve some center points in the
         # resampled view
         utf5 = grid_view.encode('utf', resolution=4)
-        eq_(resolve(utf5, 25, 10), {"Name": "North West"})
-        eq_(resolve(utf5, 25, 46), {"Name": "North East"})
-        eq_(resolve(utf5, 38, 10), {"Name": "South West"})
-        eq_(resolve(utf5, 38, 46), {"Name": "South East"})
+        assert resolve(utf5, 25, 10) ==  {"Name": "North West"}
+        assert resolve(utf5, 25, 46) ==  {"Name": "North East"}
+        assert resolve(utf5, 38, 10) ==  {"Name": "South West"}
+        assert resolve(utf5, 38, 46) ==  {"Name": "South East"}
 
     grid_feat_id = {
         'keys': [
@@ -670,25 +661,25 @@ if mapnik.has_grid_renderer():
         grid = mapnik.Grid(m.width, m.height, key='__id__')
         mapnik.render_layer(m, grid, layer=0, fields=['__id__', 'Name'])
         utf1 = grid.encode('utf', resolution=4)
-        eq_(utf1, grid_feat_id3, show_grids('id-markers', utf1, grid_feat_id3))
+        assert utf1 == grid_feat_id3, show_grids('id-markers', utf1 ==  grid_feat_id3)
         # check a full view is the same as a full image
         grid_view = grid.view(0, 0, width, height)
         # for kicks check at full res too
         utf3 = grid.encode('utf', resolution=1)
         utf4 = grid_view.encode('utf', resolution=1)
-        eq_(utf3['grid'], utf4['grid'])
-        eq_(utf3['keys'], utf4['keys'])
-        eq_(utf3['data'], utf4['data'])
+        assert utf3['grid'] ==  utf4['grid']
+        assert utf3['keys'] ==  utf4['keys']
+        assert utf3['data'] ==  utf4['data']
 
-        eq_(resolve(utf4, 0, 0), None)
+        assert resolve(utf4, 0, 0) ==  None
 
         # resolve some center points in the
         # resampled view
         utf5 = grid_view.encode('utf', resolution=4)
-        eq_(resolve(utf5, 25, 10), {"Name": "North West", "__id__": 3})
-        eq_(resolve(utf5, 25, 46), {"Name": "North East", "__id__": 4})
-        eq_(resolve(utf5, 38, 10), {"Name": "South West", "__id__": 2})
-        eq_(resolve(utf5, 38, 46), {"Name": "South East", "__id__": 1})
+        assert resolve(utf5, 25, 10) == {"Name": "North West", "__id__": 3}
+        assert resolve(utf5, 25, 46) == {"Name": "North East", "__id__": 4}
+        assert resolve(utf5, 38, 10) == {"Name": "South West", "__id__": 2}
+        assert resolve(utf5, 38, 46) == {"Name": "South East", "__id__": 1}
 
     def gen_grid_for_id(pixel_key):
         ds = mapnik.MemoryDatasource()
@@ -718,39 +709,39 @@ if mapnik.has_grid_renderer():
 
     def test_negative_id():
         grid = gen_grid_for_id(-1)
-        eq_(grid.get_pixel(128, 128), -1)
+        assert grid.get_pixel(128, 128) ==  -1
         utf1 = grid.encode('utf', resolution=4)
-        eq_(utf1['keys'], ['-1'])
+        assert utf1['keys'] ==  ['-1']
 
     def test_32bit_int_id():
         int32 = 2147483647
         grid = gen_grid_for_id(int32)
-        eq_(grid.get_pixel(128, 128), int32)
+        assert grid.get_pixel(128, 128) ==  int32
         utf1 = grid.encode('utf', resolution=4)
-        eq_(utf1['keys'], [str(int32)])
+        assert utf1['keys'] ==  [str(int32)]
         max_neg = -(int32)
         grid = gen_grid_for_id(max_neg)
-        eq_(grid.get_pixel(128, 128), max_neg)
+        assert grid.get_pixel(128, 128) ==  max_neg
         utf1 = grid.encode('utf', resolution=4)
-        eq_(utf1['keys'], [str(max_neg)])
+        assert utf1['keys'] ==  [str(max_neg)]
 
     def test_64bit_int_id():
         int64 = 0x7FFFFFFFFFFFFFFF
         grid = gen_grid_for_id(int64)
-        eq_(grid.get_pixel(128, 128), int64)
+        assert grid.get_pixel(128, 128) ==  int64
         utf1 = grid.encode('utf', resolution=4)
-        eq_(utf1['keys'], [str(int64)])
+        assert utf1['keys'] ==  [str(int64)]
         max_neg = -(int64)
         grid = gen_grid_for_id(max_neg)
-        eq_(grid.get_pixel(128, 128), max_neg)
+        assert grid.get_pixel(128, 128) ==  max_neg
         utf1 = grid.encode('utf', resolution=4)
-        eq_(utf1['keys'], [str(max_neg)])
+        assert utf1['keys'] ==  [str(max_neg)]
 
     def test_id_zero():
         grid = gen_grid_for_id(0)
-        eq_(grid.get_pixel(128, 128), 0)
+        assert grid.get_pixel(128, 128) ==  0
         utf1 = grid.encode('utf', resolution=4)
-        eq_(utf1['keys'], ['0'])
+        assert utf1['keys'] ==  ['0']
 
     line_expected = {
         "keys": [
@@ -852,7 +843,7 @@ if mapnik.has_grid_renderer():
         grid = mapnik.Grid(m.width, m.height, key='__id__')
         mapnik.render_layer(m, grid, layer=0, fields=['Name'])
         utf1 = grid.encode()
-        eq_(utf1, line_expected, show_grids('line', utf1, line_expected))
+        assert utf1 == line_expected, show_grids('line', utf1, line_expected)
 
     point_expected = {
         "data": {
@@ -947,53 +938,49 @@ if mapnik.has_grid_renderer():
         grid = mapnik.Grid(m.width, m.height)
         mapnik.render_layer(m, grid, layer=0, fields=['Name'])
         utf1 = grid.encode()
-        eq_(utf1, point_expected, show_grids('point-sym', utf1, point_expected))
+        assert utf1 == point_expected, show_grids('point-sym', utf1, point_expected)
 
     test_point_symbolizer_grid.requires_data = True
 
     # should throw because this is a mis-usage
     # https://github.com/mapnik/mapnik/issues/1325
-    @raises(RuntimeError)
     def test_render_to_grid_multiple_times():
-        # create map with two layers
-        m = mapnik.Map(256, 256)
-        s = mapnik.Style()
-        r = mapnik.Rule()
-        sym = mapnik.MarkersSymbolizer()
-        sym.allow_overlap = True
-        r.symbols.append(sym)
-        s.rules.append(r)
-        m.append_style('points', s)
+        with pytest.raises(RuntimeError):
+            # create map with two layers
+            m = mapnik.Map(256, 256)
+            s = mapnik.Style()
+            r = mapnik.Rule()
+            sym = mapnik.MarkersSymbolizer()
+            sym.allow_overlap = True
+            r.symbols.append(sym)
+            s.rules.append(r)
+            m.append_style('points', s)
 
-        # NOTE: we use a csv datasource here
-        # because the memorydatasource fails silently for
-        # queries requesting fields that do not exist in the datasource
-        ds1 = mapnik.Datasource(**{"type": "csv", "inline": '''
-          wkt,Name
-          "POINT (143.10 -38.60)",South East'''})
-        lyr1 = mapnik.Layer('One')
-        lyr1.datasource = ds1
-        lyr1.styles.append('points')
-        m.layers.append(lyr1)
+            # NOTE: we use a csv datasource here
+            # because the memorydatasource fails silently for
+            # queries requesting fields that do not exist in the datasource
+            ds1 = mapnik.Datasource(**{"type": "csv", "inline": '''
+            wkt,Name
+            "POINT (143.10 -38.60)",South East'''})
+            lyr1 = mapnik.Layer('One')
+            lyr1.datasource = ds1
+            lyr1.styles.append('points')
+            m.layers.append(lyr1)
 
-        ds2 = mapnik.Datasource(**{"type": "csv", "inline": '''
-          wkt,Value
-          "POINT (142.48 -38.60)",South West'''})
-        lyr2 = mapnik.Layer('Two')
-        lyr2.datasource = ds2
-        lyr2.styles.append('points')
-        m.layers.append(lyr2)
+            ds2 = mapnik.Datasource(**{"type": "csv", "inline": '''
+            wkt,Value
+            "POINT (142.48 -38.60)",South West'''})
+            lyr2 = mapnik.Layer('Two')
+            lyr2.datasource = ds2
+            lyr2.styles.append('points')
+            m.layers.append(lyr2)
 
-        ul_lonlat = mapnik.Coord(142.30, -38.20)
-        lr_lonlat = mapnik.Coord(143.40, -38.80)
-        m.zoom_to_box(mapnik.Box2d(ul_lonlat, lr_lonlat))
-        grid = mapnik.Grid(m.width, m.height)
-        mapnik.render_layer(m, grid, layer=0, fields=['Name'])
-        # should throw right here since Name will be a property now on the `grid` object
-        # and it is not found on the second layer
-        mapnik.render_layer(m, grid, layer=1, fields=['Value'])
-        grid.encode()
-
-if __name__ == "__main__":
-    setup()
-    exit(run_all(eval(x) for x in dir() if x.startswith("test_")))
+            ul_lonlat = mapnik.Coord(142.30, -38.20)
+            lr_lonlat = mapnik.Coord(143.40, -38.80)
+            m.zoom_to_box(mapnik.Box2d(ul_lonlat, lr_lonlat))
+            grid = mapnik.Grid(m.width, m.height)
+            mapnik.render_layer(m, grid, layer=0, fields=['Name'])
+            # should throw right here since Name will be a property now on the `grid` object
+            # and it is not found on the second layer
+            mapnik.render_layer(m, grid, layer=1, fields=['Value'])
+            grid.encode()

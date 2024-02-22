@@ -4,34 +4,15 @@
 import os
 import sys
 import traceback
-
-from nose.plugins.errorclass import ErrorClass, ErrorClassPlugin
-from nose.tools import assert_almost_equal
-
 import mapnik
+import pytest
 
-PYTHON3 = sys.version_info[0] == 3
-READ_FLAGS = 'rb' if PYTHON3 else 'r'
-if PYTHON3:
-    xrange = range
-
+READ_FLAGS = 'rb'
 HERE = os.path.dirname(__file__)
-
 
 def execution_path(filename):
     return os.path.join(os.path.dirname(
         sys._getframe(1).f_code.co_filename), filename)
-
-
-class Todo(Exception):
-    pass
-
-
-class TodoPlugin(ErrorClassPlugin):
-    name = "todo"
-
-    todo = ErrorClass(Todo, label='TODO', isfailure=False)
-
 
 def contains_word(word, bytestring_):
     """
@@ -51,7 +32,7 @@ def contains_word(word, bytestring_):
     """
     n = len(word)
     assert len(bytestring_) % n == 0, "len(bytestring_) not multiple of len(word)"
-    chunks = [bytestring_[i:i + n] for i in xrange(0, len(bytestring_), n)]
+    chunks = [bytestring_[i:i + n] for i in range(0, len(bytestring_), n)]
     return word in chunks
 
 
@@ -76,29 +57,6 @@ def get_unique_colors(im):
                 pixels.append(pixel)
     pixels = sorted(pixels)
     return list(map(pixel2rgba, pixels))
-
-
-def run_all(iterable):
-    failed = 0
-    for test in iterable:
-        try:
-            test()
-            sys.stderr.write("\x1b[32m✓ \x1b[m" + test.__name__ + "\x1b[m\n")
-        except:
-            exc_type, exc_value, exc_tb = sys.exc_info()
-            failed += 1
-            sys.stderr.write("\x1b[31m✘ \x1b[m" + test.__name__ + "\x1b[m\n")
-            for mline in traceback.format_exception_only(exc_type, exc_value):
-                for line in mline.rstrip().split("\n"):
-                    sys.stderr.write("  \x1b[31m" + line + "\x1b[m\n")
-            sys.stderr.write("  Traceback:\n")
-            for mline in traceback.format_tb(exc_tb):
-                for line in mline.rstrip().split("\n"):
-                    if not 'utilities.py' in line and not 'trivial.py' in line and not line.strip() == 'test()':
-                        sys.stderr.write("  " + line + "\n")
-        sys.stderr.flush()
-    return failed
-
 
 def side_by_side_image(left_im, right_im):
     width = left_im.width() + 1 + right_im.width()
@@ -135,7 +93,19 @@ def side_by_side_image(left_im, right_im):
 
 def assert_box2d_almost_equal(a, b, msg=None):
     msg = msg or ("%r != %r" % (a, b))
-    assert_almost_equal(a.minx, b.minx, msg=msg)
-    assert_almost_equal(a.maxx, b.maxx, msg=msg)
-    assert_almost_equal(a.miny, b.miny, msg=msg)
-    assert_almost_equal(a.maxy, b.maxy, msg=msg)
+    assert a.minx == pytest.approx(b.minx, abs=1e-2), msg
+    assert a.maxx == pytest.approx(b.maxx, abs=1e-2), msg
+    assert a.miny == pytest.approx(b.miny, abs=1e-2), msg
+    assert a.maxy == pytest.approx(b.maxy, abs=1e-2), msg
+
+
+def images_almost_equal(image1, image2, tolerance = 1):
+    def rgba(p):
+        return p & 0xff,(p >> 8) & 0xff,(p >> 16) & 0xff, p >> 24
+    assert image1.width()  == image2.width()
+    assert image1.height() == image2.height()
+    for x in range(image1.width()):
+        for y in range(image1.height()):
+            p1 = image1.get_pixel(x, y)
+            p2 = image2.get_pixel(x, y)
+            assert rgba(p1) == pytest.approx(rgba(p2), abs = tolerance)

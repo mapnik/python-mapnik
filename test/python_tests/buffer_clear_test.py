@@ -1,30 +1,17 @@
 import os
-
-from nose.tools import eq_
-
 import mapnik
-
-from .utilities import execution_path, run_all
-
-
-def setup():
-    # All of the paths used are relative, if we run the tests
-    # from another directory we need to chdir()
-    os.chdir(execution_path('.'))
-
 
 def test_clearing_image_data():
     im = mapnik.Image(256, 256)
     # make sure it equals itself
     bytes = im.tostring()
-    eq_(im.tostring(), bytes)
+    assert im.tostring() == bytes
     # set background, then clear
     im.fill(mapnik.Color('green'))
-    eq_(im.tostring() != bytes, True)
+    assert not im.tostring() == bytes
     # clear image, should now equal original
     im.clear()
-    eq_(im.tostring(), bytes)
-
+    assert im.tostring() == bytes
 
 def make_map():
     ds = mapnik.MemoryDatasource()
@@ -56,14 +43,10 @@ if mapnik.has_grid_renderer():
         g = mapnik.Grid(256, 256)
         utf = g.encode()
         # make sure it equals itself
-        eq_(g.encode(), utf)
+        assert g.encode() == utf
         m = make_map()
         mapnik.render_layer(m, g, layer=0, fields=['__id__', 'Name'])
-        eq_(g.encode() != utf, True)
+        assert g.encode() != utf
         # clear grid, should now match original
         g.clear()
-        eq_(g.encode(), utf)
-
-if __name__ == "__main__":
-    setup()
-    exit(run_all(eval(x) for x in dir() if x.startswith("test_")))
+        assert g.encode() == utf

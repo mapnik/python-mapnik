@@ -1,31 +1,19 @@
-#!/usr/bin/env python
-
 import glob
 import os
 import tempfile
-
-from nose.tools import eq_
-
 import mapnik
+import pytest
 
-from .utilities import execution_path, run_all
-
+from .utilities import execution_path
 
 default_logging_severity = mapnik.logger.get_severity()
 
-
+@pytest.fixture(scope="module")
 def setup():
-    # make the tests silent to suppress unsupported params from harfbuzz tests
-    # TODO: remove this after harfbuzz branch merges
-    mapnik.logger.set_severity(getattr(mapnik.severity_type, "None"))
     # All of the paths used are relative, if we run the tests
     # from another directory we need to chdir()
     os.chdir(execution_path('.'))
-
-
-def teardown():
-    mapnik.logger.set_severity(default_logging_severity)
-
+    yield
 
 def compare_map(xml):
     m = mapnik.Map(256, 256)
@@ -56,7 +44,7 @@ def compare_map(xml):
     try:
         with open(test_map) as f1:
             with open(test_map2) as f2:
-                eq_(f1.read(), f2.read())
+                assert f1.read() == f2.read()
     except AssertionError as e:
         raise AssertionError(
             'serialized map "%s" not the same after being reloaded, \ncompare with command:\n\n$%s' %
@@ -69,7 +57,7 @@ def compare_map(xml):
         return False
 
 
-def test_compare_map():
+def test_compare_map(setup):
     good_maps = glob.glob("../data/good_maps/*.xml")
     good_maps = [os.path.normpath(p) for p in good_maps]
     # remove one map that round trips CDATA differently, but this is okay
@@ -89,7 +77,3 @@ def test_compare_map_deprecations():
     dep = [os.path.normpath(p) for p in dep]
     for m in dep:
         compare_map(m)
-
-if __name__ == "__main__":
-    setup()
-    exit(run_all(eval(x) for x in dir() if x.startswith("test_")))

@@ -1,21 +1,17 @@
-#!/usr/bin/env python
-
 import os
-
-from nose.tools import eq_
-
 import mapnik
+import pytest
+from .utilities import execution_path
 
-from .utilities import execution_path, run_all
-
-
+@pytest.fixture
 def setup():
     # All of the paths used are relative, if we run the tests
     # from another directory we need to chdir()
     os.chdir(execution_path('.'))
+    yield
 
 if 'shape' in mapnik.DatasourceCache.plugin_names():
-    def test_query_tolerance():
+    def test_query_tolerance(setup):
         srs = 'epsg:4326'
         lyr = mapnik.Layer('test')
         ds = mapnik.Shapefile(file='../data/shp/arrows.shp')
@@ -29,20 +25,16 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
         _map_env = _map.envelope()
         tol = (_map_env.maxx - _map_env.minx) / _width * 3
         # 0.046875 for arrows.shp and zoom_all
-        eq_(tol, 0.046875)
+        assert tol == 0.046875
         # check point really exists
         x, y = 2.0, 4.0
         features = _map.query_point(0, x, y)
-        eq_(len(list(features)), 1)
+        assert len(list(features)) == 1
         # check inside tolerance limit
         x = 2.0 + tol * 0.9
         features = _map.query_point(0, x, y)
-        eq_(len(list(features)), 1)
+        assert len(list(features)) == 1
         # check outside tolerance limit
         x = 2.0 + tol * 1.1
         features = _map.query_point(0, x, y)
-        eq_(len(list(features)), 0)
-
-if __name__ == "__main__":
-    setup()
-    exit(run_all(eval(x) for x in dir() if x.startswith("test_")))
+        assert len(list(features)) == 0

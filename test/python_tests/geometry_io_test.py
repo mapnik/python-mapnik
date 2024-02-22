@@ -1,24 +1,11 @@
-# encoding: utf8
-
-import os
 from binascii import unhexlify
-
-from nose.tools import eq_, assert_raises
-
 import mapnik
-
-from .utilities import execution_path, run_all
-
+import pytest
 try:
     import json
 except ImportError:
     import simplejson as json
 
-
-def setup():
-    # All of the paths used are relative, if we run the tests
-    # from another directory we need to chdir()
-    os.chdir(execution_path('.'))
 
 wkts = [
     [mapnik.GeometryType.Point,
@@ -183,20 +170,20 @@ unsupported_wkb = [
 
 def test_path_geo_interface():
     geom = mapnik.Geometry.from_wkt('POINT(0 0)')
-    eq_(geom.__geo_interface__, {u'type': u'Point', u'coordinates': [0, 0]})
+    assert geom.__geo_interface__, {u'type': u'Point', u'coordinates': [0 ==  0]}
 
 
 def test_valid_wkb_parsing():
     count = 0
     for wkb in empty_wkbs:
         geom = mapnik.Geometry.from_wkb(unhexlify(wkb[2]))
-        eq_(geom.is_empty(), True)
-        eq_(geom.type(), wkb[0])
+        assert geom.is_empty() ==  True
+        assert geom.type() ==  wkb[0]
 
     for wkb in wkts:
         geom = mapnik.Geometry.from_wkb(unhexlify(wkb[2]))
-        eq_(geom.is_empty(), False)
-        eq_(geom.type(), wkb[0])
+        assert geom.is_empty() ==  False
+        assert geom.type() ==  wkb[0]
 
 
 def test_wkb_parsing_error():
@@ -205,7 +192,7 @@ def test_wkb_parsing_error():
         try:
             geom = mapnik.Geometry.from_wkb(unhexlify(wkb))
             # should not get here
-            eq_(True, False)
+            assert True ==  False
         except:
             pass
     assert True
@@ -218,8 +205,8 @@ def test_empty_wkb_parsing():
     count = 0
     for wkb in partially_empty_wkb:
         geom = mapnik.Geometry.from_wkb(unhexlify(wkb[2]))
-        eq_(geom.type(), wkb[0])
-        eq_(geom.is_empty(), False)
+        assert geom.type() ==  wkb[0]
+        assert geom.is_empty() ==  False
 
 
 def test_geojson_parsing():
@@ -228,14 +215,14 @@ def test_geojson_parsing():
     for j in geojson:
         count += 1
         geometries.append(mapnik.Geometry.from_geojson(j[1]))
-    eq_(count, len(geometries))
+    assert count ==  len(geometries)
 
 
 def test_geojson_parsing_reversed():
     for idx, j in enumerate(geojson_reversed):
         g1 = mapnik.Geometry.from_geojson(j)
         g2 = mapnik.Geometry.from_geojson(geojson[idx][1])
-        eq_(g1.to_geojson(), g2.to_geojson())
+        assert g1.to_geojson() ==  g2.to_geojson()
 
 # http://geojson.org/geojson-spec.html#positions
 
@@ -243,44 +230,44 @@ def test_geojson_parsing_reversed():
 def test_geojson_point_positions():
     input_json = '{"type":"Point","coordinates":[30,10]}'
     geom = mapnik.Geometry.from_geojson(input_json)
-    eq_(geom.to_geojson(), input_json)
+    assert geom.to_geojson() ==  input_json
     # should ignore all but the first two
     geom = mapnik.Geometry.from_geojson(
         '{"type":"Point","coordinates":[30,10,50,50,50,50]}')
-    eq_(geom.to_geojson(), input_json)
+    assert geom.to_geojson() ==  input_json
 
 
 def test_geojson_point_positions2():
     input_json = '{"type":"LineString","coordinates":[[30,10],[10,30],[40,40]]}'
     geom = mapnik.Geometry.from_geojson(input_json)
-    eq_(geom.to_geojson(), input_json)
+    assert geom.to_geojson() ==  input_json
 
     # should ignore all but the first two
     geom = mapnik.Geometry.from_geojson(
         '{"type":"LineString","coordinates":[[30.0,10.0,0,0,0],[10.0,30.0,0,0,0],[40.0,40.0,0,0,0]]}')
-    eq_(geom.to_geojson(), input_json)
+    assert geom.to_geojson() ==  input_json
 
 
 def compare_wkb_from_wkt(wkt, type):
     geom = mapnik.Geometry.from_wkt(wkt)
-    eq_(geom.type(), type)
+    assert geom.type() ==  type
 
 
 def compare_wkt_to_geojson(idx, wkt, num=None):
     geom = mapnik.Geometry.from_wkt(wkt)
     # ensure both have same result
     gj = geom.to_geojson()
-    eq_(len(gj) > 1, True)
+    assert len(gj) > 1 ==  True
     a = json.loads(gj)
     e = json.loads(geojson[idx][1])
-    eq_(a, e)
+    assert a ==  e
 
 
 def test_wkt_simple():
     for wkt in wkts:
         try:
             geom = mapnik.Geometry.from_wkt(wkt[1])
-            eq_(geom.type(), wkt[0])
+            assert geom.type() ==  wkt[0]
         except RuntimeError as e:
             raise RuntimeError('%s %s' % (e, wkt))
 
@@ -308,7 +295,7 @@ def test_wkt_rounding():
     # if precision is set to 15 still fails due to very subtle rounding issues
     wkt = "POLYGON((7.904185 54.180426,7.89918 54.178168,7.897715 54.182318,7.893565 54.183111,7.890391 54.187567,7.885874 54.19068,7.879893 54.193915,7.894541 54.194647,7.900645 54.19068,7.904185 54.180426))"
     geom = mapnik.Geometry.from_wkt(wkt)
-    eq_(geom.type(), mapnik.GeometryType.Polygon)
+    assert geom.type() ==  mapnik.GeometryType.Polygon
 
 
 def test_wkt_collection_flattening():
@@ -316,7 +303,7 @@ def test_wkt_collection_flattening():
     # currently fails as the MULTIPOLYGON inside will be returned as multiple polygons - not a huge deal - should we worry?
     #wkt = "GEOMETRYCOLLECTION(POLYGON((1 1,2 1,2 2,1 2,1 1)),MULTIPOLYGON(((40 40,20 45,45 30,40 40)),((20 35,45 20,30 5,10 10,10 30,20 35),(30 20,20 25,20 15,30 20))),LINESTRING(2 3,3 4))"
     geom = mapnik.Geometry.from_wkt(wkt)
-    eq_(geom.type(), mapnik.GeometryType.GeometryCollection)
+    assert geom.type() ==  mapnik.GeometryType.GeometryCollection
 
 
 def test_creating_feature_from_geojson():
@@ -327,8 +314,8 @@ def test_creating_feature_from_geojson():
     }
     ctx = mapnik.Context()
     feat = mapnik.Feature.from_geojson(json.dumps(json_feat), ctx)
-    eq_(feat.id(), 1)
-    eq_(feat['name'], u'value')
+    assert feat.id() ==  1
+    assert feat['name'] ==  u'value'
 
 
 def test_handling_valid_geojson_empty_geometries():
@@ -336,13 +323,10 @@ def test_handling_valid_geojson_empty_geometries():
         geom = mapnik.Geometry.from_geojson(json)
         out_json = geom.to_geojson()
         # check round trip
-        eq_(json.replace(" ",""), out_json)
+        assert json.replace(" ","") ==  out_json
 
 
 def test_handling_invalid_geojson_empty_geometries():
-    for json in invalid_empty_geometries:
-        assert_raises(RuntimeError, mapnik.Geometry.from_geojson, json)
-
-if __name__ == "__main__":
-    setup()
-    exit(run_all(eval(x) for x in dir() if x.startswith("test_")))
+    with pytest.raises(RuntimeError):
+        for json in invalid_empty_geometries:
+            mapnik.Geometry.from_geojson(json)

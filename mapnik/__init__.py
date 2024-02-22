@@ -108,7 +108,7 @@ class Envelope(Box2d):
         Box2d.__init__(self, *args, **kwargs)
 
 
-class _Coord(Coord, _injector()):
+class Coord(_mapnik.Coord, _injector()):
     """
     Represents a point with two coordinates (either lon/lat or x/y).
 
@@ -183,7 +183,7 @@ class _Coord(Coord, _injector()):
         return inverse_(self, projection)
 
 
-class _Box2d(Box2d, _injector()):
+class Box2d(_mapnik.Box2d, _injector()):
     """
     Represents a spatial envelope (i.e. bounding box).
 
@@ -238,7 +238,7 @@ class _Box2d(Box2d, _injector()):
         return inverse_(self, projection)
 
 
-class _Projection(Projection, _injector()):
+class Projection(_mapnik.Projection, _injector()):
 
     def __repr__(self):
         return "Projection('%s')" % self.params()
@@ -266,15 +266,15 @@ class _Projection(Projection, _injector()):
         return inverse_(obj, self)
 
 
-class _Feature(Feature, _injector()):
+class Feature(_mapnik.Feature, _injector()):
     __geo_interface__ = property(lambda self: json.loads(self.to_geojson()))
 
 
-class _Geometry(Geometry, _injector()):
+class Geometry(_mapnik.Geometry, _injector()):
     __geo_interface__ = property(lambda self: json.loads(self.to_geojson()))
 
 
-class _Datasource(Datasource, _injector()):
+class Datasource(_mapnik.Datasource, _injector()):
 
     def featureset(self, fields = None, variables = {}):
         query = Query(self.envelope())
@@ -291,13 +291,13 @@ class _Datasource(Datasource, _injector()):
         return self.__iter__(fields, variables)
 
 
-class _Color(Color, _injector()):
+class Color(_mapnik.Color, _injector()):
 
     def __repr__(self):
         return "Color(R=%d,G=%d,B=%d,A=%d)" % (self.r, self.g, self.b, self.a)
 
 
-class _SymbolizerBase(SymbolizerBase, _injector()):
+class SymbolizerBase(_mapnik.SymbolizerBase, _injector()):
     # back compatibility
 
     @property
@@ -804,7 +804,7 @@ class PythonDatasource(object):
         return itertools.imap(make_it, features, itertools.count(1))
 
 
-class _TextSymbolizer(TextSymbolizer, _injector()):
+class TextSymbolizer(_mapnik.TextSymbolizer, _injector()):
 
     @property
     def name(self):

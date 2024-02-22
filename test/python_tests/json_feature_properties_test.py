@@ -1,11 +1,4 @@
-# encoding: utf8
-
-from nose.tools import eq_
-
 import mapnik
-
-from .utilities import run_all
-
 try:
     import json
 except ImportError:
@@ -83,30 +76,20 @@ chars = [
 ctx = mapnik.Context()
 ctx.push('name')
 
-
 def test_char_escaping():
     for char in chars:
         feat = mapnik.Feature(ctx, 1)
         expected = char['test']
         feat["name"] = expected
-        eq_(feat["name"], expected)
+        assert feat["name"] ==  expected
         # confirm the python json module
         # is working as we would expect
         pyjson2 = json.loads(char['json'])
-        eq_(pyjson2['properties']['name'], expected)
+        assert pyjson2['properties']['name'] ==  expected
         # confirm our behavior is the same as python json module
         # for the original string
         geojson_feat_string = feat.to_geojson()
-        eq_(
-            geojson_feat_string,
-            char['json'],
-            "Mapnik's json escaping is not to spec: actual(%s) and expected(%s) for %s" %
-            (geojson_feat_string,
-             char['json'],
-                char['name']))
+        assert  geojson_feat_string ==  char['json'], "Mapnik's json escaping is not to spec: actual(%s) and expected(%s) for %s" % (geojson_feat_string, char['json'], char['name'])
         # and the round tripped string
         pyjson = json.loads(geojson_feat_string)
-        eq_(pyjson['properties']['name'], expected)
-
-if __name__ == "__main__":
-    exit(run_all(eval(x) for x in dir() if x.startswith("test_")))
+        assert pyjson['properties']['name'] ==  expected

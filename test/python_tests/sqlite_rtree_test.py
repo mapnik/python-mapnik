@@ -1,26 +1,22 @@
-#!/usr/bin/env python
 import os
 import sqlite3
 import sys
 import threading
-
-from nose.tools import eq_
-
 import mapnik
-
-from .utilities import execution_path, run_all
-
-PYTHON3 = sys.version_info[0] == 3
+import pytest
+from .utilities import execution_path
 
 
+@pytest.fixture(scope="module")
 def setup():
     # All of the paths used are relative, if we run the tests
     # from another directory we need to chdir()
     os.chdir(execution_path('.'))
+    yield
+
 
 NUM_THREADS = 10
 TOTAL = 245
-
 
 def create_ds(test_db, table):
     ds = mapnik.SQLite(file=test_db, table=table)
@@ -29,7 +25,7 @@ def create_ds(test_db, table):
 
 if 'sqlite' in mapnik.DatasourceCache.plugin_names():
 
-    def test_rtree_creation():
+    def test_rtree_creation(setup):
         test_db = '../data/sqlite/world.sqlite'
         index = test_db + '.index'
         table = 'world_merc'
@@ -46,7 +42,7 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         for i in threads:
             i.join()
 
-        eq_(os.path.exists(index), True)
+        assert os.path.exists(index)
         conn = sqlite3.connect(index)
         cur = conn.cursor()
         try:
@@ -55,7 +51,7 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
                 table.replace(
                     "'", ""))
             conn.commit()
-            eq_(cur.fetchone()[0], TOTAL)
+            assert cur.fetchone()[0] == TOTAL
         except sqlite3.OperationalError:
             # don't worry about testing # of index records if
             # python's sqlite module does not support rtree
@@ -66,13 +62,13 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.SQLite(file=test_db, table=table)
         fs = list(ds.all_features())
         del ds
-        eq_(len(fs), TOTAL)
+        assert len(fs) == TOTAL
         os.unlink(index)
         ds = mapnik.SQLite(file=test_db, table=table, use_spatial_index=False)
         fs = list(ds.all_features())
         del ds
-        eq_(len(fs), TOTAL)
-        eq_(os.path.exists(index), False)
+        assert len(fs) == TOTAL
+        assert os.path.exists(index) ==  False
 
         ds = mapnik.SQLite(file=test_db, table=table, use_spatial_index=True)
         fs = list(ds.all_features())
@@ -82,10 +78,10 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         # for feat in fs:
         #    query = mapnik.Query(feat.envelope())
         #    selected = ds.features(query)
-        #    eq_(len(selected.features)>=1,True)
+        #    assert len(selected.features)>=1 == True
         del ds
 
-        eq_(os.path.exists(index), True)
+        assert os.path.exists(index) ==  True
         os.unlink(index)
 
     test_rtree_creation.requires_data = True
@@ -148,17 +144,17 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
 
         # confirm the wkb matches a manually formed wkb
         wkb2 = make_wkb_point(x, y)
-        eq_(wkb, wkb2)
+        assert wkb ==  wkb2
 
         # ensure we can read this data back out properly with mapnik
         ds = mapnik.Datasource(
             **{'type': 'sqlite', 'file': test_db, 'table': 'point_table'})
         fs = ds.featureset()
         feat = fs.next()
-        eq_(feat.id(), 1)
-        eq_(feat['name'], 'test point')
+        assert feat.id() ==  1
+        assert feat['name'] == 'test point'
         geom = feat.geometry
-        eq_(geom.to_wkt(), 'POINT(-122 48)')
+        assert geom.to_wkt() == 'POINT(-122 48)'
         del ds
 
         # ensure it matches data read with just sqlite
@@ -169,19 +165,12 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         result = cur.fetchone()
         cur.close()
         feat_id = result[0]
-        eq_(feat_id, 1)
+        assert feat_id ==  1
         name = result[2]
-        eq_(name, 'test point')
+        assert name ==  'test point'
         geom_wkb_blob = result[1]
-        if not PYTHON3:
-            geom_wkb_blob = str(geom_wkb_blob)
-        eq_(geom_wkb_blob, geom.to_wkb(mapnik.wkbByteOrder.NDR))
+        assert geom_wkb_blob == geom.to_wkb(mapnik.wkbByteOrder.NDR)
         new_geom = mapnik.Geometry.from_wkb(geom_wkb_blob)
-        eq_(new_geom.to_wkt(), geom.to_wkt())
+        assert new_geom.to_wkt() == geom.to_wkt()
         conn.close()
         os.unlink(test_db)
-
-if __name__ == "__main__":
-    setup()
-    returncode = run_all(eval(x) for x in dir() if x.startswith("test_"))
-    exit(returncode)

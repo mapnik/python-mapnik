@@ -1,27 +1,28 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import os
-
 import mapnik
+import pytest
+from .utilities import execution_path
 
-from .utilities import execution_path, run_all
-
-
+@pytest.fixture(scope="module")
 def setup():
     # All of the paths used are relative, if we run the tests
     # from another directory we need to chdir()
     os.chdir(execution_path('.'))
+    yield
 
-
-def test_datasource_template_is_working():
+def test_datasource_template_is_working(setup):
     m = mapnik.Map(256, 256)
-    try:
-        mapnik.load_map(m, '../data/good_maps/datasource.xml')
-    except RuntimeError as e:
-        if "Required parameter 'type'" in str(e):
-            raise RuntimeError(e)
-
-if __name__ == "__main__":
-    setup()
-    exit(run_all(eval(x) for x in dir() if x.startswith("test_")))
+    mapnik.load_map(m, '../data/good_maps/datasource.xml')
+    for layer in m.layers:
+        layer_bbox = layer.envelope()
+        bbox = None
+        first = True
+        for feature in layer.datasource:
+            assert feature.envelope() == feature.geometry.envelope()
+            assert layer_bbox.contains(feature.envelope())
+            if first:
+                first = False
+                bbox = feature.envelope()
+            else:
+                bbox += feature.envelope()
+        assert layer_bbox == bbox

@@ -1,77 +1,62 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-import os
-import sys
+import sys, os
 import tempfile
-
-from nose.tools import eq_, raises
-
 import mapnik
+import pytest
+from .utilities import execution_path
 
-from .utilities import execution_path, run_all
-
-PYTHON3 = sys.version_info[0] == 3
-
-
+@pytest.fixture(scope="module")
 def setup():
     # All of the paths used are relative, if we run the tests
     # from another directory we need to chdir()
     os.chdir(execution_path('.'))
+    yield
 
-
-def test_simplest_render():
+def test_simplest_render(setup):
     m = mapnik.Map(256, 256)
     im = mapnik.Image(m.width, m.height)
-    eq_(im.painted(), False)
-    eq_(im.is_solid(), True)
+    assert not im.painted()
+    assert im.is_solid()
     mapnik.render(m, im)
-    eq_(im.painted(), False)
-    eq_(im.is_solid(), True)
+    assert not im.painted()
+    assert im.is_solid()
     s = im.tostring()
-    if PYTHON3:
-        eq_(s, 256 * 256 * b'\x00\x00\x00\x00')
-    else:
-        eq_(s, 256 * 256 * '\x00\x00\x00\x00')
+    assert s ==  256 * 256 * b'\x00\x00\x00\x00'
 
 
 def test_render_image_to_string():
     im = mapnik.Image(256, 256)
     im.fill(mapnik.Color('black'))
-    eq_(im.painted(), False)
-    eq_(im.is_solid(), True)
+    assert not im.painted()
+    assert im.is_solid()
     s = im.tostring()
-    if PYTHON3:
-        eq_(s, 256 * 256 * b'\x00\x00\x00\xff')
-    else:
-        eq_(s, 256 * 256 * '\x00\x00\x00\xff')
+    assert s ==  256 * 256 * b'\x00\x00\x00\xff'
 
 
 def test_non_solid_image():
     im = mapnik.Image(256, 256)
     im.fill(mapnik.Color('black'))
-    eq_(im.painted(), False)
-    eq_(im.is_solid(), True)
+    assert not im.painted()
+    assert im.is_solid()
     # set one pixel to a different color
     im.set_pixel(0, 0, mapnik.Color('white'))
-    eq_(im.painted(), False)
-    eq_(im.is_solid(), False)
+    assert not im.painted()
+    assert not im.is_solid()
 
 
 def test_non_solid_image_view():
     im = mapnik.Image(256, 256)
     im.fill(mapnik.Color('black'))
     view = im.view(0, 0, 256, 256)
-    eq_(view.is_solid(), True)
+    assert view.is_solid()
     # set one pixel to a different color
     im.set_pixel(0, 0, mapnik.Color('white'))
-    eq_(im.is_solid(), False)
+    assert not im.is_solid()
     # view, since it is the exact dimensions of the image
     # should also be non-solid
-    eq_(view.is_solid(), False)
+    assert not view.is_solid()
     # but not a view that excludes the single diff pixel
     view2 = im.view(1, 1, 256, 256)
-    eq_(view2.is_solid(), True)
+    assert view2.is_solid()
 
 
 def test_setting_alpha():
@@ -80,16 +65,16 @@ def test_setting_alpha():
     # white, half transparent
     c1 = mapnik.Color('rgba(255,255,255,.5)')
     im1.fill(c1)
-    eq_(im1.painted(), False)
-    eq_(im1.is_solid(), True)
+    assert not im1.painted()
+    assert im1.is_solid()
     # pure white
     im2 = mapnik.Image(w, h)
     c2 = mapnik.Color('rgba(255,255,255,1)')
     im2.fill(c2)
     im2.apply_opacity(c1.a / 255.0)
-    eq_(im2.painted(), False)
-    eq_(im2.is_solid(), True)
-    eq_(len(im1.tostring('png32')), len(im2.tostring('png32')))
+    assert not im2.painted()
+    assert im2.is_solid()
+    assert len(im1.tostring('png32')) ==  len(im2.tostring('png32'))
 
 
 def test_render_image_to_file():
@@ -129,11 +114,11 @@ def test_render_from_serialization():
     try:
         im, im2 = get_paired_images(
             100, 100, '../data/good_maps/building_symbolizer.xml')
-        eq_(im.tostring('png32'), im2.tostring('png32'))
+        assert im.tostring('png32') ==  im2.tostring('png32')
 
         im, im2 = get_paired_images(
             100, 100, '../data/good_maps/polygon_symbolizer.xml')
-        eq_(im.tostring('png32'), im2.tostring('png32'))
+        assert im.tostring('png32') ==  im2.tostring('png32')
     except RuntimeError as e:
         # only test datasources that we have installed
         if not 'Could not create datasource' in str(e):
@@ -198,21 +183,14 @@ def test_render_points():
         with open(svg_file, 'r') as f:
             svg = f.read()
         num_points_rendered = svg.count('<image ')
-        eq_(
-            num_points_present,
-            num_points_rendered,
-            "Not all points were rendered (%d instead of %d) at projection %s" %
-            (num_points_rendered,
-             num_points_present,
-             projdescr))
+        assert  num_points_present == num_points_rendered, "Not all points were rendered (%d instead of %d) at projection %s" % (num_points_rendered, num_points_present, projdescr)
 
 
-@raises(RuntimeError)
 def test_render_with_scale_factor_zero_throws():
-    m = mapnik.Map(256, 256)
-    im = mapnik.Image(256, 256)
-    mapnik.render(m, im, 0.0)
-
+    with pytest.raises(RuntimeError):
+        m = mapnik.Map(256, 256)
+        im = mapnik.Image(256, 256)
+        mapnik.render(m, im, 0.0) #should throw
 
 def test_render_with_detector():
     ds = mapnik.MemoryDatasource()
@@ -234,27 +212,24 @@ def test_render_with_detector():
     m.zoom_to_box(mapnik.Box2d(-180, -85, 180, 85))
     im = mapnik.Image(256, 256)
     mapnik.render(m, im)
-    expected_file = './images/support/marker-in-center.png'
+    expected_file = 'images/support/marker-in-center.png'
     actual_file = '/tmp/' + os.path.basename(expected_file)
     # im.save(expected_file,'png8')
     im.save(actual_file, 'png8')
     actual = mapnik.Image.open(expected_file)
     expected = mapnik.Image.open(expected_file)
-    eq_(actual.tostring('png32'),
-        expected.tostring('png32'),
-        'failed comparing actual (%s) and expected (%s)' % (actual_file,
-                                                            expected_file))
+    assert actual.tostring('png32') == expected.tostring('png32'), 'failed comparing actual (%s) and expected (%s)' % (actual_file, expected_file)
     # now render will a collision detector that should
     # block out the placement of this point
     detector = mapnik.LabelCollisionDetector(m)
-    eq_(detector.extent(), mapnik.Box2d(-0.0, -0.0, m.width, m.height))
-    eq_(detector.extent(), mapnik.Box2d(-0.0, -0.0, 256.0, 256.0))
-    eq_(detector.boxes(), [])
+    assert detector.extent(), mapnik.Box2d(-0.0, -0.0, m.width ==  m.height)
+    assert detector.extent(), mapnik.Box2d(-0.0, -0.0, 256.0 ==  256.0)
+    assert detector.boxes() ==  []
     detector.insert(detector.extent())
-    eq_(detector.boxes(), [detector.extent()])
+    assert detector.boxes() ==  [detector.extent()]
     im2 = mapnik.Image(256, 256)
     mapnik.render_with_detector(m, im2, detector)
-    expected_file_collision = './images/support/marker-in-center-not-placed.png'
+    expected_file_collision = 'images/support/marker-in-center-not-placed.png'
     # im2.save(expected_file_collision,'png8')
     actual_file = '/tmp/' + os.path.basename(expected_file_collision)
     im2.save(actual_file, 'png8')
@@ -270,7 +245,7 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
         for size in sizes:
             im = mapnik.Image(256, 256)
             mapnik.render(m, im, size)
-            expected_file = './images/support/marker-text-line-scale-factor-%s.png' % size
+            expected_file = 'images/support/marker-text-line-scale-factor-%s.png' % size
             actual_file = '/tmp/' + os.path.basename(expected_file)
             im.save(actual_file, 'png32')
             if os.environ.get('UPDATE'):
@@ -279,11 +254,4 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
             # color png
             actual = mapnik.Image.open(actual_file)
             expected = mapnik.Image.open(expected_file)
-            eq_(actual.tostring('png32'),
-                expected.tostring('png32'),
-                'failed comparing actual (%s) and expected (%s)' % (actual_file,
-                                                                    expected_file))
-
-if __name__ == "__main__":
-    setup()
-    exit(run_all(eval(x) for x in dir() if x.startswith("test_")))
+            assert actual.tostring('png32') == expected.tostring('png32'), 'failed comparing actual (%s) and expected (%s)' % (actual_file, expected_file)

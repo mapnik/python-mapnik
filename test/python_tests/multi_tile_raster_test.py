@@ -1,21 +1,17 @@
-#!/usr/bin/env python
-
 import os
-
-from nose.tools import eq_
-
 import mapnik
+import pytest
+from .utilities import execution_path
 
-from .utilities import execution_path, run_all
-
-
+@pytest.fixture(scope="module")
 def setup():
     # All of the paths used are relative, if we run the tests
     # from another directory we need to chdir()
     os.chdir(execution_path('.'))
+    yield
 
 
-def test_multi_tile_policy():
+def test_multi_tile_policy(setup):
     srs = 'epsg:4326'
     lyr = mapnik.Layer('raster')
     if 'raster' in mapnik.DatasourceCache.plugin_names():
@@ -46,29 +42,25 @@ def test_multi_tile_policy():
         mapnik.render(_map, im)
 
         # test green chunk
-        eq_(im.view(0, 64, 1, 1).tostring(), b'\x00\xff\x00\xff')
-        eq_(im.view(127, 64, 1, 1).tostring(), b'\x00\xff\x00\xff')
-        eq_(im.view(0, 127, 1, 1).tostring(), b'\x00\xff\x00\xff')
-        eq_(im.view(127, 127, 1, 1).tostring(), b'\x00\xff\x00\xff')
+        assert im.view(0, 64, 1, 1).tostring() ==  b'\x00\xff\x00\xff'
+        assert im.view(127, 64, 1, 1).tostring() ==  b'\x00\xff\x00\xff'
+        assert im.view(0, 127, 1, 1).tostring() ==  b'\x00\xff\x00\xff'
+        assert im.view(127, 127, 1, 1).tostring() ==  b'\x00\xff\x00\xff'
 
         # test blue chunk
-        eq_(im.view(128, 64, 1, 1).tostring(), b'\x00\x00\xff\xff')
-        eq_(im.view(255, 64, 1, 1).tostring(), b'\x00\x00\xff\xff')
-        eq_(im.view(128, 127, 1, 1).tostring(), b'\x00\x00\xff\xff')
-        eq_(im.view(255, 127, 1, 1).tostring(), b'\x00\x00\xff\xff')
+        assert im.view(128, 64, 1, 1).tostring() ==  b'\x00\x00\xff\xff'
+        assert im.view(255, 64, 1, 1).tostring() ==  b'\x00\x00\xff\xff'
+        assert im.view(128, 127, 1, 1).tostring() ==  b'\x00\x00\xff\xff'
+        assert im.view(255, 127, 1, 1).tostring() ==  b'\x00\x00\xff\xff'
 
         # test red chunk
-        eq_(im.view(0, 128, 1, 1).tostring(), b'\xff\x00\x00\xff')
-        eq_(im.view(127, 128, 1, 1).tostring(), b'\xff\x00\x00\xff')
-        eq_(im.view(0, 191, 1, 1).tostring(), b'\xff\x00\x00\xff')
-        eq_(im.view(127, 191, 1, 1).tostring(), b'\xff\x00\x00\xff')
+        assert im.view(0, 128, 1, 1).tostring() ==  b'\xff\x00\x00\xff'
+        assert im.view(127, 128, 1, 1).tostring() ==  b'\xff\x00\x00\xff'
+        assert im.view(0, 191, 1, 1).tostring() ==  b'\xff\x00\x00\xff'
+        assert im.view(127, 191, 1, 1).tostring() ==  b'\xff\x00\x00\xff'
 
         # test magenta chunk
-        eq_(im.view(128, 128, 1, 1).tostring(), b'\xff\x00\xff\xff')
-        eq_(im.view(255, 128, 1, 1).tostring(), b'\xff\x00\xff\xff')
-        eq_(im.view(128, 191, 1, 1).tostring(), b'\xff\x00\xff\xff')
-        eq_(im.view(255, 191, 1, 1).tostring(), b'\xff\x00\xff\xff')
-
-if __name__ == "__main__":
-    setup()
-    exit(run_all(eval(x) for x in dir() if x.startswith("test_")))
+        assert im.view(128, 128, 1, 1).tostring() ==  b'\xff\x00\xff\xff'
+        assert im.view(255, 128, 1, 1).tostring() ==  b'\xff\x00\xff\xff'
+        assert im.view(128, 191, 1, 1).tostring() ==  b'\xff\x00\xff\xff'
+        assert im.view(255, 191, 1, 1).tostring() ==  b'\xff\x00\xff\xff'
