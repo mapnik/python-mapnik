@@ -107,30 +107,23 @@ os.environ['ARCHFLAGS'] = ''
 if os.environ.get("MASON_BUILD", "false") == "true":
     # run bootstrap.sh to get mason builds
     subprocess.call(['./bootstrap.sh'])
-    mapnik_config = 'mason_packages/.link/bin/mapnik-config'
     mason_build = True
 else:
-    mapnik_config = 'mapnik-config'
     mason_build = False
 
 
 linkflags = []
-lib_path = os.path.join(check_output([mapnik_config, '--prefix']),'lib')
-linkflags.extend(check_output([mapnik_config, '--libs']).split(' '))
-linkflags.extend(check_output([mapnik_config, '--ldflags']).split(' '))
-linkflags.extend(check_output([mapnik_config, '--dep-libs']).split(' '))
-linkflags.extend([
-'-lmapnik-wkt',
-'-lmapnik-json',
-] + ['-l%s' % i for i in get_boost_library_names()])
+lib_path = os.path.join(check_output(['pkg-config', '--variable=prefix', 'libmapnik']),'lib')
+linkflags.extend(check_output(['pkg-config', '--libs', 'libmapnik']).split(' '))
+linkflags.extend(['-l%s' % i for i in get_boost_library_names()])
 
 # Dynamically make the mapnik/paths.py file
 f_paths = open('mapnik/paths.py', 'w')
 f_paths.write('import os\n')
 f_paths.write('\n')
 
-input_plugin_path = check_output([mapnik_config, '--input-plugins'])
-font_path = check_output([mapnik_config, '--fonts'])
+input_plugin_path = check_output(['pkg-config', '--variable=plugins_dir', 'libmapnik'])
+font_path = check_output(['pkg-config', '--variable=fonts_dir', 'libmapnik'])
 
 if mason_build:
     try:
@@ -225,7 +218,7 @@ if mason_build:
         except shutil.Error:
             pass
 
-extra_comp_args = check_output([mapnik_config, '--cflags']).split(' ')
+extra_comp_args = check_output(['pkg-config', '--cflags', 'libmapnik']).split(' ')
 
 extra_comp_args = list(filter(lambda arg: arg != "-fvisibility=hidden", extra_comp_args))
 
@@ -253,9 +246,12 @@ else:
     linkflags.append('-Wl,-rpath=$ORIGIN/lib')
 
 if os.environ.get("CC", False) == False:
-    os.environ["CC"] = check_output([mapnik_config, '--cxx'])
+    os.environ["CC"] = 'c++'
 if os.environ.get("CXX", False) == False:
-    os.environ["CXX"] = check_output([mapnik_config, '--cxx'])
+    os.environ["CXX"] = 'c++'
+
+extra_comp_args = list(filter(lambda arg: arg != "", extra_comp_args))
+linkflags = list(filter(lambda arg: arg != "", linkflags))
 
 setup(
     name="mapnik",
