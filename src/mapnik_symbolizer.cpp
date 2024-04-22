@@ -34,6 +34,7 @@
 #include <mapnik/symbolizer_hash.hpp>
 #include <mapnik/symbolizer_utils.hpp>
 #include <mapnik/symbolizer_keys.hpp>
+#include <mapnik/symbolizer_enumerations.hpp>
 #include <mapnik/image_util.hpp>
 #include <mapnik/parse_path.hpp>
 #include <mapnik/path_expression.hpp>
@@ -46,6 +47,7 @@
 #include <mapnik/group/group_rule.hpp>
 #include <mapnik/group/group_symbolizer_properties.hpp>
 #include <mapnik/util/variant.hpp>
+#include <mapnik/text/placements/dummy.hpp>
 
 using mapnik::symbolizer;
 using mapnik::point_symbolizer;
@@ -56,6 +58,7 @@ using mapnik::polygon_pattern_symbolizer;
 using mapnik::raster_symbolizer;
 using mapnik::shield_symbolizer;
 using mapnik::text_symbolizer;
+using mapnik::text_placements_dummy;
 using mapnik::building_symbolizer;
 using mapnik::markers_symbolizer;
 using mapnik::debug_symbolizer;
@@ -145,10 +148,10 @@ private:
 };
 
 using namespace boost::python;
-void __setitem__(mapnik::symbolizer_base & sym, std::string const& name, mapnik::symbolizer_base::value_type const& val)
-{
-    mapnik::util::apply_visitor(value_to_target(sym, name), val);
-}
+//void __setitem__(mapnik::symbolizer_base & sym, std::string const& name, mapnik::symbolizer_base::value_type const& val)
+//{
+//    mapnik::util::apply_visitor(value_to_target(sym, name), val);
+//}
 
 std::shared_ptr<mapnik::symbolizer_base::value_type> numeric_wrapper(const object& arg)
 {
@@ -182,6 +185,7 @@ struct extract_python_object
     }
 };
 
+/*
 boost::python::object __getitem__(mapnik::symbolizer_base const& sym, std::string const& name)
 {
     using const_iterator = symbolizer_base::cont_type::const_iterator;
@@ -195,6 +199,7 @@ boost::python::object __getitem__(mapnik::symbolizer_base const& sym, std::strin
     //return mapnik::util::apply_visitor(extract_python_object(), std::get<1>(meta));
     return boost::python::object();
 }
+*/
 
 boost::python::object symbolizer_keys(mapnik::symbolizer_base const& sym)
 {
@@ -243,6 +248,29 @@ boost::python::object extract_underlying_type(symbolizer const& sym)
     return mapnik::util::apply_visitor(extract_underlying_type_visitor(), sym);
 }
 
+// text symbolizer
+mapnik::text_placements_ptr get_placement_finder(text_symbolizer const& sym)
+{
+    return mapnik::get<mapnik::text_placements_ptr>(sym, mapnik::keys::text_placements_);
+}
+
+void set_placement_finder(text_symbolizer & sym, std::shared_ptr<text_placements_dummy> const& finder)
+{
+    mapnik::put<mapnik::text_placements_ptr>(sym, mapnik::keys::text_placements_, finder);
+}
+
+template <typename Value, auto Key>
+auto get(symbolizer_base const& sym) -> Value
+{
+    return mapnik::get<Value>(sym, Key);
+}
+
+template <typename Value, auto Key>
+void set(symbolizer_base & sym, Value const& val)
+{
+    mapnik::put<Value>(sym, Key, val);
+}
+
 }
 
 void export_symbolizer()
@@ -258,6 +286,7 @@ void export_symbolizer()
     implicitly_convertible<mapnik::path_expression_ptr, mapnik::symbolizer_base::value_type>();
     implicitly_convertible<mapnik::enumeration_wrapper, mapnik::symbolizer_base::value_type>();
     implicitly_convertible<std::shared_ptr<mapnik::group_symbolizer_properties>, mapnik::symbolizer_base::value_type>();
+    implicitly_convertible<std::shared_ptr<text_placements_dummy>, mapnik::symbolizer_base::value_type>();
 
     enum_<mapnik::keys>("keys")
         .value("gamma", mapnik::keys::gamma)
@@ -275,10 +304,10 @@ void export_symbolizer()
         ;
 
     class_<symbolizer_base>("SymbolizerBase",no_init)
-        .def("__setitem__",&__setitem__)
-        .def("__setattr__",&__setitem__)
-        .def("__getitem__",&__getitem__)
-        .def("__getattr__",&__getitem__)
+        //.def("__setitem__",&__setitem__)
+        //.def("__setattr__",&__setitem__)
+        //.def("__getitem__",&__getitem__)
+        //.def("__getattr__",&__getitem__)
         .def("keys", &symbolizer_keys)
         //.def("__str__", &__str__)
         .def(self == self) // __eq__
@@ -322,9 +351,9 @@ void export_text_symbolizer()
         .value("FULL", mapnik::halo_rasterizer_enum::HALO_RASTERIZER_FULL)
         .value("FAST", mapnik::halo_rasterizer_enum::HALO_RASTERIZER_FAST);
 
-    class_< text_symbolizer, bases<symbolizer_base> >("TextSymbolizer",
-                                                      init<>("Default ctor"))
+    class_<text_symbolizer>("TextSymbolizer", init<>("Default ctor"))
         .def("__hash__",hash_impl_2<text_symbolizer>)
+        .add_property("placement_finder", &get_placement_finder, &set_placement_finder, "Placement finder")
         ;
 
 }
@@ -344,8 +373,11 @@ void export_polygon_symbolizer()
     using namespace boost::python;
 
     class_<polygon_symbolizer, bases<symbolizer_base> >("PolygonSymbolizer",
-                                                        init<>("Default ctor"))
+                               init<>("Default ctor"))
         .def("__hash__",hash_impl_2<polygon_symbolizer>)
+        .add_property("fill",
+                      &get<mapnik::color, mapnik::keys::fill>,
+                      &set<mapnik::color, mapnik::keys::fill>, "Fill color")
         ;
 
 }
@@ -411,6 +443,36 @@ void export_markers_symbolizer()
         ;
 }
 
+namespace {
+
+std::string get_stroke_dasharray(mapnik::symbolizer_base & sym)
+{
+    auto dash = mapnik::get<mapnik::dash_array>(sym, mapnik::keys::stroke_dasharray);
+
+    std::ostringstream os;
+    for (std::size_t i = 0; i < dash.size(); ++i)
+    {
+        os << dash[i].first << "," << dash[i].second;
+        if (i + 1 < dash.size())
+            os << ",";
+    }
+    return os.str();
+}
+
+void set_stroke_dasharray(mapnik::symbolizer_base & sym, std::string str)
+{
+    mapnik::dash_array dash;
+    if (mapnik::util::parse_dasharray(str, dash))
+    {
+        mapnik::put(sym, mapnik::keys::stroke_dasharray, dash);
+    }
+    else
+    {
+        throw std::runtime_error("Can't parse dasharray");
+    }
+}
+
+}
 
 void export_line_symbolizer()
 {
@@ -438,10 +500,38 @@ void export_line_symbolizer()
         .value("BEVEL_JOIN",mapnik::line_join_enum::BEVEL_JOIN)
         ;
 
-
     class_<line_symbolizer, bases<symbolizer_base> >("LineSymbolizer",
                             init<>("Default LineSymbolizer - 1px solid black"))
         .def("__hash__",hash_impl_2<line_symbolizer>)
+        .add_property("stroke",
+                      &get<mapnik::color, mapnik::keys::stroke>,
+                      &set<mapnik::color, mapnik::keys::stroke>, "Stroke color")
+        .add_property("stroke_width",
+                      &get<double, mapnik::keys::stroke_width>,
+                      &set<double, mapnik::keys::stroke_width>, "Stroke width")
+        .add_property("stroke_opacity",
+                      &get<double, mapnik::keys::stroke_opacity>,
+                      &set<double, mapnik::keys::stroke_opacity>, "Stroke opacity")
+        .add_property("stroke_gamma",
+                      &get<double, mapnik::keys::stroke_gamma>,
+                      &set<double, mapnik::keys::stroke_gamma>, "Stroke gamma")
+        .add_property("stroke_gamma_method",
+                      &get<mapnik::gamma_method_enum, mapnik::keys::stroke_gamma_method>,
+                      &set<mapnik::gamma_method_enum, mapnik::keys::stroke_gamma_method>, "Stroke gamma method")
+        .add_property("line_rasterizer",
+                      &get<mapnik::line_rasterizer_enum, mapnik::keys::line_rasterizer>,
+                      &set<mapnik::line_rasterizer_enum, mapnik::keys::line_rasterizer>, "Line rasterizer")
+        .add_property("stroke_linecap",
+                      &get<mapnik::line_cap_enum, mapnik::keys::stroke_linecap>,
+                      &set<mapnik::line_cap_enum, mapnik::keys::stroke_linecap>, "Stroke linecap")
+        .add_property("stroke_linejoin",
+                      &get<mapnik::line_join_enum, mapnik::keys::stroke_linejoin>,
+                      &set<mapnik::line_join_enum, mapnik::keys::stroke_linejoin>, "Stroke linejoin")
+        .add_property("stroke_dasharray",
+                      &get_stroke_dasharray,
+                      &set_stroke_dasharray, "Stroke dasharray")
+
+
         ;
 }
 

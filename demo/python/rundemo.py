@@ -165,6 +165,7 @@ sym = mapnik.LineSymbolizer()
 # https://github.com/mapnik/mapnik/issues/2324
 sym.stroke = mapnik.Color('black')
 sym.stroke_width = 1
+sym.stroke_dasharray="8 4 2 2 2 2"
 provlines_rule.symbols.append(sym)
 provlines_style.rules.append(provlines_rule)
 
@@ -290,19 +291,34 @@ popplaces_rule = mapnik.Rule()
 # text to label with.  Then there is font size in points (I think?), and colour.
 
 # TODO - currently broken: https://github.com/mapnik/mapnik/issues/2324
-#popplaces_text_symbolizer = mapnik.TextSymbolizer(mapnik.Expression("[GEONAME]"),
-#                                           'DejaVu Sans Book',
-#                                           10, mapnik.Color('black'))
+popplaces_text_sym = mapnik.TextSymbolizer() #mapnik.Expression("[GEONAME]"),
+
+#finder = mapnik.PlacementFinder()
+#finder.face_name = 'DejaVu Sans Book'
+#finder.text_size = 10
+#finder.halo_fill = mapnik.Color(255,255,200)
+#finder.halo_radius = 1.0
+#finder.fill = mapnik.Color("black")
+#finder.format_expression = "[GEONAME]"
+
+popplaces_text_sym.placement_finder = mapnik.PlacementFinder()
+popplaces_text_sym.placement_finder.face_name = 'DejaVu Sans Book'
+popplaces_text_sym.placement_finder.text_size = 10
+popplaces_text_sym.placement_finder.halo_fill = mapnik.Color(255,255,200)
+popplaces_text_sym.placement_finder.halo_radius = 1.0
+popplaces_text_sym.placement_finder.fill = mapnik.Color("black")
+popplaces_text_sym.placement_finder.format_expression = "[GEONAME]"
+
 
 # We set a "halo" around the text, which looks like an outline if thin enough,
 # or an outright background if large enough.
-#popplaces_text_symbolizer.label_placement= mapnik.label_placement.POINT_PLACEMENT
-#popplaces_text_symbolizer.halo_fill = mapnik.Color(255,255,200)
-#popplaces_text_symbolizer.halo_radius = 1
-#popplaces_text_symbolizer.avoid_edges = True
-#popplaces_text_symbolizer.minimum_padding = 30
-#popplaces_rule.symbols.append(popplaces_text_symbolizer)
+#popplaces_text_sym.label_placement= mapnik.label_placement.POINT_PLACEMENT
+#popplaces_text_sym.halo_fill = mapnik.Color(255,255,200)
+#popplaces_text_sym.halo_radius = 1
+#popplaces_text_sym.avoid_edges = True
+#popplaces_text_sym.minimum_padding = 30
 
+popplaces_rule.symbols.append(popplaces_text_sym)
 popplaces_style.rules.append(popplaces_rule)
 
 m.append_style('popplaces', popplaces_style)
@@ -365,9 +381,9 @@ if  mapnik.has_cairo():
     mapnik.render_to_file(m,'demo.svg')
     images_.append('demo.svg')
     mapnik.render_to_file(m,'demo_cairo_rgb24.png','RGB24')
-    images_.append('demo_cairo_rgb.png')
+    images_.append('demo_cairo_rgb24.png')
     mapnik.render_to_file(m,'demo_cairo_argb32.png','ARGB32')
-    images_.append('demo_cairo_argb.png')
+    images_.append('demo_cairo_argb32.png')
 
 print ("\n\n", len(images_), "maps have been rendered in the current directory:")
 

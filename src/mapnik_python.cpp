@@ -77,6 +77,7 @@ void export_line_symbolizer();
 void export_line_pattern_symbolizer();
 void export_polygon_symbolizer();
 void export_building_symbolizer();
+void export_placement_finder();
 void export_polygon_pattern_symbolizer();
 void export_raster_symbolizer();
 void export_text_symbolizer();
@@ -753,6 +754,7 @@ BOOST_PYTHON_MODULE(_mapnik)
     export_line_pattern_symbolizer();
     export_polygon_symbolizer();
     export_building_symbolizer();
+    export_placement_finder();
     export_polygon_pattern_symbolizer();
     export_raster_symbolizer();
     export_text_symbolizer();

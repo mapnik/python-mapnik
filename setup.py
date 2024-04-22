@@ -242,11 +242,11 @@ if os.environ.get("PYCAIRO", "false") == "true":
         raise Exception("Failed to find compiler options for pycairo")
 
 if sys.platform == 'darwin':
-    extra_comp_args.append('-mmacosx-version-min=13.0')
+    extra_comp_args.append('-mmacosx-version-min=11.0')
     # silence warning coming from boost python macros which
     # would is hard to silence via pragma
     extra_comp_args.append('-Wno-parentheses-equality')
-    linkflags.append('-mmacosx-version-min=13.0')
+    linkflags.append('-mmacosx-version-min=11.0')
 else:
     linkflags.append('-lrt')
     linkflags.append('-Wl,-z,origin')
@@ -267,13 +267,12 @@ setup(
     license="GNU LESSER GENERAL PUBLIC LICENSE",
     keywords="mapnik mapbox mapping cartography",
     url="http://mapnik.org/",
-    tests_require=[
-        'nose',
-    ],
+    setup_requires=['pytest-runner'],
+    tests_require=['pytest'],
     package_data={
         'mapnik': ['lib/*.*', 'lib/*/*/*', 'share/*/*'],
     },
-    test_suite='nose.collector',
+    test_suite='pytest',
     cmdclass={
         'whichboost': WhichBoostCommand,
     },
@@ -301,6 +300,7 @@ setup(
             'src/mapnik_map.cpp',
             'src/mapnik_palette.cpp',
             'src/mapnik_parameters.cpp',
+            'src/mapnik_placement_finder.cpp',
             'src/mapnik_proj_transform.cpp',
             'src/mapnik_projection.cpp',
             'src/mapnik_python.cpp',
