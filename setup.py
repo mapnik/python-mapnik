@@ -279,6 +279,7 @@ setup(
     ext_modules=[
         Extension('mapnik._mapnik', [
             'src/mapnik_color.cpp',
+            'src/mapnik_composite_modes.cpp',
             'src/mapnik_coord.cpp',
             'src/mapnik_datasource.cpp',
             'src/mapnik_datasource_cache.cpp',
@@ -311,7 +312,7 @@ setup(
             'src/mapnik_style.cpp',
             'src/mapnik_symbolizer.cpp',
             'src/mapnik_view_transform.cpp',
-            'src/python_grid_utils.cpp',
+            'src/python_grid_utils.cpp'
         ],
             language='c++',
             extra_compile_args=extra_comp_args,

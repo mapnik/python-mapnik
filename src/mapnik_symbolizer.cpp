@@ -48,6 +48,8 @@
 #include <mapnik/group/group_symbolizer_properties.hpp>
 #include <mapnik/util/variant.hpp>
 #include <mapnik/text/placements/dummy.hpp>
+#include <mapnik/transform/parse_transform.hpp>
+#include <mapnik/transform/transform_processor.hpp>
 
 using mapnik::symbolizer;
 using mapnik::point_symbolizer;
@@ -185,7 +187,7 @@ struct extract_python_object
     }
 };
 
-/*
+
 boost::python::object __getitem__(mapnik::symbolizer_base const& sym, std::string const& name)
 {
     using const_iterator = symbolizer_base::cont_type::const_iterator;
@@ -199,7 +201,7 @@ boost::python::object __getitem__(mapnik::symbolizer_base const& sym, std::strin
     //return mapnik::util::apply_visitor(extract_python_object(), std::get<1>(meta));
     return boost::python::object();
 }
-*/
+
 
 boost::python::object symbolizer_keys(mapnik::symbolizer_base const& sym)
 {
@@ -271,6 +273,20 @@ void set(symbolizer_base & sym, Value const& val)
     mapnik::put<Value>(sym, Key, val);
 }
 
+std::string get_transform(symbolizer_base const& sym)
+{
+    auto expr = mapnik::get<mapnik::transform_type>(sym, mapnik::keys::geometry_transform);
+    if (expr)
+        return mapnik::transform_processor_type::to_string(*expr);
+    return "";
+}
+
+void set_transform(symbolizer_base & sym, std::string const& str)
+{
+    mapnik::put(sym, mapnik::keys::geometry_transform, mapnik::parse_transform(str));
+}
+
+
 }
 
 void export_symbolizer()
@@ -306,11 +322,26 @@ void export_symbolizer()
     class_<symbolizer_base>("SymbolizerBase",no_init)
         //.def("__setitem__",&__setitem__)
         //.def("__setattr__",&__setitem__)
-        //.def("__getitem__",&__getitem__)
-        //.def("__getattr__",&__getitem__)
+        .def("__getitem__",&__getitem__)
+        .def("__getattr__",&__getitem__)
         .def("keys", &symbolizer_keys)
         //.def("__str__", &__str__)
         .def(self == self) // __eq__
+        .add_property("smooth",
+                      &get<double, mapnik::keys::smooth>,
+                      &set<double, mapnik::keys::smooth>, "Smooth")
+        .add_property("simplify_tolerance",
+                      &get<double, mapnik::keys::simplify_tolerance>,
+                      &set<double, mapnik::keys::simplify_tolerance>, "Simplify tolerance")
+        .add_property("clip",
+                      &get<mapnik::value_bool, mapnik::keys::clip>,
+                      &set<mapnik::value_bool, mapnik::keys::clip>, "Clip - False/True")
+        .add_property("comp_op",
+                      &get<mapnik::composite_mode_e, mapnik::keys::comp_op>,
+                      &set<mapnik::composite_mode_e, mapnik::keys::comp_op>, "Composite mode (comp-op)")
+        .add_property("geometry_transform",
+                      &get_transform,
+                      &set_transform, "Geometry transform")
         ;
 }
 
@@ -377,7 +408,16 @@ void export_polygon_symbolizer()
         .def("__hash__",hash_impl_2<polygon_symbolizer>)
         .add_property("fill",
                       &get<mapnik::color, mapnik::keys::fill>,
-                      &set<mapnik::color, mapnik::keys::fill>, "Fill color")
+                      &set<mapnik::color, mapnik::keys::fill>, "Fill - CSS color)")
+        .add_property("fill_opacity",
+                      &get<double, mapnik::keys::fill_opacity>,
+                      &set<double, mapnik::keys::fill_opacity>, "Fill opacity - 0..1.0")
+        .add_property("gamma",
+                      &get<double, mapnik::keys::gamma>,
+                      &set<double, mapnik::keys::gamma>, "Fill gamma")
+        .add_property("gamma_method",
+                      &get<mapnik::gamma_method_enum, mapnik::keys::gamma_method>,
+                      &set<mapnik::gamma_method_enum, mapnik::keys::gamma_method>, "Fill gamma method")
         ;
 
 }
@@ -530,7 +570,12 @@ void export_line_symbolizer()
         .add_property("stroke_dasharray",
                       &get_stroke_dasharray,
                       &set_stroke_dasharray, "Stroke dasharray")
-
+        .add_property("stroke_dashoffset",
+                      &get<double, mapnik::keys::stroke_dashoffset>,
+                      &set<double, mapnik::keys::stroke_dashoffset>, "Stroke dashoffset")
+        .add_property("stroke_miterlimit",
+                      &get<double, mapnik::keys::stroke_miterlimit>,
+                      &set<double, mapnik::keys::stroke_miterlimit>, "Stroke miterlimit")
 
         ;
 }

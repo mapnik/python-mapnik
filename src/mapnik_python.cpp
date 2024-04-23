@@ -45,6 +45,7 @@
 #include <fstream>
 
 void export_color();
+void export_composite_modes();
 void export_coord();
 void export_layer();
 void export_parameters();
@@ -732,6 +733,7 @@ BOOST_PYTHON_MODULE(_mapnik)
     export_datasource();
     export_parameters();
     export_color();
+    export_composite_modes();
     export_envelope();
     export_palette();
     export_image();
