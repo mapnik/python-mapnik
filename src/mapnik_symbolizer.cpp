@@ -292,17 +292,7 @@ void set_transform(symbolizer_base & sym, std::string const& str)
 void export_symbolizer()
 {
     using namespace boost::python;
-
-    //implicitly_convertible<mapnik::value_bool, mapnik::symbolizer_base::value_type>();
-    implicitly_convertible<mapnik::value_integer, mapnik::symbolizer_base::value_type>();
-    implicitly_convertible<mapnik::value_double, mapnik::symbolizer_base::value_type>();
-    implicitly_convertible<std::string, mapnik::symbolizer_base::value_type>();
-    implicitly_convertible<mapnik::color, mapnik::symbolizer_base::value_type>();
-    implicitly_convertible<mapnik::expression_ptr, mapnik::symbolizer_base::value_type>();
-    implicitly_convertible<mapnik::path_expression_ptr, mapnik::symbolizer_base::value_type>();
-    implicitly_convertible<mapnik::enumeration_wrapper, mapnik::symbolizer_base::value_type>();
-    implicitly_convertible<std::shared_ptr<mapnik::group_symbolizer_properties>, mapnik::symbolizer_base::value_type>();
-    implicitly_convertible<std::shared_ptr<text_placements_dummy>, mapnik::symbolizer_base::value_type>();
+    implicitly_convertible<std::string, mapnik::color>();
 
     enum_<mapnik::keys>("keys")
         .value("gamma", mapnik::keys::gamma)
