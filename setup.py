@@ -7,8 +7,7 @@ import shutil
 import subprocess
 import sys
 import glob
-import pkg_resources
-
+import importlib.resources
 from distutils import sysconfig
 from ctypes.util import find_library
 
@@ -233,11 +232,10 @@ if os.environ.get("PYCAIRO", "false") == "true":
     try:
         extra_comp_args.append('-DHAVE_PYCAIRO')
         dist = pkg_resources.get_distribution('pycairo')
-        print(dist.location)
-        print("-I%s/cairo/include".format(dist.location))
-        extra_comp_args.append("-I{0}/cairo/include".format(dist.location))
-        #extra_comp_args.extend(check_output(["pkg-config", '--cflags', 'pycairo']).strip().split(' '))
-        #linkflags.extend(check_output(["pkg-config", '--libs', 'pycairo']).strip().split(' '))
+        location = str(importlib.resources.files('pycairo'))
+        print(location)
+        print("-I%s/include".format(location))
+        extra_comp_args.append("-I{0}/include".format(location))
     except:
         raise Exception("Failed to find compiler options for pycairo")
 
