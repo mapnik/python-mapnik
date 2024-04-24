@@ -240,11 +240,8 @@ if os.environ.get("PYCAIRO", "false") == "true":
         raise Exception("Failed to find compiler options for pycairo")
 
 if sys.platform == 'darwin':
-    extra_comp_args.append('-mmacosx-version-min=11.0')
-    # silence warning coming from boost python macros which
-    # would is hard to silence via pragma
-    extra_comp_args.append('-Wno-parentheses-equality')
-    linkflags.append('-mmacosx-version-min=11.0')
+    extra_comp_args.append('-mmacosx-version-min=14.0')
+    linkflags.append('-mmacosx-version-min=14.0')
 else:
     linkflags.append('-lrt')
     linkflags.append('-Wl,-z,origin')
@@ -256,17 +253,7 @@ if os.environ.get("CXX", False) == False:
     os.environ["CXX"] = check_output([mapnik_config, '--cxx'])
 
 setup(
-    name="mapnik",
-    version="4.0.0",
     packages=['mapnik','mapnik.printing'],
-    author="Blake Thompson",
-    author_email="flippmoke@gmail.com",
-    description="Python bindings for Mapnik",
-    license="GNU LESSER GENERAL PUBLIC LICENSE",
-    keywords="mapnik mapbox mapping cartography",
-    url="http://mapnik.org/",
-    setup_requires=['pytest-runner'],
-    tests_require=['pytest'],
     package_data={
         'mapnik': ['lib/*.*', 'lib/*/*/*', 'share/*/*'],
     },
