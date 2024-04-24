@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
-from __future__ import print_function
+
 import sys
 from os import path
 import mapnik
@@ -32,7 +32,7 @@ m = mapnik.Map(800,600,"+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 
 
 # Set its background colour. More on colours later ...
 
-m.background = mapnik.Color('white')
+m.background = 'white' #Color(R=255,G=255,B=255,A=255)
 
 # Now we can start adding layers, in stacking order (i.e. bottom layer first)
 
@@ -98,7 +98,7 @@ provpoly_style.rules.append(provpoly_rule_on)
 provpoly_rule_qc = mapnik.Rule()
 provpoly_rule_qc.filter = mapnik.Expression("[NOM_FR] = 'Québec'")
 sym = mapnik.PolygonSymbolizer()
-sym.fill = mapnik.Color(217, 235, 203)
+sym.fill = 'rgb(217, 235, 203)'
 provpoly_rule_qc.symbols.append(sym)
 provpoly_style.rules.append(provpoly_rule_qc)
 
@@ -130,7 +130,7 @@ qcdrain_style = mapnik.Style()
 qcdrain_rule = mapnik.Rule()
 qcdrain_rule.filter = mapnik.Expression('[HYC] = 8')
 sym = mapnik.PolygonSymbolizer()
-sym.fill = mapnik.Color(153, 204, 255)
+sym.fill = 'rgba(153, 204, 255, 255)'
 sym.smooth = 1.0 # very smooth
 qcdrain_rule.symbols.append(sym)
 qcdrain_style.rules.append(qcdrain_rule)
@@ -163,7 +163,7 @@ provlines_rule = mapnik.Rule()
 sym = mapnik.LineSymbolizer()
 # FIXME - currently adding dash arrays is broken
 # https://github.com/mapnik/mapnik/issues/2324
-sym.stroke = mapnik.Color('black')
+sym.stroke = 'black'
 sym.stroke_width = 1
 sym.stroke_dasharray="8 4 2 2 2 2"
 provlines_rule.symbols.append(sym)
@@ -219,7 +219,7 @@ roads2_rule_1 = mapnik.Rule()
 roads2_rule_1.filter = mapnik.Expression('[CLASS] = 2')
 
 sym = mapnik.LineSymbolizer()
-sym.stroke = mapnik.Color(171,158,137)
+sym.stroke = 'rgb(171,158,137)' #mapnik.Color(R=171,G=158,B=137,A=255)
 sym.stroke_width = 4
 sym.stroke_linecap = mapnik.stroke_linecap.ROUND_CAP
 roads2_rule_1.symbols.append(sym)
@@ -231,7 +231,7 @@ roads2_style_2 = mapnik.Style()
 roads2_rule_2 = mapnik.Rule()
 roads2_rule_2.filter = mapnik.Expression('[CLASS] = 2')
 sym = mapnik.LineSymbolizer()
-sym.stroke = mapnik.Color(255,250,115)
+sym.stroke = 'rgb(100%,98%,45%)' #mapnik.Color(R=255,G=250,B=115,A=255)
 sym.stroke_linecap = mapnik.stroke_linecap.ROUND_CAP
 sym.stroke_width = 2
 roads2_rule_2.symbols.append(sym)
@@ -304,9 +304,9 @@ popplaces_text_sym = mapnik.TextSymbolizer() #mapnik.Expression("[GEONAME]"),
 popplaces_text_sym.placement_finder = mapnik.PlacementFinder()
 popplaces_text_sym.placement_finder.face_name = 'DejaVu Sans Book'
 popplaces_text_sym.placement_finder.text_size = 10
-popplaces_text_sym.placement_finder.halo_fill = mapnik.Color(255,255,200)
+popplaces_text_sym.placement_finder.halo_fill = 'rgba(100%,100%,78.5%,1.0)' #mapnik.Color(R=255,G=255,B=200,A=255)
 popplaces_text_sym.placement_finder.halo_radius = 1.0
-popplaces_text_sym.placement_finder.fill = mapnik.Color("black")
+popplaces_text_sym.placement_finder.fill = "black"
 popplaces_text_sym.placement_finder.format_expression = "[GEONAME]"
 
 
