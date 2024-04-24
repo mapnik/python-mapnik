@@ -11,7 +11,7 @@ import importlib.resources
 from distutils import sysconfig
 from ctypes.util import find_library
 
-from setuptools import Command, Extension, setup
+from setuptools import Command, Extension, setup, find_packages
 
 PYTHON3 = sys.version_info.major == 3
 
@@ -124,7 +124,7 @@ linkflags.extend([
 ] + ['-l%s' % i for i in get_boost_library_names()])
 
 # Dynamically make the mapnik/paths.py file
-f_paths = open('mapnik/paths.py', 'w')
+f_paths = open('packaging/mapnik/paths.py', 'w')
 f_paths.write('import os\n')
 f_paths.write('\n')
 
@@ -253,7 +253,8 @@ if os.environ.get("CXX", False) == False:
     os.environ["CXX"] = check_output([mapnik_config, '--cxx'])
 
 setup(
-    packages=['mapnik','mapnik.printing'],
+    packages=find_packages(where="packaging"),
+    package_dir={"": "packaging"},
     package_data={
         'mapnik': ['lib/*.*', 'lib/*/*/*', 'share/*/*'],
     },
