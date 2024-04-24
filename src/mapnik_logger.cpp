@@ -21,7 +21,7 @@
  *****************************************************************************/
 
 #include <mapnik/config.hpp>
-#include "boost_std_shared_shim.hpp"
+
 
 #pragma GCC diagnostic push
 #include <mapnik/warning_ignore.hpp>

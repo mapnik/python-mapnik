@@ -21,7 +21,6 @@
  *****************************************************************************/
 
 #include <mapnik/config.hpp>
-#include "boost_std_shared_shim.hpp"
 
 #pragma GCC diagnostic push
 #include <mapnik/warning_ignore.hpp>
@@ -285,7 +284,6 @@ void set_transform(symbolizer_base & sym, std::string const& str)
 {
     mapnik::put(sym, mapnik::keys::geometry_transform, mapnik::parse_transform(str));
 }
-
 
 }
 

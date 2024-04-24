@@ -22,7 +22,7 @@
 
 #include <mapnik/config.hpp>
 #include "python_to_value.hpp"
-#include "boost_std_shared_shim.hpp"
+
 
 #pragma GCC diagnostic push
 #include <mapnik/warning_ignore.hpp>
