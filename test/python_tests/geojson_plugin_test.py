@@ -44,7 +44,7 @@ if 'geojson' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.Datasource(
             type='geojson',
             file='../data/json/escaped.geojson')
-        f = list(ds.all_features())[0]
+        f = list(iter(ds))[0]
         assert len(ds.fields()) ==  11
 
         desc = ds.describe()
@@ -81,7 +81,7 @@ if 'geojson' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.Datasource(
             type='geojson',
             file='../data/json/escaped.geojson')
-        f = list(ds.all_features())[0]
+        f = list(iter(ds))[0]
         assert len(ds.fields()) ==  11
 
         desc = ds.describe()
@@ -104,7 +104,7 @@ if 'geojson' in mapnik.DatasourceCache.plugin_names():
             type='geojson',
             inline='{ "type":"FeatureCollection", "features": [ { "type":"Feature", "properties":{"name":"test"}, "geometry": { "type":"LineString","coordinates":[[0,0],[10,10]] } } ]}')
         assert len(ds.fields()) ==  1
-        f = list(ds.all_features())[0]
+        f = list(iter(ds))[0]
         desc = ds.describe()
         assert desc['geometry_type'] ==  mapnik.DataGeometryType.LineString
         assert f['name'] ==  u'test'
@@ -130,7 +130,7 @@ if 'geojson' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.Datasource(
             type='geojson',
             file='../data/json/feature_collection_level_properties.json')
-        f = list(ds.all_features())[0]
+        f = list(iter(ds))[0]
 
         desc = ds.describe()
         assert desc['geometry_type'] ==  mapnik.DataGeometryType.Point
