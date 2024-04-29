@@ -13,7 +13,6 @@ license = { text = "GNU LESSER GENERAL PUBLIC LICENSE"}
 keywords = ["mapnik", "beautiful maps", "cartography", "python-mapnik"]
 classifiers = [
    "Development Status :: 4 - Beta",
-   # Indicate who your project is intended for
 ]
 authors = [
 {name= "Artem Pavlenko", email = "artem@mapnik.org"},
