@@ -39,7 +39,7 @@ void export_datasource_cache(py::module const&);
 void export_projection(py::module&);
 void export_proj_transform(py::module const&);
 
-PYBIND11_MODULE(mapnik, m) {
+PYBIND11_MODULE(_mapnik, m) {
  export_color(m);
  export_composite_modes(m);
  export_coord(m);
