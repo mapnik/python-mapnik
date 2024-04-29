@@ -2,7 +2,7 @@
  *
  * This file is part of Mapnik (c++ mapping toolkit)
  *
- * Copyright (C) 2015 Artem Pavlenko
+ * Copyright (C) 2024 Artem Pavlenko
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,37 +20,21 @@
  *
  *****************************************************************************/
 
-#include <mapnik/config.hpp>
-
-
-#pragma GCC diagnostic push
-#include <mapnik/warning_ignore.hpp>
-#include <boost/python.hpp>
-#include <boost/noncopyable.hpp>
-#pragma GCC diagnostic pop
-
 // mapnik
+#include <mapnik/config.hpp>
 #include <mapnik/proj_transform.hpp>
 #include <mapnik/projection.hpp>
 #include <mapnik/coord.hpp>
 #include <mapnik/geometry/box2d.hpp>
-
 // stl
 #include <stdexcept>
+//pybind11
+#include <pybind11/pybind11.h>
 
+namespace py = pybind11;
 
 using mapnik::proj_transform;
 using mapnik::projection;
-
-struct proj_transform_pickle_suite : boost::python::pickle_suite
-{
-    static boost::python::tuple
-    getinitargs(const proj_transform& p)
-    {
-        using namespace boost::python;
-        return boost::python::make_tuple(p.definition());
-    }
-};
 
 namespace  {
 
@@ -132,12 +116,11 @@ mapnik::box2d<double> backward_transform_env_p(mapnik::proj_transform& t, mapnik
 
 }
 
-void export_proj_transform ()
+void export_proj_transform (py::module const& m)
 {
-    using namespace boost::python;
-
-    class_<proj_transform, boost::noncopyable>("ProjTransform", init<projection const&, projection const&>())
-        .def_pickle(proj_transform_pickle_suite())
+    py::class_<proj_transform>(m, "ProjTransform")
+        .def(py::init<projection const&, projection const&>(),
+             "Constructs ProjTransform object")
         .def("forward", forward_transform_c)
         .def("backward",backward_transform_c)
         .def("forward", forward_transform_env)

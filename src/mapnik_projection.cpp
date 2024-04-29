@@ -2,7 +2,7 @@
  *
  * This file is part of Mapnik (c++ mapping toolkit)
  *
- * Copyright (C) 2015 Artem Pavlenko, Jean-Francois Doyon
+ * Copyright (C) 2024 Artem Pavlenko
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,32 +20,20 @@
  *
  *****************************************************************************/
 
-#include <mapnik/config.hpp>
-
-
-#pragma GCC diagnostic push
-#include <mapnik/warning_ignore.hpp>
-#include <boost/python.hpp>
-#pragma GCC diagnostic pop
-
 // mapnik
+#include <mapnik/config.hpp>
 #include <mapnik/coord.hpp>
 #include <mapnik/geometry/box2d.hpp>
 #include <mapnik/projection.hpp>
+//pybind11
+#include <pybind11/pybind11.h>
 
 using mapnik::projection;
 
-struct projection_pickle_suite : boost::python::pickle_suite
-{
-    static boost::python::tuple
-    getinitargs(const projection& p)
-    {
-        using namespace boost::python;
-        return boost::python::make_tuple(p.params());
-    }
-};
+namespace py = pybind11;
 
 namespace {
+
 mapnik::coord2d forward_pt(mapnik::coord2d const& pt,
                            mapnik::projection const& prj)
 {
@@ -90,34 +78,40 @@ mapnik::box2d<double> inverse_env(mapnik::box2d<double> const & box,
 
 }
 
-void export_projection ()
+void export_projection (py::module& m)
 {
-    using namespace boost::python;
-
-    class_<projection>("Projection", "Represents a map projection.",init<std::string const&>(
-                           (arg("proj_string")),
-                           "Constructs a new projection from its PROJ string representation.\n"
-                           "\n"
-                           "The constructor will throw a RuntimeError in case the projection\n"
-                           "cannot be initialized.\n"
-                           )
-        )
-        .def_pickle(projection_pickle_suite())
-        .def ("params", make_function(&projection::params,
-                                      return_value_policy<copy_const_reference>()),
-              "Returns the PROJ string for this projection.\n")
-        .def ("definition",&projection::definition,
-              "Return projection definition\n")
-        .def ("description", &projection::description,
-              "Returns projection description")
-        .add_property ("geographic", &projection::is_geographic,
-                       "This property is True if the projection is a geographic projection\n"
-                       "(i.e. it uses lon/lat coordinates)\n")
+    py::class_<projection>(m, "Projection", "Represents a map projection.")
+        .def(py::init<std::string const&>(),
+             "Constructs a new projection from its PROJ string representation.\n"
+             "\n"
+             "The constructor will throw a RuntimeError in case the projection\n"
+             "cannot be initialized.\n",
+             py::arg("proj_string")
+            )
+        .def(py::pickle(
+                 [] (projection const& p) { // __getstate__
+                     return py::make_tuple(p.params());
+                 },
+                 [] (py::tuple t) { // __setstate__
+                     if (t.size() != 1)
+                         throw std::runtime_error("Invalid state!");
+                     projection p(t[0].cast<std::string>());
+                     return p;
+                 }))
+        .def("params",  &projection::params,
+             "Returns the PROJ string for this projection.\n")
+        .def("definition",&projection::definition,
+             "Return projection definition\n")
+        .def("description", &projection::description,
+             "Returns projection description")
+        .def_property_readonly("geographic", &projection::is_geographic,
+                               "This property is True if the projection is a geographic projection\n"
+                               "(i.e. it uses lon/lat coordinates)\n")
         ;
 
-    def("forward_",&forward_pt);
-    def("inverse_",&inverse_pt);
-    def("forward_",&forward_env);
-    def("inverse_",&inverse_env);
+    m.def("forward_",&forward_pt);
+    m.def("inverse_",&inverse_pt);
+    m.def("forward_",&forward_env);
+    m.def("inverse_",&inverse_env);
 
 }

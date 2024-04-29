@@ -2,7 +2,7 @@
  *
  * This file is part of Mapnik (c++ mapping toolkit)
  *
- * Copyright (C) 2015 Artem Pavlenko, Jean-Francois Doyon
+ * Copyright (C) 2024 Artem Pavlenko
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,17 +20,10 @@
  *
  *****************************************************************************/
 
+// mapnik
 #include <mapnik/config.hpp>
 #include "python_to_value.hpp"
-
-
-#pragma GCC diagnostic push
-#include <mapnik/warning_ignore.hpp>
-#include <boost/python.hpp>
-#include <boost/noncopyable.hpp>
-#pragma GCC diagnostic pop
-
-// mapnik
+#include "mapnik_value_converter.hpp"
 #include <mapnik/util/variant.hpp>
 #include <mapnik/feature.hpp>
 #include <mapnik/expression.hpp>
@@ -39,11 +32,15 @@
 #include <mapnik/parse_path.hpp>
 #include <mapnik/value.hpp>
 
+//pybind11
+#include <pybind11/pybind11.h>
+
 using mapnik::expression_ptr;
 using mapnik::parse_expression;
 using mapnik::to_expression_string;
 using mapnik::path_expression_ptr;
 
+namespace py = pybind11;
 
 // expression
 expression_ptr parse_expression_(std::string const& wkt)
@@ -56,15 +53,15 @@ std::string expression_to_string_(mapnik::expr_node const& expr)
     return mapnik::to_expression_string(expr);
 }
 
-mapnik::value expression_evaluate_(mapnik::expr_node const& expr, mapnik::feature_impl const& f, boost::python::dict const& d)
+mapnik::value expression_evaluate_(mapnik::expr_node const& expr, mapnik::feature_impl const& f, py::dict const& d)
 {
     // will be auto-converted to proper python type by `mapnik_value_to_python`
-    return mapnik::util::apply_visitor(mapnik::evaluate<mapnik::feature_impl,mapnik::value,mapnik::attributes>(f,mapnik::dict2attr(d)),expr);
+    return mapnik::util::apply_visitor(mapnik::evaluate<mapnik::feature_impl,mapnik::value,mapnik::attributes>(f, mapnik::dict2attr(d)),expr);
 }
 
-bool expression_evaluate_to_bool_(mapnik::expr_node const& expr, mapnik::feature_impl const& f, boost::python::dict const& d)
+bool expression_evaluate_to_bool_(mapnik::expr_node const& expr, mapnik::feature_impl const& f, py::dict const& d)
 {
-    return mapnik::util::apply_visitor(mapnik::evaluate<mapnik::feature_impl,mapnik::value,mapnik::attributes>(f,mapnik::dict2attr(d)),expr).to_bool();
+    return mapnik::util::apply_visitor(mapnik::evaluate<mapnik::feature_impl,mapnik::value,mapnik::attributes>(f, mapnik::dict2attr(d)),expr).to_bool();
 }
 
 // path expression
@@ -83,25 +80,19 @@ std::string path_evaluate_(mapnik::path_expression const& expr, mapnik::feature_
     return mapnik::path_processor_type::evaluate(expr, f);
 }
 
-void export_expression()
+void export_expression(py::module & m)
 {
-    using namespace boost::python;
-    class_<mapnik::expr_node ,boost::noncopyable>("Expression",
-                                                  "TODO"
-                                                  "",no_init)
-        .def("evaluate", &expression_evaluate_,(arg("feature"),arg("variables")=boost::python::dict()))
-        .def("to_bool", &expression_evaluate_to_bool_,(arg("feature"),arg("variables")=boost::python::dict()))
-        .def("__str__",&expression_to_string_);
+    py::class_<mapnik::expr_node, mapnik::expression_ptr>(m, "Expression")
+        .def(py::init([] (std::string const& wkt) { return parse_expression_(wkt);}))
+        .def("evaluate", &expression_evaluate_, py::arg("feature"), py::arg("variables") = py::dict())
+        .def("to_bool", &expression_evaluate_to_bool_, py::arg("feature"), py::arg("variables") = py::dict())
+        .def("__str__", &expression_to_string_);
     ;
 
-    def("Expression",&parse_expression_,(arg("expr")),"Expression string");
-
-    class_<mapnik::path_expression ,boost::noncopyable>("PathExpression",
-                                                        "TODO"
-                                                        "",no_init)
-        .def("evaluate", &path_evaluate_) // note: "pass" is a reserved word in Python
+    py::class_<mapnik::path_expression, mapnik::path_expression_ptr>(m, "PathExpression")
+        .def(py::init([] (std::string const& wkt) { return parse_path_(wkt);}))
+        .def("evaluate", &path_evaluate_)
         .def("__str__",&path_to_string_);
     ;
 
-    def("PathExpression",&parse_path_,(arg("expr")),"PathExpression string");
 }

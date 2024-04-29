@@ -20,22 +20,19 @@
  *
  *****************************************************************************/
 
+// mapnik
 #include <mapnik/config.hpp>
-
-#pragma GCC diagnostic push
-#include <mapnik/warning_ignore.hpp>
-#include <boost/python.hpp>
-#include <boost/noncopyable.hpp>
-#pragma GCC diagnostic pop
-
-#include "mapnik_enumeration.hpp"
+//#include "mapnik_enumeration.hpp"
 #include <mapnik/image_compositing.hpp>
+//pybind11
+#include <pybind11/pybind11.h>
 
-void export_composite_modes()
+namespace py = pybind11;
+
+void export_composite_modes(py::module const& m)
 {
-    using namespace boost::python;
     // NOTE: must match list in include/mapnik/image_compositing.hpp
-    enum_<mapnik::composite_mode_e>("CompositeOp")
+    py::enum_<mapnik::composite_mode_e>(m, "CompositeOp")
         .value("clear", mapnik::clear)
         .value("src", mapnik::src)
         .value("dst", mapnik::dst)

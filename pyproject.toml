@@ -1,10 +1,13 @@
 [build-system]
-requires = ["setuptools >= 69.0"]
+requires = [
+         "setuptools >= 69.0",
+         "pybind11 >= 2.10.0",
+]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "mapnik"
-version = "4.0.0-dev"
+version = "4.0.0.beta"
 description = "Python bindings for Mapnik"
 license = { text = "GNU LESSER GENERAL PUBLIC LICENSE"}
 keywords = ["mapnik", "beautiful maps", "cartography", "python-mapnik"]
