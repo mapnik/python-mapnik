@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 from pybind11.setup_helpers import Pybind11Extension, build_ext
-from setuptools import setup
+from setuptools import setup, find_packages
 import sys
 import subprocess
 import os
@@ -56,26 +56,26 @@ else:
 
 
 ext_modules = [
-    Pybind11Extension(
-        "mapnik",
-        [
-             "src/mapnik_python.cpp",
-             "src/mapnik_color.cpp",
-             "src/mapnik_composite_modes.cpp",
-             "src/mapnik_coord.cpp",
-             "src/mapnik_envelope.cpp",
-             "src/mapnik_geometry.cpp",
-             "src/mapnik_feature.cpp",
-             "src/mapnik_featureset.cpp",
-             "src/mapnik_expression.cpp",
-             "src/mapnik_datasource.cpp",
-             "src/mapnik_datasource_cache.cpp",
-             "src/mapnik_projection.cpp",
-             "src/mapnik_proj_transform.cpp",
-        ],
-        extra_compile_args=extra_comp_args,
-        extra_link_args=linkflags,
-    )
+     Pybind11Extension(
+          "mapnik._mapnik",
+          [
+               "src/mapnik_python.cpp",
+               "src/mapnik_color.cpp",
+               "src/mapnik_composite_modes.cpp",
+               "src/mapnik_coord.cpp",
+               "src/mapnik_envelope.cpp",
+               "src/mapnik_geometry.cpp",
+               "src/mapnik_feature.cpp",
+               "src/mapnik_featureset.cpp",
+               "src/mapnik_expression.cpp",
+               "src/mapnik_datasource.cpp",
+               "src/mapnik_datasource_cache.cpp",
+               "src/mapnik_projection.cpp",
+               "src/mapnik_proj_transform.cpp",
+          ],
+          extra_compile_args=extra_comp_args,
+          extra_link_args=linkflags,
+     )
 ]
 
 if os.environ.get("CC", False) == False:
@@ -84,13 +84,18 @@ if os.environ.get("CXX", False) == False:
     os.environ["CXX"] = check_output([mapnik_config, '--cxx'])
 
 setup(
-    name="mapnik",
-    version="4.0.0.dev",
-    ext_modules=ext_modules,
-    #extras_require={"test": "pytest"},
-    cmdclass={"build_ext": build_ext},
-    #zip_safe=False,
-    python_requires=">=3.7",
+     name="mapnik",
+     version="4.0.0.dev",
+     packages=find_packages(where="packaging"),
+     package_dir={"": "packaging"},
+     package_data={
+          'mapnik': ['lib/*.*', 'lib/*/*/*', 'share/*/*'],
+     },
+     ext_modules=ext_modules,
+     #extras_require={"test": "pytest"},
+     cmdclass={"build_ext": build_ext},
+     #zip_safe=False,
+     python_requires=">=3.7",
 )
 
 #import os
