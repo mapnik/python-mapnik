@@ -42,11 +42,6 @@ Several things happen when you do:
 import itertools
 import os
 import warnings
-try:
-    import json
-except ImportError:
-    import simplejson as json
-
 
 def bootstrap_env():
     """
@@ -71,7 +66,7 @@ def bootstrap_env():
 
 bootstrap_env()
 
-from mapnik import *
+from ._mapnik import *
 
 # The base Boost.Python class
 # BoostPythonMetaclass = Coord.__class__
@@ -1042,31 +1037,31 @@ from mapnik import *
 #     return (int(n[0]) * 100000) + (int(n[1]) * 100) + (int(n[2]))
 
 
-# def register_plugins(path=None):
-#     """Register plugins located by specified path"""
-#     if not path:
-#         if 'MAPNIK_INPUT_PLUGINS_DIRECTORY' in os.environ:
-#             path = os.environ.get('MAPNIK_INPUT_PLUGINS_DIRECTORY')
-#         else:
-#             from .paths import inputpluginspath
-#             path = inputpluginspath
-#     DatasourceCache.register_datasources(path)
+def register_plugins(path=None):
+    """Register plugins located by specified path"""
+    if not path:
+        if 'MAPNIK_INPUT_PLUGINS_DIRECTORY' in os.environ:
+            path = os.environ.get('MAPNIK_INPUT_PLUGINS_DIRECTORY')
+        else:
+            from .paths import inputpluginspath
+            path = inputpluginspath
+    DatasourceCache.register_datasources(path, False)
 
 
-# def register_fonts(path=None, valid_extensions=[
-#                    '.ttf', '.otf', '.ttc', '.pfa', '.pfb', '.ttc', '.dfont', '.woff']):
-#     """Recursively register fonts using path argument as base directory"""
-#     if not path:
-#         if 'MAPNIK_FONT_DIRECTORY' in os.environ:
-#             path = os.environ.get('MAPNIK_FONT_DIRECTORY')
-#         else:
-#             from .paths import fontscollectionpath
-#             path = fontscollectionpath
-#     for dirpath, _, filenames in os.walk(path):
-#         for filename in filenames:
-#             if os.path.splitext(filename.lower())[1] in valid_extensions:
-#                 FontEngine.register_font(os.path.join(dirpath, filename))
+def register_fonts(path=None, valid_extensions=[
+                   '.ttf', '.otf', '.ttc', '.pfa', '.pfb', '.ttc', '.dfont', '.woff']):
+    """Recursively register fonts using path argument as base directory"""
+    if not path:
+        if 'MAPNIK_FONT_DIRECTORY' in os.environ:
+            path = os.environ.get('MAPNIK_FONT_DIRECTORY')
+        else:
+            from .paths import fontscollectionpath
+            path = fontscollectionpath
+    for dirpath, _, filenames in os.walk(path):
+        for filename in filenames:
+            if os.path.splitext(filename.lower())[1] in valid_extensions:
+                FontEngine.register_font(os.path.join(dirpath, filename))
 
 # # auto-register known plugins and fonts
-# register_plugins()
-# register_fonts()
+register_plugins()
+#register_fonts()
