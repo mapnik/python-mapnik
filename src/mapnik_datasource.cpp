@@ -184,6 +184,7 @@ void export_datasource(py::module& m)
         ;
 
     py::class_<datasource,std::shared_ptr<datasource>> (m, "Datasource")
+        .def(py::init([] (py::kwargs const& kwargs) { return create_datasource(kwargs);}))
         .def("type", &datasource::type)
         .def("geometry_type", &datasource::get_geometry_type)
         .def("describe", &describe)
