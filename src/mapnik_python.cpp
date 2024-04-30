@@ -21,10 +21,93 @@
  *****************************************************************************/
 
 #include <mapnik/config.hpp>
-
+#include <mapnik/version.hpp>
 #include <pybind11/pybind11.h>
 
 namespace py = pybind11;
+
+unsigned mapnik_version()
+{
+    return MAPNIK_VERSION;
+}
+
+std::string mapnik_version_string()
+{
+    return MAPNIK_VERSION_STRING;
+}
+
+bool has_proj()
+{
+#if defined(MAPNIK_USE_PROJ)
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool has_svg_renderer()
+{
+#if defined(SVG_RENDERER)
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool has_grid_renderer()
+{
+#if defined(GRID_RENDERER)
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool has_jpeg()
+{
+#if defined(HAVE_JPEG)
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool has_png()
+{
+#if defined(HAVE_PNG)
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool has_tiff()
+{
+#if defined(HAVE_TIFF)
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool has_webp()
+{
+#if defined(HAVE_WEBP)
+    return true;
+#else
+     return false;
+ #endif
+}
+
+// indicator for cairo rendering support inside libmapnik
+bool has_cairo()
+{
+#if defined(HAVE_CAIRO)
+    return true;
+#else
+    return false;
+#endif
+}
 
 void export_color(py::module const&);
 void export_composite_modes(py::module const&);
@@ -54,6 +137,18 @@ PYBIND11_MODULE(_mapnik, m) {
  export_image(m);
  export_projection(m);
  export_proj_transform(m);
+
+ m.def("mapnik_version", &mapnik_version,"Get the Mapnik version number");
+ m.def("mapnik_version_string", &mapnik_version_string,"Get the Mapnik version string");
+ m.def("has_proj", &has_proj, "Get proj status");
+ m.def("has_jpeg", &has_jpeg, "Get jpeg read/write support status");
+ m.def("has_png", &has_png, "Get png read/write support status");
+ m.def("has_tiff", &has_tiff, "Get tiff read/write support status");
+ m.def("has_webp", &has_webp, "Get webp read/write support status");
+ m.def("has_svg_renderer", &has_svg_renderer, "Get svg_renderer status");
+ m.def("has_grid_renderer", &has_grid_renderer, "Get grid_renderer status");
+ m.def("has_cairo", &has_cairo, "Get cairo library status");
+// m.def("has_pycairo", &has_pycairo, "Get pycairo module status");
 }
 
 // #pragma GCC diagnostic push
@@ -623,88 +718,6 @@ PYBIND11_MODULE(_mapnik, m) {
 //     PyErr_SetString(PyExc_RuntimeError, ex.what());
 // }
 
-// unsigned mapnik_version()
-// {
-//     return MAPNIK_VERSION;
-// }
-
-// std::string mapnik_version_string()
-// {
-//     return MAPNIK_VERSION_STRING;
-// }
-
-// bool has_proj()
-// {
-// #if defined(MAPNIK_USE_PROJ)
-//     return true;
-// #else
-//     return false;
-// #endif
-// }
-
-// bool has_svg_renderer()
-// {
-// #if defined(SVG_RENDERER)
-//     return true;
-// #else
-//     return false;
-// #endif
-// }
-
-// bool has_grid_renderer()
-// {
-// #if defined(GRID_RENDERER)
-//     return true;
-// #else
-//     return false;
-// #endif
-// }
-
-// bool has_jpeg()
-// {
-// #if defined(HAVE_JPEG)
-//     return true;
-// #else
-//     return false;
-// #endif
-// }
-
-// bool has_png()
-// {
-// #if defined(HAVE_PNG)
-//     return true;
-// #else
-//     return false;
-// #endif
-// }
-
-// bool has_tiff()
-// {
-// #if defined(HAVE_TIFF)
-//     return true;
-// #else
-//     return false;
-// #endif
-// }
-
-// bool has_webp()
-// {
-// #if defined(HAVE_WEBP)
-//     return true;
-// #else
-//     return false;
-// #endif
-// }
-
-// // indicator for cairo rendering support inside libmapnik
-// bool has_cairo()
-// {
-// #if defined(HAVE_CAIRO)
-//     return true;
-// #else
-//     return false;
-// #endif
-// }
 
 // // indicator for pycairo support in the python bindings
 // bool has_pycairo()
