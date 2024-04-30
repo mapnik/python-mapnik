@@ -36,6 +36,7 @@ void export_featureset(py::module const&);
 void export_expression(py::module&);
 void export_datasource(py::module&);
 void export_datasource_cache(py::module const&);
+void export_image(py::module const&);
 void export_projection(py::module&);
 void export_proj_transform(py::module const&);
 
@@ -50,6 +51,7 @@ PYBIND11_MODULE(_mapnik, m) {
  export_expression(m);
  export_datasource(m);
  export_datasource_cache(m);
+ export_image(m);
  export_projection(m);
  export_proj_transform(m);
 }

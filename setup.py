@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 from pybind11.setup_helpers import Pybind11Extension, build_ext
 from setuptools import setup, find_packages
@@ -47,8 +47,7 @@ extra_comp_args = check_output([mapnik_config, '--cflags']).split(' ')
 extra_comp_args = list(filter(lambda arg: arg != "-fvisibility=hidden", extra_comp_args))
 
 if sys.platform == 'darwin':
-     extra_comp_args.append('-mmacosx-version-min=11.0')
-     linkflags.append('-mmacosx-version-min=11.0')
+     pass
 else:
      linkflags.append('-lrt')
      linkflags.append('-Wl,-z,origin')
@@ -70,6 +69,7 @@ ext_modules = [
                "src/mapnik_expression.cpp",
                "src/mapnik_datasource.cpp",
                "src/mapnik_datasource_cache.cpp",
+               "src/mapnik_image.cpp",
                "src/mapnik_projection.cpp",
                "src/mapnik_proj_transform.cpp",
           ],
