@@ -29,8 +29,8 @@ if 'shape' in plugins and 'ogr' in plugins:
     def ensure_geometries_are_interpreted_equivalently(filename):
         ds1 = mapnik.Ogr(file=filename, layer_by_index=0)
         ds2 = mapnik.Shapefile(file=filename)
-        fs1 = ds1.featureset()
-        fs2 = ds2.featureset()
+        fs1 = iter(ds1)
+        fs2 = iter(ds2)
         count = 0
         for feat1, feat2 in zip(fs1, fs2):
             count += 1
