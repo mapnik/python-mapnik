@@ -29,18 +29,6 @@
 #include <mapnik/image_reader.hpp>
 #include <mapnik/image_compositing.hpp>
 #include <mapnik/image_view_any.hpp>
-// cairo
-#if defined(HAVE_CAIRO) && defined(HAVE_PYCAIRO)
-#include <mapnik/cairo/cairo_context.hpp>
-#include <mapnik/cairo/cairo_image_util.hpp>
-#if PY_MAJOR_VERSION >= 3
-#define PYCAIRO_NO_IMPORT
-#include <py3cairo.h>
-#else
-#include <pycairo.h>
-#endif
-#include <cairo.h>
-#endif
 //stl
 #include <type_traits>
 //pybind11
@@ -74,7 +62,6 @@ py::object to_string3(image_any const & im, std::string const& format, mapnik::r
     std::string s = mapnik::save_to_string(im, format, pal);
     return py::bytes(s.data(), s.length());
 }
-
 
 void save_to_file1(mapnik::image_any const& im, std::string const& filename)
 {
@@ -289,15 +276,64 @@ void composite(image_any & dst, image_any & src, mapnik::composite_mode_e mode, 
     }
 }
 
-#if defined(HAVE_CAIRO) && defined(HAVE_PYCAIRO)
-std::shared_ptr<image_any> from_cairo(PycairoSurface* py_surface)
+std::shared_ptr<image_any> from_cairo(py::object const& surface)
 {
-    mapnik::cairo_surface_ptr surface(cairo_surface_reference(py_surface->surface), mapnik::cairo_surface_closer());
-    mapnik::image_rgba8 image = mapnik::image_rgba8(cairo_image_surface_get_width(&*surface), cairo_image_surface_get_height(&*surface));
-    cairo_image_to_rgba8(image, surface);
-    return std::make_shared<image_any>(std::move(image));
+    py::object ImageSurface = py::module_::import("cairo").attr("ImageSurface");
+    py::object get_width = ImageSurface.attr("get_width");
+    py::object get_height = ImageSurface.attr("get_height");
+    py::object get_format = ImageSurface.attr("get_format");
+    py::object get_data = ImageSurface.attr("get_data");
+    int format = py::int_(get_format(surface));
+    int width = py::int_(get_width(surface));
+    int height = py::int_(get_height(surface));
+    if (format == 0 ) // cairo.Format.ARGB32
+    {
+        mapnik::image_rgba8 image{width, height};
+        py::memoryview view = get_data(surface);
+        auto buf = py::buffer(view);
+        py::buffer_info info = buf.request();
+        const std::unique_ptr<unsigned int[]> out_row(new unsigned int[width]);
+        unsigned int const* in_row = reinterpret_cast<unsigned int const*>(info.ptr);
+        for (int row = 0; row < height; row++, in_row += width)
+        {
+            for (int column = 0; column < width; column++)
+            {
+                unsigned int in = in_row[column];
+                unsigned int a = (in >> 24) & 0xff;
+                unsigned int r = (in >> 16) & 0xff;
+                unsigned int g = (in >> 8) & 0xff;
+                unsigned int b = (in >> 0) & 0xff;
+                out_row[column] = mapnik::color(r, g, b, a).rgba();
+            }
+            image.set_row(row, out_row.get(), width);
+        }
+        return std::make_shared<image_any>(std::move(image));
+    }
+    else if (format == 1 ) // cairo.Format.RGB24
+    {
+        mapnik::image_rgba8 image{width, height};
+        py::memoryview view = get_data(surface);
+        auto buf = py::buffer(view);
+        py::buffer_info info = buf.request();
+        const std::unique_ptr<unsigned int[]> out_row(new unsigned int[width]);
+        unsigned int const* in_row = reinterpret_cast<unsigned int const*>(info.ptr);
+        for (int row = 0; row < height; row++, in_row += width)
+        {
+            for (int column = 0; column < width; column++)
+            {
+                unsigned int in = in_row[column];
+                unsigned int r = (in >> 16) & 0xff;
+                unsigned int g = (in >> 8) & 0xff;
+                unsigned int b = (in >> 0) & 0xff;
+                out_row[column] = mapnik::color(r, g, b, 255).rgba();
+            }
+            image.set_row(row, out_row.get(), width);
+        }
+        return std::make_shared<image_any>(std::move(image));
+    }
+
+    throw std::runtime_error("Unable to convert this Cairo format to rgba8 image");
 }
-#endif
 
 } // namespace
 
@@ -381,9 +417,7 @@ void export_image(py::module const& m)
         .def_static("from_buffer",&from_buffer)
         .def_static("from_memoryview",&from_memoryview)
         .def_static("from_string",&from_string)
-#if defined(HAVE_CAIRO) && defined(HAVE_PYCAIRO)
         .def_static("from_cairo",&from_cairo)
-#endif
         ;
 
 }
