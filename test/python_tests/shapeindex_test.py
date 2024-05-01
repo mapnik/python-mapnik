@@ -36,9 +36,9 @@ def test_shapeindex(setup):
         dest_file = os.path.join(working_dir, os.path.relpath(shp, source_dir))
         ds = mapnik.Shapefile(file=source_file)
         count = 0
-        fs = ds.featureset()
+        fs = iter(ds)
         try:
-            while (fs.next()):
+            while (next(fs)):
                 count = count + 1
         except StopIteration:
             pass
@@ -47,9 +47,9 @@ def test_shapeindex(setup):
             dest_file, shell=True, stdout=PIPE, stderr=PIPE).communicate()
         ds2 = mapnik.Shapefile(file=dest_file)
         count2 = 0
-        fs = ds.featureset()
+        fs = iter(ds)
         try:
-            while (fs.next()):
+            while (next(fs)):
                 count2 = count2 + 1
         except StopIteration:
             pass
