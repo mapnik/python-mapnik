@@ -59,7 +59,7 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
         query = mapnik.Query(ds.envelope())
         for fld in ds.fields():
             query.add_property_name(fld)
-        feat = list(ds.all_features())[0]
+        feat = list(iter(ds))[0]
         assert feat.id() ==  1
         assert feat['LONG'] ==  '0'
         assert feat['LAT'] ==  '0'
@@ -75,7 +75,7 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
         assert len(ds.fields()) ==  2
         assert ds.fields(), ['id' ==  'name']
         assert ds.field_types(), ['int' ==  'str']
-        assert len(list(ds.all_features())) ==  3
+        assert len(list(iter(ds))) ==  3
 
     # ogr2ogr tests/data/shp/3dpoint/ogr_zfield.shp
     # tests/data/shp/3dpoint/qgis.shp -zfield id
@@ -84,14 +84,14 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
         assert len(ds.fields()) ==  2
         assert ds.fields(), ['id' ==  'name']
         assert ds.field_types(), ['int' ==  'str']
-        assert len(list(ds.all_features())) ==  3
+        assert len(list(iter(ds))) ==  3
 
     def test_shapefile_multipoint_from_qgis():
         ds = mapnik.Shapefile(file='../data/shp/points/qgis_multi.shp')
         assert len(ds.fields()) ==  2
         assert ds.fields(), ['id' ==  'name']
         assert ds.field_types(), ['int' ==  'str']
-        assert len(list(ds.all_features())) ==  1
+        assert len(list(iter(ds))) ==  1
 
     # pointzm from arcinfo
     def test_shapefile_point_zm_from_arcgis():
@@ -105,7 +105,7 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
                                'Name',
                                'Website']
         assert ds.field_types() == ['str', 'str', 'str', 'float', 'float', 'str', 'str']
-        assert len(list(ds.all_features())) ==  17
+        assert len(list(iter(ds))) ==  17
 
     # copy of the above with ogr2ogr that makes m record 14 instead of 18
     def test_shapefile_point_zm_from_ogr():
@@ -119,4 +119,4 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
                             'Name',
                             'Website']
         assert ds.field_types() == ['str', 'str', 'str', 'float', 'float', 'str', 'str']
-        assert len(list(ds.all_features())) ==  17
+        assert len(list(iter(ds))) ==  17
