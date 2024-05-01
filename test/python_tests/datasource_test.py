@@ -71,7 +71,7 @@ def test_field_listing():
 def test_total_feature_count_shp():
     if 'shape' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.Shapefile(file='../data/shp/poly.shp')
-        features = ds.all_features()
+        features = iter(ds)
         num_feats = len(list(features))
         assert num_feats ==  10
 
@@ -83,7 +83,7 @@ def test_total_feature_count_json():
         assert desc['name'] ==  'ogr'
         assert desc['type'] ==  mapnik.DataType.Vector
         assert desc['encoding'] ==  'utf-8'
-        features = ds.all_features()
+        features = iter(ds)
         num_feats = len(list(features))
         assert num_feats ==  5
 
@@ -98,7 +98,7 @@ def test_sqlite_reading():
         assert desc['name'] ==  'sqlite'
         assert desc['type'] ==  mapnik.DataType.Vector
         assert desc['encoding'] ==  'utf-8'
-        features = ds.all_features()
+        features = iter(ds)
         num_feats = len(list(features))
         assert num_feats ==  245
 
@@ -108,7 +108,7 @@ def test_reading_json_from_string():
         json = f.read()
     if 'ogr' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.Ogr(file=json, layer_by_index=0)
-        features = ds.all_features()
+        features = iter(ds)
         num_feats = len(list(features))
         assert num_feats ==  5
 
@@ -116,8 +116,7 @@ def test_reading_json_from_string():
 def test_feature_envelope():
     if 'shape' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.Shapefile(file='../data/shp/poly.shp')
-        features = ds.all_features()
-        for feat in features:
+        for feat in ds:
             env = feat.envelope()
             contains = ds.envelope().contains(env)
             assert contains ==  True
@@ -128,19 +127,19 @@ def test_feature_envelope():
 def test_feature_attributes():
     if 'shape' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.Shapefile(file='../data/shp/poly.shp')
-        features = list(ds.all_features())
+        features = list(iter(ds))
         feat = features[0]
-        attrs = {'PRFEDEA': u'35043411', 'EAS_ID': 168, 'AREA': 215229.266}
+        attrs = {'AREA': 215229.266, 'EAS_ID': 168, 'PRFEDEA': '35043411'}
         assert feat.attributes ==  attrs
-        assert ds.fields(), ['AREA', 'EAS_ID' ==  'PRFEDEA']
-        assert ds.field_types(), ['float', 'int' ==  'str']
+        assert ds.fields(), ['AREA', 'EAS_ID', 'PRFEDEA']
+        assert ds.field_types(), ['float', 'int', 'str']
 
 
 def test_ogr_layer_by_sql():
     if 'ogr' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.Ogr(file='../data/shp/poly.shp',
                         layer_by_sql='SELECT * FROM poly WHERE EAS_ID = 168')
-        features = ds.all_features()
+        features = iter(ds)
         num_feats = len(list(features))
         assert num_feats ==  1
 
