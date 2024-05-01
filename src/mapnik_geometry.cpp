@@ -217,7 +217,6 @@ void export_geometry(py::module const& m)
             py::object loads = json.attr("loads");
             return loads(to_geojson_impl<geometry<double>>(g));})
         //.def("to_svg",&to_svg)
-        // TODO add other geometry_type methods
         ;
 
     py::implicitly_convertible<point<double>, geometry<double>>();

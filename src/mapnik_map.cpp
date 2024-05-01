@@ -2,7 +2,7 @@
  *
  * This file is part of Mapnik (c++ mapping toolkit)
  *
- * Copyright (C) 2015 Artem Pavlenko, Jean-Francois Doyon
+ * Copyright (C) 2024 Artem Pavlenko
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,18 +20,8 @@
  *
  *****************************************************************************/
 
+//mapnik
 #include <mapnik/config.hpp>
-
-
-#pragma GCC diagnostic push
-#include <mapnik/warning_ignore.hpp>
-#include <boost/python.hpp>
-#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
-#include <boost/python/iterator.hpp>
-#include <boost/iterator/transform_iterator.hpp>
-#pragma GCC diagnostic pop
-
-// mapnik
 #include <mapnik/rule.hpp>
 #include <mapnik/layer.hpp>
 #include <mapnik/map.hpp>
@@ -39,7 +29,6 @@
 #include <mapnik/projection.hpp>
 #include <mapnik/view_transform.hpp>
 #include <mapnik/feature_type_style.hpp>
-#include "mapnik_enumeration.hpp"
 
 using mapnik::color;
 using mapnik::coord;
