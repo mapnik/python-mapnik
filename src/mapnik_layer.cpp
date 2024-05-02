@@ -37,6 +37,9 @@ using mapnik::layer;
 using mapnik::parameters;
 using mapnik::datasource_cache;
 
+std::vector<std::string> & (mapnik::layer::*set_styles_)() = &mapnik::layer::styles;
+std::vector<std::string> const& (mapnik::layer::*get_styles_)() const = &mapnik::layer::styles;
+
 void export_layer(py::module const& m)
 {
     py::class_<layer>(m, "Layer", "A Mapnik map layer.")
@@ -54,8 +57,6 @@ void export_layer(py::module const& m)
              "<mapnik._mapnik.Layer object at 0x6a270>\n",
              py::arg("name"), py::arg("srs") = mapnik::MAPNIK_GEOGRAPHIC_PROJ
             )
-
-        //.def_pickle(layer_pickle_suite())
 
         .def("envelope",&layer::envelope,
              "Return the geographic envelope/bounding box."
@@ -260,12 +261,8 @@ void export_layer(py::module const& m)
             )
 
         .def_property("styles",
-                      [](layer const& l) {
-                          return l.styles();
-                      },
-                      [] (layer& l) {
-                          return l.styles();
-                      },
+                      get_styles_,
+                      set_styles_,
                       "The styles list attached to this layer.\n"
                       "\n"
                       "Usage:\n"
