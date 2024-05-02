@@ -63,7 +63,7 @@ bool has_grid_renderer()
 #endif
 }
 
-bool has_jpeg()
+constexpr bool has_jpeg()
 {
 #if defined(HAVE_JPEG)
     return true;
@@ -72,7 +72,7 @@ bool has_jpeg()
 #endif
 }
 
-bool has_png()
+constexpr bool has_png()
 {
 #if defined(HAVE_PNG)
     return true;
@@ -122,8 +122,10 @@ void export_expression(py::module&);
 void export_datasource(py::module&);
 void export_datasource_cache(py::module const&);
 void export_image(py::module const&);
+void export_layer(py::module const&);
 void export_projection(py::module&);
 void export_proj_transform(py::module const&);
+void export_query(py::module const& m);
 
 PYBIND11_MODULE(_mapnik, m) {
  export_color(m);
@@ -139,8 +141,10 @@ PYBIND11_MODULE(_mapnik, m) {
  export_datasource(m);
  export_datasource_cache(m);
  export_image(m);
+ export_layer(m);
  export_projection(m);
  export_proj_transform(m);
+ export_query(m);
 
  m.def("mapnik_version", &mapnik_version,"Get the Mapnik version number");
  m.def("mapnik_version_string", &mapnik_version_string,"Get the Mapnik version string");
@@ -154,23 +158,6 @@ PYBIND11_MODULE(_mapnik, m) {
  m.def("has_cairo", &has_cairo, "Get cairo library status");
 // m.def("has_pycairo", &has_pycairo, "Get pycairo module status");
 }
-
-// #pragma GCC diagnostic push
-// #include <mapnik/warning_ignore.hpp>
-// #include "python_to_value.hpp"
-// #include <boost/python/args.hpp>        // for keywords, arg, etc
-// #include <boost/python/converter/from_python.hpp>
-// #include <boost/python/def.hpp>         // for def
-// #include <boost/python/detail/defaults_gen.hpp>
-// #include <boost/python/detail/none.hpp>  // for none
-// #include <boost/python/dict.hpp>        // for dict
-// #include <boost/python/exception_translator.hpp>
-// #include <boost/python/list.hpp>        // for list
-// #include <boost/python/module.hpp>      // for BOOST_PYTHON_MODULE
-// #include <boost/python/object_core.hpp>  // for get_managed_object
-// #include <boost/python/register_ptr_to_python.hpp>
-// #include <boost/python/to_python_converter.hpp>
-// #pragma GCC diagnostic pop
 
 // // stl
 // #include <stdexcept>

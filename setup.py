@@ -58,6 +58,9 @@ ext_modules = [
      Pybind11Extension(
           "mapnik._mapnik",
           [
+               "src/mapnik_layer.cpp",
+               "src/mapnik_query.cpp",
+
                "src/mapnik_python.cpp",
                "src/mapnik_color.cpp",
                "src/mapnik_composite_modes.cpp",
@@ -74,6 +77,7 @@ ext_modules = [
                "src/mapnik_image.cpp",
                "src/mapnik_projection.cpp",
                "src/mapnik_proj_transform.cpp",
+
           ],
           extra_compile_args=extra_comp_args,
           extra_link_args=linkflags,
