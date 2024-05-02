@@ -28,17 +28,13 @@
 #include <mapnik/feature_layer_desc.hpp>
 #include <mapnik/memory_datasource.hpp>
 #include "mapnik_value_converter.hpp"
+#include "python_optional.hpp"
 // stl
 #include <vector>
 //pybind11
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>
-
-namespace PYBIND11_NAMESPACE { namespace detail {
-    template <typename T>
-    struct type_caster<boost::optional<T>> : optional_caster<boost::optional<T>> {};
-}}
 
 
 using mapnik::datasource;
