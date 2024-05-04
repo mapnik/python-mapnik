@@ -60,7 +60,7 @@ ext_modules = [
           [
                "src/mapnik_layer.cpp",
                "src/mapnik_query.cpp",
-
+               "src/mapnik_map.cpp",
                "src/mapnik_python.cpp",
                "src/mapnik_color.cpp",
                "src/mapnik_composite_modes.cpp",
