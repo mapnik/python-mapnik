@@ -37,8 +37,8 @@
 #include <mapnik/util/geometry_to_geojson.hpp> // to_geojson
 #include <mapnik/util/geometry_to_wkb.hpp> // to_wkb
 #include <mapnik/util/geometry_to_wkt.hpp> // to_wkt
-//#include <mapnik/util/geometry_to_svg.hpp>
 #include <mapnik/wkb.hpp>
+#include "python_variant.hpp"
 
 // stl
 #include <stdexcept>
@@ -48,14 +48,6 @@
 #include <pybind11/stl.h>
 
 namespace py = pybind11;
-
-PYBIND11_MAKE_OPAQUE(mapnik::geometry::line_string<double>);
-PYBIND11_MAKE_OPAQUE(mapnik::geometry::linear_ring<double>);
-PYBIND11_MAKE_OPAQUE(mapnik::geometry::polygon<double>);
-PYBIND11_MAKE_OPAQUE(mapnik::geometry::multi_point<double>);
-PYBIND11_MAKE_OPAQUE(mapnik::geometry::multi_line_string<double>);
-PYBIND11_MAKE_OPAQUE(mapnik::geometry::multi_polygon<double>);
-PYBIND11_MAKE_OPAQUE(mapnik::geometry::geometry_collection<double>);
 
 namespace {
 
@@ -155,29 +147,16 @@ void geometry_correct_impl(mapnik::geometry::geometry<double> & geom)
     mapnik::geometry::correct(geom);
 }
 
-void line_string_add_coord_impl1(mapnik::geometry::line_string<double> & l, double x, double y)
+template <typename T>
+void add_coord(T & geom, double x, double y)
 {
-    l.emplace_back(x, y);
+    geom.emplace_back(x, y);
 }
 
-void line_string_add_coord_impl2(mapnik::geometry::line_string<double> & l, mapnik::geometry::point<double> const& p)
+template <typename Dst, typename Src>
+void add_impl(Dst & geom, Src const& src)
 {
-    l.push_back(p);
-}
-
-void linear_ring_add_coord_impl1(mapnik::geometry::linear_ring<double> & l, double x, double y)
-{
-    l.emplace_back(x, y);
-}
-
-void linear_ring_add_coord_impl2(mapnik::geometry::linear_ring<double> & l, mapnik::geometry::point<double> const& p)
-{
-    l.push_back(p);
-}
-
-void polygon_add_ring_impl(mapnik::geometry::polygon<double> & poly, mapnik::geometry::linear_ring<double> const& ring)
-{
-    poly.push_back(ring); // copy
+    geom.push_back(src); // copy
 }
 
 mapnik::geometry::point<double> geometry_centroid_impl(mapnik::geometry::geometry<double> const& geom)
@@ -195,33 +174,11 @@ void export_geometry(py::module const& m)
     using mapnik::geometry::line_string;
     using mapnik::geometry::linear_ring;
     using mapnik::geometry::polygon;
+    using mapnik::geometry::multi_point;
+    using mapnik::geometry::multi_line_string;
+    using mapnik::geometry::multi_polygon;
+    using mapnik::geometry::geometry_collection;
 
-    py::class_<geometry<double>, std::shared_ptr<geometry<double>>>(m, "Geometry")
-        .def("envelope",&geometry_envelope_impl<geometry<double>>)
-        .def_static("from_geojson", from_geojson_impl)
-        .def_static("from_wkt", from_wkt_impl)
-        .def_static("from_wkb", from_wkb_impl)
-        .def("__str__",&to_wkt_impl<geometry<double>>)
-        .def("type",&geometry_type_impl)
-        .def("is_valid", &geometry_is_valid_impl<geometry<double>>)
-        .def("is_simple", &geometry_is_simple_impl<geometry<double>>)
-        .def("is_empty", &geometry_is_empty_impl<geometry<double>>)
-        .def("correct", &geometry_correct_impl)
-        .def("centroid",&geometry_centroid_impl)
-        .def("to_wkb",&to_wkb_impl<geometry<double>>)
-        .def("to_wkt",&to_wkt_impl<geometry<double>>)
-        .def("to_json",&to_geojson_impl<geometry<double>>)
-        .def("to_geojson",&to_geojson_impl<geometry<double>>)
-        .def_property_readonly("__geo_interface__", [](geometry<double> const& g) {
-            py::object json = py::module_::import("json");
-            py::object loads = json.attr("loads");
-            return loads(to_geojson_impl<geometry<double>>(g));})
-        //.def("to_svg",&to_svg)
-        ;
-
-    py::implicitly_convertible<point<double>, geometry<double>>();
-    py::implicitly_convertible<line_string<double>, geometry<double>>();
-    py::implicitly_convertible<polygon<double>, geometry<double>>();
 
     py::enum_<mapnik::geometry::geometry_types>(m, "GeometryType")
         .value("Unknown",mapnik::geometry::geometry_types::Unknown)
@@ -254,10 +211,28 @@ void export_geometry(py::module const& m)
         .def("envelope",&geometry_envelope_impl<point<double>>)
         ;
 
+    py::class_<multi_point<double>>(m, "MultiPoint")
+        .def(py::init<>(),
+             "Constructs a new MultiPoint object\n")
+        .def("add_point", &add_coord<multi_point<double>>, "Adds coord x,y")
+        .def("add_point", &add_impl<multi_point<double>, point<double>>, "Adds mapnik.Point")
+        .def("is_valid", &geometry_is_valid_impl<multi_point<double>>)
+        .def("is_simple", &geometry_is_simple_impl<multi_point<double>>)
+        .def("to_geojson",&to_geojson_impl<multi_point<double>>)
+        .def("to_wkb",&to_wkb_impl<multi_point<double>>)
+        .def("to_wkt",&to_wkt_impl<multi_point<double>>)
+        .def("envelope",&geometry_envelope_impl<multi_point<double>>)
+        .def("num_points",[](multi_point<double> const& mp) { return mp.size(); },"Number of points in MultiPoint")
+        .def("__len__", [](multi_point<double>const &mp) { return mp.size(); })
+        .def("__iter__", [](multi_point<double> const& mp) {
+            return py::make_iterator(mp.begin(), mp.end());
+        }, py::keep_alive<0, 1>())
+        ;
+
     py::class_<line_string<double> >(m, "LineString")
         .def(py::init<>(), "Constructs a new LineString object\n")
-        .def("add_point", &line_string_add_coord_impl1, "Adds coord x,y")
-        .def("add_point", &line_string_add_coord_impl2, "Adds mapnik.Point")
+        .def("add_point", &add_coord<line_string<double>>, "Adds coord x,y")
+        .def("add_point", &add_impl<line_string<double>, point<double>>, "Adds mapnik.Point")
         .def("is_valid", &geometry_is_valid_impl<line_string<double>>)
         .def("is_simple", &geometry_is_simple_impl<line_string<double>>)
         .def("to_geojson",&to_geojson_impl<line_string<double>>)
@@ -273,8 +248,8 @@ void export_geometry(py::module const& m)
 
     py::class_<linear_ring<double> >(m, "LinearRing")
         .def(py::init<>(),  "Constructs a new LinearRtring object\n")
-        .def("add_point", &linear_ring_add_coord_impl1, "Adds coord x,y")
-        .def("add_point", &linear_ring_add_coord_impl2, "Adds mapnik.Point")
+        .def("add_point", &add_coord<linear_ring<double>>, "Adds coord x,y")
+        .def("add_point", &add_impl<linear_ring<double>, point<double>>, "Adds mapnik.Point")
         .def("envelope",&geometry_envelope_impl<linear_ring<double>>)
         .def("__len__", [](linear_ring<double>const &r) { return r.size(); })
         .def("__iter__", [](linear_ring<double> const& r) {
@@ -284,7 +259,7 @@ void export_geometry(py::module const& m)
 
     py::class_<polygon<double> >(m, "Polygon")
         .def(py::init<>(), "Constructs a new Polygon object\n")
-        .def("add_ring", &polygon_add_ring_impl, "Add ring")
+        .def("add_ring", &add_impl<polygon<double>, linear_ring<double>>, "Add ring")
         .def("is_valid", &geometry_is_valid_impl<polygon<double>>)
         .def("is_simple", &geometry_is_simple_impl<polygon<double>>)
         .def("to_geojson",&to_geojson_impl<polygon<double>>)
@@ -297,4 +272,87 @@ void export_geometry(py::module const& m)
             return py::make_iterator(p.begin(), p.end());
         }, py::keep_alive<0, 1>())
         ;
+
+    py::class_<multi_line_string<double> >(m, "MultiLineString")
+        .def(py::init<>(), "Constructs a new MultiLineString object\n")
+        .def("add_string", &add_impl<multi_line_string<double>, line_string<double>>, "Add LineString")
+        .def("is_valid", &geometry_is_valid_impl<multi_line_string<double>>)
+        .def("is_simple", &geometry_is_simple_impl<multi_line_string<double>>)
+        .def("to_geojson",&to_geojson_impl<multi_line_string<double>>)
+        .def("to_wkb",&to_wkb_impl<multi_line_string<double>>)
+        .def("to_wkt",&to_wkt_impl<multi_line_string<double>>)
+        .def("envelope",&geometry_envelope_impl<multi_line_string<double>>)
+        .def("__len__", [](multi_line_string<double>const& mls) { return mls.size(); })
+        .def("__iter__", [](multi_line_string<double> const& mls) {
+            return py::make_iterator(mls.begin(), mls.end());
+        }, py::keep_alive<0, 1>())
+        ;
+
+    py::class_<multi_polygon<double> >(m, "MultiPolygon")
+        .def(py::init<>(), "Constructs a new MultiPolygon object\n")
+        .def("add_polygon", &add_impl<multi_polygon<double>, polygon<double>>, "Add Polygon")
+        .def("is_valid", &geometry_is_valid_impl<multi_polygon<double>>)
+        .def("is_simple", &geometry_is_simple_impl<multi_polygon<double>>)
+        .def("to_geojson",&to_geojson_impl<multi_polygon<double>>)
+        .def("to_wkb",&to_wkb_impl<multi_polygon<double>>)
+        .def("to_wkt",&to_wkt_impl<multi_polygon<double>>)
+        .def("envelope",&geometry_envelope_impl<multi_polygon<double>>)
+        .def("__len__", [](multi_polygon<double>const& mp) { return mp.size(); })
+        .def("__iter__", [](multi_polygon<double> const& mp) {
+            return py::make_iterator(mp.begin(), mp.end());
+        }, py::keep_alive<0, 1>())
+        ;
+
+    py::class_<geometry_collection<double> >(m, "GeometryCollection")
+        .def(py::init<>(), "Constructs a new GeometryCollection object\n")
+        .def("add_geometry", &add_impl<geometry_collection<double>, geometry<double>>, "Add Geometry")
+        .def("is_valid", &geometry_is_valid_impl<geometry_collection<double>>)
+        .def("is_simple", &geometry_is_simple_impl<geometry_collection<double>>)
+        .def("to_geojson",&to_geojson_impl<geometry_collection<double>>)
+        .def("to_wkb",&to_wkb_impl<geometry_collection<double>>)
+        .def("to_wkt",&to_wkt_impl<geometry_collection<double>>)
+        .def("envelope",&geometry_envelope_impl<geometry_collection<double>>)
+        .def("__len__", [](geometry_collection<double>const& gc) { return gc.size(); })
+        .def("__iter__", [](geometry_collection<double> const& gc) {
+            return py::make_iterator(gc.begin(), gc.end());
+        }, py::keep_alive<0, 1>())
+        ;
+
+    py::class_<geometry<double>, std::shared_ptr<geometry<double>>>(m, "Geometry")
+        .def(py::init<point<double>>())
+        .def(py::init<line_string<double>>())
+        .def(py::init<polygon<double>>())
+        .def(py::init<multi_point<double>>())
+        .def(py::init<multi_line_string<double>>())
+        .def(py::init<multi_polygon<double>>())
+        .def(py::init<geometry_collection<double>>())
+        .def("envelope",&geometry_envelope_impl<geometry<double>>)
+        .def_static("from_geojson", from_geojson_impl)
+        .def_static("from_wkt", from_wkt_impl)
+        .def_static("from_wkb", from_wkb_impl)
+        .def("__str__",&to_wkt_impl<geometry<double>>)
+        .def("type",&geometry_type_impl)
+        .def("is_valid", &geometry_is_valid_impl<geometry<double>>)
+        .def("is_simple", &geometry_is_simple_impl<geometry<double>>)
+        .def("is_empty", &geometry_is_empty_impl<geometry<double>>)
+        .def("correct", &geometry_correct_impl)
+        .def("centroid",&geometry_centroid_impl)
+        .def("to_wkb",&to_wkb_impl<geometry<double>>)
+        .def("to_wkt",&to_wkt_impl<geometry<double>>)
+        .def("to_json",&to_geojson_impl<geometry<double>>)
+        .def("to_geojson",&to_geojson_impl<geometry<double>>)
+        .def_property_readonly("__geo_interface__", [](geometry<double> const& g) {
+            py::object json = py::module_::import("json");
+            py::object loads = json.attr("loads");
+            return loads(to_geojson_impl<geometry<double>>(g));})
+        ;
+
+    py::implicitly_convertible<mapnik::geometry::point<double>, mapnik::geometry::geometry<double>>();
+    py::implicitly_convertible<mapnik::geometry::line_string<double>, mapnik::geometry::geometry<double>>();
+    py::implicitly_convertible<mapnik::geometry::polygon<double>, mapnik::geometry::geometry<double>>();
+    py::implicitly_convertible<mapnik::geometry::multi_point<double>, mapnik::geometry::geometry<double>>();
+    py::implicitly_convertible<mapnik::geometry::multi_line_string<double>, mapnik::geometry::geometry<double>>();
+    py::implicitly_convertible<mapnik::geometry::multi_polygon<double>, mapnik::geometry::geometry<double>>();
+    py::implicitly_convertible<mapnik::geometry::geometry_collection<double>, mapnik::geometry::geometry<double>>();
+
 }
