@@ -29,6 +29,7 @@
 #include <mapnik/memory_datasource.hpp>
 #include "mapnik_value_converter.hpp"
 #include "python_optional.hpp"
+#include "create_datasource.hpp"
 // stl
 #include <vector>
 //pybind11
@@ -55,37 +56,6 @@ struct mapnik_param_to_python
         return mapnik::util::apply_visitor(value_converter(),v);
     }
 };
-
-std::shared_ptr<mapnik::datasource> create_datasource(py::kwargs const& kwargs)
-{
-    mapnik::parameters params;
-    for (auto param : kwargs)
-    {
-        std::string key = std::string(py::str(param.first));
-        py::handle handle = param.second;
-        if (py::isinstance<py::str>(handle))
-        {
-            params[key] = handle.cast<std::string>();
-        }
-        else if (py::isinstance<py::bool_>(handle))
-        {
-            params[key] = handle.cast<bool>();
-        }
-        else if (py::isinstance<py::float_>(handle))
-        {
-            params[key] = handle.cast<double>();
-        }
-        else if (py::isinstance<py::int_>(handle))
-        {
-            params[key] = handle.cast<long long>();
-        }
-        else
-        {
-            params[key] = py::str(handle).cast<std::string>();
-        }
-    }
-    return mapnik::datasource_cache::instance().create(params);
-}
 
 py::dict describe(std::shared_ptr<mapnik::datasource> const& ds)
 {
