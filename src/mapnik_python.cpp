@@ -20,8 +20,13 @@
  *
  *****************************************************************************/
 
+//mapnik
 #include <mapnik/config.hpp>
 #include <mapnik/version.hpp>
+#include <mapnik/map.hpp>
+#include <mapnik/load_map.hpp>
+#include <mapnik/save_map.hpp>
+//pybind11
 #include <pybind11/pybind11.h>
 
 namespace py = pybind11;
@@ -123,39 +128,61 @@ void export_datasource(py::module&);
 void export_datasource_cache(py::module const&);
 void export_image(py::module const&);
 void export_layer(py::module const&);
+void export_map(py::module const&);
 void export_projection(py::module&);
 void export_proj_transform(py::module const&);
 void export_query(py::module const& m);
 
-PYBIND11_MODULE(_mapnik, m) {
- export_color(m);
- export_composite_modes(m);
- export_coord(m);
- export_envelope(m);
- export_geometry(m);
- export_gamma_method(m);
- export_feature(m);
- export_featureset(m);
- export_font_engine(m);
- export_expression(m);
- export_datasource(m);
- export_datasource_cache(m);
- export_image(m);
- export_layer(m);
- export_projection(m);
- export_proj_transform(m);
- export_query(m);
 
- m.def("mapnik_version", &mapnik_version,"Get the Mapnik version number");
- m.def("mapnik_version_string", &mapnik_version_string,"Get the Mapnik version string");
- m.def("has_proj", &has_proj, "Get proj status");
- m.def("has_jpeg", &has_jpeg, "Get jpeg read/write support status");
- m.def("has_png", &has_png, "Get png read/write support status");
- m.def("has_tiff", &has_tiff, "Get tiff read/write support status");
- m.def("has_webp", &has_webp, "Get webp read/write support status");
- m.def("has_svg_renderer", &has_svg_renderer, "Get svg_renderer status");
- m.def("has_grid_renderer", &has_grid_renderer, "Get grid_renderer status");
- m.def("has_cairo", &has_cairo, "Get cairo library status");
+using mapnik::load_map;
+using mapnik::load_map_string;
+using mapnik::save_map;
+using mapnik::save_map_to_string;
+
+
+PYBIND11_MODULE(_mapnik, m) {
+    export_color(m);
+    export_composite_modes(m);
+    export_coord(m);
+    export_envelope(m);
+    export_geometry(m);
+    export_gamma_method(m);
+    export_feature(m);
+    export_featureset(m);
+    export_font_engine(m);
+    export_expression(m);
+    export_datasource(m);
+    export_datasource_cache(m);
+    export_image(m);
+    export_layer(m);
+    export_map(m);
+    export_projection(m);
+    export_proj_transform(m);
+    export_query(m);
+
+    m.def("mapnik_version", &mapnik_version,"Get the Mapnik version number");
+    m.def("mapnik_version_string", &mapnik_version_string,"Get the Mapnik version string");
+    m.def("has_proj", &has_proj, "Get proj status");
+    m.def("has_jpeg", &has_jpeg, "Get jpeg read/write support status");
+    m.def("has_png", &has_png, "Get png read/write support status");
+    m.def("has_tiff", &has_tiff, "Get tiff read/write support status");
+    m.def("has_webp", &has_webp, "Get webp read/write support status");
+    m.def("has_svg_renderer", &has_svg_renderer, "Get svg_renderer status");
+    m.def("has_grid_renderer", &has_grid_renderer, "Get grid_renderer status");
+    m.def("has_cairo", &has_cairo, "Get cairo library status");
+
+    m.def("load_map", &load_map,
+          py::arg("Map"),
+          py::arg("filename"),
+          py::arg("strict")=false,
+          py::arg("base_path") = "" );
+
+    m.def("load_map_from_string", &load_map_string,
+          py::arg("Map"),
+          py::arg("str"),
+          py::arg("strict")=false,
+          py::arg("base_path") = "" );
+
 // m.def("has_pycairo", &has_pycairo, "Get pycairo module status");
 }
 
