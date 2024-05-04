@@ -85,7 +85,7 @@ std::vector<std::string> plugin_names()
 
 void export_datasource_cache(py::module const& m)
 {
-    py::class_<mapnik::datasource_cache, std::unique_ptr<mapnik::datasource_cache,py::nodelete>>(m, "DatasourceCache")
+    py::class_<mapnik::datasource_cache, std::unique_ptr<mapnik::datasource_cache, py::nodelete>>(m, "DatasourceCache")
         .def_static("create",&create_datasource)
         .def_static("register_datasources",&register_datasources)
         .def_static("plugin_names",&plugin_names)
