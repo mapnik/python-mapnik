@@ -127,7 +127,7 @@ struct get_pixel_visitor
     py::object operator() (T const& im)
     {
         using pixel_type = typename T::pixel_type;
-        using python_type = std::conditional<std::is_integral<pixel_type>::value, py::int_, py::float_>::type;
+        using python_type = typename std::conditional<std::is_integral<pixel_type>::value, py::int_, py::float_>::type;
         return python_type(mapnik::get_pixel<pixel_type>(im, x_, y_));
     }
   private:
