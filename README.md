@@ -1,6 +1,3 @@
-
-[![Build Status](https://travis-ci.org/mapnik/python-mapnik.svg)](https://travis-ci.org/mapnik/python-mapnik)
-
 **New**  Python bindings for Mapnik **[WIP]**
 
 https://github.com/pybind/pybind11
