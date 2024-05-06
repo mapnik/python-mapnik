@@ -34,6 +34,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>
+#include <pybind11/stl_bind.h>
 
 namespace py = pybind11;
 
@@ -42,6 +43,8 @@ using mapnik::coord;
 using mapnik::box2d;
 using mapnik::layer;
 using mapnik::Map;
+
+PYBIND11_MAKE_OPAQUE(std::vector<mapnik::layer>);
 
 std::vector<layer>& (Map::*set_layers)() =  &Map::layers;
 std::vector<layer> const& (Map::*get_layers)() const =  &Map::layers;
@@ -130,8 +133,7 @@ void set_maximum_extent(mapnik::Map & m, boost::optional<mapnik::box2d<double> >
 
 void export_map(py::module const& m)
 {
-
-
+    py::bind_vector<std::vector<mapnik::layer>>(m, "Layers", py::module_local());
     // aspect ratio fix modes
     py::enum_<mapnik::Map::aspect_fix_mode>(m, "aspect_fix_mode")
         .value("GROW_BBOX", mapnik::Map::GROW_BBOX)
@@ -143,10 +145,6 @@ void export_map(py::module const& m)
         .value("ADJUST_CANVAS_WIDTH",mapnik::Map::ADJUST_CANVAS_WIDTH)
         .value("ADJUST_CANVAS_HEIGHT", mapnik::Map::ADJUST_CANVAS_HEIGHT)
         .value("RESPECT", mapnik::Map::RESPECT)
-        ;
-
-    py::class_<std::vector<layer> >(m, "Layers")
-        //.def(vector_indexing_suite<std::vector<layer> >())
         ;
 
     //py::class_<style_range>(m, "StyleRange")

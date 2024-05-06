@@ -30,6 +30,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>
+#include <pybind11/stl_bind.h>
 
 namespace py = pybind11;
 
@@ -37,11 +38,15 @@ using mapnik::layer;
 using mapnik::parameters;
 using mapnik::datasource_cache;
 
+PYBIND11_MAKE_OPAQUE(std::vector<std::string>);
+
 std::vector<std::string> & (mapnik::layer::*set_styles_)() = &mapnik::layer::styles;
 std::vector<std::string> const& (mapnik::layer::*get_styles_)() const = &mapnik::layer::styles;
 
 void export_layer(py::module const& m)
 {
+    py::bind_vector<std::vector<std::string>>(m, "StyleNames", py::module_local());
+
     py::class_<layer>(m, "Layer", "A Mapnik map layer.")
         .def(py::init<std::string const&, std::string const&>(),
              "Create a Layer with a named string and, optionally, an srs string.\n"
