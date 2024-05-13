@@ -77,7 +77,10 @@ ext_modules = [
                "src/mapnik_image.cpp",
                "src/mapnik_projection.cpp",
                "src/mapnik_proj_transform.cpp",
-
+               "src/mapnik_rule.cpp",
+               "src/mapnik_symbolizer.cpp",
+               "src/mapnik_polygon_symbolizer.cpp",
+               "src/mapnik_line_symbolizer.cpp",
           ],
           extra_compile_args=extra_comp_args,
           extra_link_args=linkflags,

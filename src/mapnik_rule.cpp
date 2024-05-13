@@ -2,7 +2,7 @@
  *
  * This file is part of Mapnik (c++ mapping toolkit)
  *
- * Copyright (C) 2015 Artem Pavlenko, Jean-Francois Doyon
+ * Copyright (C) 2024 Artem Pavlenko
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,19 +21,18 @@
  *****************************************************************************/
 
 #include <mapnik/config.hpp>
-
-
-#pragma GCC diagnostic push
-#include <mapnik/warning_ignore.hpp>
-#include <boost/python.hpp>
-#include <boost/python/implicit.hpp>
-#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
-#pragma GCC diagnostic pop
-
 // mapnik
 #include <mapnik/rule.hpp>
 #include <mapnik/expression.hpp>
 #include <mapnik/expression_string.hpp>
+//#include "python_variant.hpp"
+//pybind11
+#include <pybind11/pybind11.h>
+#include <pybind11/operators.h>
+#include <pybind11/stl.h>
+#include <pybind11/stl_bind.h>
+
+namespace py = pybind11;
 
 using mapnik::rule;
 using mapnik::expr_node;
@@ -52,45 +51,36 @@ using mapnik::group_symbolizer;
 using mapnik::symbolizer;
 using mapnik::to_expression_string;
 
-void export_rule()
+PYBIND11_MAKE_OPAQUE(std::vector<symbolizer>);
+
+void export_rule(py::module const& m)
 {
-    using namespace boost::python;
-    implicitly_convertible<point_symbolizer,symbolizer>();
-    implicitly_convertible<line_symbolizer,symbolizer>();
-    implicitly_convertible<line_pattern_symbolizer,symbolizer>();
-    implicitly_convertible<polygon_symbolizer,symbolizer>();
-    implicitly_convertible<building_symbolizer,symbolizer>();
-    implicitly_convertible<polygon_pattern_symbolizer,symbolizer>();
-    implicitly_convertible<raster_symbolizer,symbolizer>();
-    implicitly_convertible<shield_symbolizer,symbolizer>();
-    implicitly_convertible<text_symbolizer,symbolizer>();
-    implicitly_convertible<markers_symbolizer,symbolizer>();
-    implicitly_convertible<group_symbolizer,symbolizer>();
+    py::bind_vector<std::vector<symbolizer>>(m, "Symbolizers", py::module_local());
 
-    class_<rule::symbolizers>("Symbolizers",init<>("TODO"))
-        .def(vector_indexing_suite<rule::symbolizers>())
-        ;
+    py::class_<rule>(m, "Rule")
+        .def(py::init<>(), "default constructor")
+        .def(py::init<std::string, double, double>(),
+             py::arg("name"),
+             py::arg("min_scale_denominator")=0,
+             py::arg("max_scale_denominator")=std::numeric_limits<double>::infinity())
 
-    class_<rule>("Rule",init<>("default constructor"))
-        .def(init<std::string const&,
-             boost::python::optional<double,double> >())
-        .add_property("name",make_function
-                      (&rule::get_name,
-                       return_value_policy<copy_const_reference>()),
+        .def_property("name",
+                      &rule::get_name,
                       &rule::set_name)
-        .add_property("filter",make_function
-                      (&rule::get_filter,return_value_policy<copy_const_reference>()),
+
+        .def_property("filter",
+                      &rule::get_filter,
                       &rule::set_filter)
-        .add_property("min_scale",&rule::get_min_scale,&rule::set_min_scale)
-        .add_property("max_scale",&rule::get_max_scale,&rule::set_max_scale)
-        .def("set_else",&rule::set_else)
-        .def("has_else",&rule::has_else_filter)
-        .def("set_also",&rule::set_also)
-        .def("has_also",&rule::has_also_filter)
-        .def("active",&rule::active)
-        .add_property("symbols",make_function
-                      (&rule::get_symbolizers,return_value_policy<reference_existing_object>()))
-        .add_property("copy_symbols",make_function
-                      (&rule::get_symbolizers,return_value_policy<copy_const_reference>()))
+
+        .def_property("min_scale", &rule::get_min_scale, &rule::set_min_scale)
+        .def_property("max_scale", &rule::get_max_scale, &rule::set_max_scale)
+        .def("set_else", &rule::set_else)
+        .def("has_else", &rule::has_else_filter)
+        .def("set_also", &rule::set_also)
+        .def("has_also", &rule::has_also_filter)
+        .def("active", &rule::active)
+        .def_property_readonly("symbolizers", &rule::get_symbolizers)//,return_value_policy<reference_existing_object>()))
+        //.def_property("copy_symbols",make_function
+        //              (&rule::get_symbolizers,return_value_policy<copy_const_reference>()))
         ;
 }

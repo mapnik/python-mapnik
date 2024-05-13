@@ -132,7 +132,10 @@ void export_map(py::module const&);
 void export_projection(py::module&);
 void export_proj_transform(py::module const&);
 void export_query(py::module const& m);
-
+void export_rule(py::module const& m);
+void export_symbolizer(py::module const& m);
+void export_polygon_symbolizer(py::module const& m);
+void export_line_symbolizer(py::module const& m);
 
 using mapnik::load_map;
 using mapnik::load_map_string;
@@ -159,6 +162,10 @@ PYBIND11_MODULE(_mapnik, m) {
     export_projection(m);
     export_proj_transform(m);
     export_query(m);
+    export_rule(m);
+    export_symbolizer(m);
+    export_polygon_symbolizer(m);
+    export_line_symbolizer(m);
 
     m.def("mapnik_version", &mapnik_version,"Get the Mapnik version number");
     m.def("mapnik_version_string", &mapnik_version_string,"Get the Mapnik version string");

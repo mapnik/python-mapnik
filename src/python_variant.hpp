@@ -26,15 +26,15 @@
 #include <mapnik/util/variant.hpp>
 
 namespace PYBIND11_NAMESPACE { namespace detail {
-    template <typename... Ts>
-    struct type_caster<mapnik::util::variant<Ts...>> : variant_caster<mapnik::util::variant<Ts...>> {};
+template <typename... Ts>
+struct type_caster<mapnik::util::variant<Ts...>> : variant_caster<mapnik::util::variant<Ts...>> {};
 
-    // Specifies the function used to visit the variant -- `apply_visitor` instead of `visit`
-    template <>
-    struct visit_helper<mapnik::util::variant> {
-        template <typename... Args>
-        static auto call(Args &&...args) -> decltype(mapnik::util::apply_visitor(args...)) {
-            return mapnik::util::apply_visitor(args...);
-        }
-    };
+// // Specifies the function used to visit the variant -- `apply_visitor` instead of `visit`
+// template <>
+// struct visit_helper<mapnik::util::variant> {
+//     template <typename... Args>
+//     static auto call(Args &&...args) -> decltype(mapnik::util::apply_visitor(args...)) {
+//         return mapnik::util::apply_visitor(args...);
+//     }
+// };
 }} // namespace PYBIND11_NAMESPACE::detail
