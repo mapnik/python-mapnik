@@ -84,17 +84,13 @@ void __setitem__(mapnik::feature_impl & feature, std::string const& name, mapnik
     feature.put_new(name,val);
 }
 
-py::dict attributes(mapnik::feature_impl const& f)
+py::dict attributes(mapnik::feature_impl const& feature)
 {
     auto attributes = py::dict();
-    feature_kv_iterator itr = f.begin();
-    feature_kv_iterator end = f.end();
-
-    for ( ;itr!=end; ++itr)
+    for (auto const& kv : feature)
     {
-        attributes[std::get<0>(*itr).c_str()] = std::get<1>(*itr);
+        attributes[std::get<0>(kv).c_str()] = std::get<1>(kv);
     }
-
     return attributes;
 }
 
