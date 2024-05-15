@@ -79,8 +79,6 @@ void export_rule(py::module const& m)
         .def("set_also", &rule::set_also)
         .def("has_also", &rule::has_also_filter)
         .def("active", &rule::active)
-        .def_property_readonly("symbolizers", &rule::get_symbolizers)//,return_value_policy<reference_existing_object>()))
-        //.def_property("copy_symbols",make_function
-        //              (&rule::get_symbolizers,return_value_policy<copy_const_reference>()))
+        .def_property_readonly("symbolizers", &rule::get_symbolizers)
         ;
 }
