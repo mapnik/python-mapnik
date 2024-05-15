@@ -70,10 +70,9 @@ void export_style(py::module const& m)
 
     py::class_<feature_type_style>(m, "Style")
         .def(py::init<>(), "default style constructor")
-        .def("rules",
-             &feature_type_style::get_rules,
-             "Rules of this style.\n"
-            )
+        .def_property_readonly("rules",
+                               &feature_type_style::get_rules,
+                               "Rules assigned to this style.\n")
         .def_property("filter_mode",
                       &feature_type_style::get_filter_mode,
                       &feature_type_style::set_filter_mode,
