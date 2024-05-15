@@ -20,13 +20,17 @@
  *
  *****************************************************************************/
 
-#include <mapnik/config.hpp>
-
 // mapnik
+#include <mapnik/config.hpp>
 #include <mapnik/value/error.hpp>
 #include <mapnik/rule.hpp>
 #include <mapnik/feature_type_style.hpp>
 #include <mapnik/image_filter_types.hpp> // generate_image_filters
+//pybind11
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
+namespace py = pybind11;
 
 using mapnik::feature_type_style;
 using mapnik::rules;
@@ -48,56 +52,45 @@ void set_image_filters(feature_type_style & style, std::string const& filters)
     {
         throw mapnik::value_error("failed to parse image-filters: '" + filters + "'");
     }
-#ifdef _WINDOWS
-    style.image_filters() = new_filters;
-    // FIXME : https://svn.boost.org/trac/boost/ticket/2839
-#else
     style.image_filters() = std::move(new_filters);
-#endif
 }
 
-void export_style()
+void export_style(py::module const& m)
 {
-    using namespace boost::python;
 
-    mapnik::enumeration_<mapnik::filter_mode_e>("filter_mode")
+    py::enum_<mapnik::filter_mode_enum>(m, "filter_mode")
         .value("ALL",mapnik::filter_mode_enum::FILTER_ALL)
         .value("FIRST",mapnik::filter_mode_enum::FILTER_FIRST)
         ;
 
-    class_<rules>("Rules",init<>("default ctor"))
-        .def(vector_indexing_suite<rules>())
-        ;
-    class_<feature_type_style>("Style",init<>("default style constructor"))
+    //py::class_<rules>(m, "Rules")
+    //    .def(py::init<>(), "default ctor")
+    //    .def(vector_indexing_suite<rules>())
+    //    ;
 
-        .add_property("rules",make_function
-                      (&feature_type_style::get_rules,
-                       return_value_policy<reference_existing_object>()),
-                      "List of rules belonging to a style as rule objects.\n"
-                      "\n"
-                      "Usage:\n"
-                      ">>> for r in m.find_style('style 1').rules:\n"
-                      ">>>    print r\n"
-                      "<mapnik._mapnik.Rule object at 0x100549910>\n"
-                      "<mapnik._mapnik.Rule object at 0x100549980>\n"
+    py::class_<feature_type_style>(m, "Style")
+        .def(py::init<>(), "default style constructor")
+        .def("rules",
+             &feature_type_style::get_rules,
+             "Rules of this style.\n"
             )
-        .add_property("filter_mode",
+        .def_property("filter_mode",
                       &feature_type_style::get_filter_mode,
                       &feature_type_style::set_filter_mode,
                       "Set/get the filter mode of the style")
-        .add_property("opacity",
+        .def_property("opacity",
                       &feature_type_style::get_opacity,
                       &feature_type_style::set_opacity,
                       "Set/get the opacity of the style")
-        .add_property("comp_op",
+        .def_property("comp_op",
                       &feature_type_style::comp_op,
                       &feature_type_style::set_comp_op,
                       "Set/get the comp-op (composite operation) of the style")
-        .add_property("image_filters_inflate",
+        .def_property("image_filters_inflate",
                       &feature_type_style::image_filters_inflate,
                       &feature_type_style::image_filters_inflate,
                       "Set/get the image_filters_inflate property of the style")
-        .add_property("image_filters",
+        .def_property("image_filters",
                       get_image_filters,
                       set_image_filters,
                       "Set/get the comp-op (composite operation) of the style")
