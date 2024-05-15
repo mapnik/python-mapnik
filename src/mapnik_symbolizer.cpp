@@ -45,16 +45,11 @@
 #include "mapnik_enumeration.hpp"
 #include "mapnik_symbolizer.hpp"
 
-//#include "python_variant.hpp"
-//#include "mapnik_value_converter.hpp"
-
 //pybind11
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
-
-//#define PYBIND11_DETAILED_ERROR_MESSAGES
 
 namespace py = pybind11;
 
@@ -75,23 +70,102 @@ using mapnik::markers_symbolizer;
 using mapnik::debug_symbolizer;
 using mapnik::group_symbolizer;
 using mapnik::symbolizer_base;
-// using mapnik::color;
-// using mapnik::path_processor_type;
-// using mapnik::path_expression_ptr;
-// using mapnik::guess_type;
-// using mapnik::expression_ptr;
-// using mapnik::parse_path;
 
 using namespace python_mapnik;
+
+namespace {
+
+struct extract_underlying_type_visitor
+{
+    template <typename T>
+    py::object operator() (T const& sym) const
+    {
+        return py::cast(sym);
+    }
+};
+
+inline py::object extract_underlying_type(symbolizer const& sym)
+{
+    return mapnik::util::apply_visitor(extract_underlying_type_visitor(), sym);
+}
+
+std::string __str__(mapnik::symbolizer const& sym)
+{
+    return mapnik::util::apply_visitor(mapnik::symbolizer_to_json(), sym);
+}
+
+std::string symbolizer_type_name(symbolizer const& sym)
+{
+    return mapnik::symbolizer_name(sym);
+}
+
+struct symbolizer_keys_visitor
+{
+    symbolizer_keys_visitor(py::list & keys)
+        : keys_(keys) {}
+
+    template <typename Symbolizer>
+    void operator() (Symbolizer const& sym) const
+    {
+        for (auto const& kv : sym.properties)
+        {
+            std::string name = std::get<0>(mapnik::get_meta(kv.first));
+            keys_.append(name);
+        }
+    }
+    py::list & keys_;
+};
+
+struct symbolizer_getitem_visitor
+{
+    using const_iterator = symbolizer_base::cont_type::const_iterator;
+    symbolizer_getitem_visitor(std::string const& name)
+        : name_(name) {}
+
+    template <typename Symbolizer>
+    py::object operator() (Symbolizer const& sym) const
+    {
+        for (auto const& kv : sym.properties)
+        {
+            std::string name = std::get<0>(mapnik::get_meta(kv.first));
+            if (name == name_)
+            {
+                return mapnik::util::apply_visitor(extract_python_object<>(kv.first), std::get<1>(kv));
+            }
+        }
+        throw pybind11::key_error("Invalid property name");
+    }
+    std::string const& name_;
+};
+
+py::object symbolizer_keys(mapnik::symbolizer const& sym)
+{
+    py::list keys;
+    mapnik::util::apply_visitor(symbolizer_keys_visitor(keys), sym);
+    return keys;
+}
+
+py::object getitem_impl(mapnik::symbolizer const& sym, std::string const& name)
+{
+    return  mapnik::util::apply_visitor(symbolizer_getitem_visitor(name), sym);
+}
+
+py::object symbolizer_base_keys(mapnik::symbolizer_base const& sym)
+{
+    py::list keys;
+    for (auto const& kv : sym.properties)
+    {
+        std::string name = std::get<0>(mapnik::get_meta(kv.first));
+        keys.append(name);
+    }
+    return keys;
+}
+
+} // namespace
 
 void export_symbolizer(py::module const& m)
 {
     py::implicitly_convertible<std::string, mapnik::color>();
-
-    py::enum_<mapnik::keys>(m, "keys")
-        .value("gamma", mapnik::keys::gamma)
-        .value("gamma_method", mapnik::keys::gamma_method)
-        ;
 
     py::class_<symbolizer>(m, "Symbolizer")
         .def(py::init<dot_symbolizer>())
@@ -100,25 +174,21 @@ void export_symbolizer(py::module const& m)
         .def(py::init<point_symbolizer>())
         .def(py::init<line_symbolizer>())
         .def(py::init<line_pattern_symbolizer>())
-        .def("type", get_symbolizer_type)
+        .def("type_name", symbolizer_type_name)
         .def("__hash__", hash_impl)
         .def("__getitem__",&getitem_impl)
         .def("__getattr__",&getitem_impl)
         .def("keys", &symbolizer_keys)
-        //.def("extract", extract_underlying_type)
+        .def("extract", &extract_underlying_type)
+        .def("__str__", &__str__)
+        .def("__repr__", &__str__)
+        .def("to_json", &__str__)
         ;
 
-    // class_<symbolizer_base::value_type>("NumericWrapper")
-    //     .def("__init__", make_constructor(numeric_wrapper))
-    //     ;
-
     py::class_<symbolizer_base>(m, "SymbolizerBase")
-        //.def("__setitem__",&__setitem__)
-        //.def("__setattr__",&__setitem__)
         //.def("__getitem__",&__getitem__)
         //.def("__getattr__",&__getitem__)
         .def("keys", &symbolizer_base_keys)
-        //.def("__str__", &__str__)
         .def(py::self == py::self) // __eq__
         .def_property("smooth",
                       &get_property<symbolizer_base, mapnik::keys::smooth>,
@@ -236,21 +306,6 @@ void export_symbolizer(py::module const& m)
 //         ;
 // }
 
-// void export_point_symbolizer()
-// {
-//     using namespace boost::python;
-
-//     mapnik::enumeration_<mapnik::point_placement_e>("point_placement")
-//         .value("CENTROID",mapnik::point_placement_enum::CENTROID_POINT_PLACEMENT)
-//         .value("INTERIOR",mapnik::point_placement_enum::INTERIOR_POINT_PLACEMENT)
-//         ;
-
-//     class_<point_symbolizer, bases<symbolizer_base> >("PointSymbolizer",
-//                              init<>("Default Point Symbolizer - 4x4 black square"))
-//         .def("__hash__",hash_impl_2<point_symbolizer>)
-//         ;
-// }
-
 // void export_markers_symbolizer()
 // {
 //     using namespace boost::python;
@@ -270,103 +325,6 @@ void export_symbolizer(py::module const& m)
 //     class_<markers_symbolizer, bases<symbolizer_base> >("MarkersSymbolizer",
 //                                init<>("Default Markers Symbolizer - circle"))
 //         .def("__hash__",hash_impl_2<markers_symbolizer>)
-//         ;
-// }
-
-// namespace {
-
-// std::string get_stroke_dasharray(mapnik::symbolizer_base & sym)
-// {
-//     auto dash = mapnik::get<mapnik::dash_array>(sym, mapnik::keys::stroke_dasharray);
-
-//     std::ostringstream os;
-//     for (std::size_t i = 0; i < dash.size(); ++i)
-//     {
-//         os << dash[i].first << "," << dash[i].second;
-//         if (i + 1 < dash.size())
-//             os << ",";
-//     }
-//     return os.str();
-// }
-
-// void set_stroke_dasharray(mapnik::symbolizer_base & sym, std::string str)
-// {
-//     mapnik::dash_array dash;
-//     if (mapnik::util::parse_dasharray(str, dash))
-//     {
-//         mapnik::put(sym, mapnik::keys::stroke_dasharray, dash);
-//     }
-//     else
-//     {
-//         throw std::runtime_error("Can't parse dasharray");
-//     }
-// }
-
-// }
-
-// void export_line_symbolizer()
-// {
-//     using namespace boost::python;
-
-//     mapnik::enumeration_<mapnik::line_rasterizer_e>("line_rasterizer")
-//         .value("FULL",mapnik::line_rasterizer_enum::RASTERIZER_FULL)
-//         .value("FAST",mapnik::line_rasterizer_enum::RASTERIZER_FAST)
-//         ;
-
-//     mapnik::enumeration_<mapnik::line_cap_e>("stroke_linecap",
-//                              "The possible values for a line cap used when drawing\n"
-//                              "with a stroke.\n")
-//         .value("BUTT_CAP",mapnik::line_cap_enum::BUTT_CAP)
-//         .value("SQUARE_CAP",mapnik::line_cap_enum::SQUARE_CAP)
-//         .value("ROUND_CAP",mapnik::line_cap_enum::ROUND_CAP)
-//         ;
-
-//     mapnik::enumeration_<mapnik::line_join_e>("stroke_linejoin",
-//                                       "The possible values for the line joining mode\n"
-//                                       "when drawing with a stroke.\n")
-//         .value("MITER_JOIN",mapnik::line_join_enum::MITER_JOIN)
-//         .value("MITER_REVERT_JOIN",mapnik::line_join_enum::MITER_REVERT_JOIN)
-//         .value("ROUND_JOIN",mapnik::line_join_enum::ROUND_JOIN)
-//         .value("BEVEL_JOIN",mapnik::line_join_enum::BEVEL_JOIN)
-//         ;
-
-//     class_<line_symbolizer, bases<symbolizer_base> >("LineSymbolizer",
-//                             init<>("Default LineSymbolizer - 1px solid black"))
-//         .def("__hash__",hash_impl_2<line_symbolizer>)
-//         .add_property("stroke",
-//                       &get<mapnik::color, mapnik::keys::stroke>,
-//                       &set<mapnik::color, mapnik::keys::stroke>, "Stroke color")
-//         .add_property("stroke_width",
-//                       &get<double, mapnik::keys::stroke_width>,
-//                       &set<double, mapnik::keys::stroke_width>, "Stroke width")
-//         .add_property("stroke_opacity",
-//                       &get<double, mapnik::keys::stroke_opacity>,
-//                       &set<double, mapnik::keys::stroke_opacity>, "Stroke opacity")
-//         .add_property("stroke_gamma",
-//                       &get<double, mapnik::keys::stroke_gamma>,
-//                       &set<double, mapnik::keys::stroke_gamma>, "Stroke gamma")
-//         .add_property("stroke_gamma_method",
-//                       &get<mapnik::gamma_method_enum, mapnik::keys::stroke_gamma_method>,
-//                       &set<mapnik::gamma_method_enum, mapnik::keys::stroke_gamma_method>, "Stroke gamma method")
-//         .add_property("line_rasterizer",
-//                       &get<mapnik::line_rasterizer_enum, mapnik::keys::line_rasterizer>,
-//                       &set<mapnik::line_rasterizer_enum, mapnik::keys::line_rasterizer>, "Line rasterizer")
-//         .add_property("stroke_linecap",
-//                       &get<mapnik::line_cap_enum, mapnik::keys::stroke_linecap>,
-//                       &set<mapnik::line_cap_enum, mapnik::keys::stroke_linecap>, "Stroke linecap")
-//         .add_property("stroke_linejoin",
-//                       &get<mapnik::line_join_enum, mapnik::keys::stroke_linejoin>,
-//                       &set<mapnik::line_join_enum, mapnik::keys::stroke_linejoin>, "Stroke linejoin")
-//         .add_property("stroke_dasharray",
-//                       &get_stroke_dasharray,
-//                       &set_stroke_dasharray, "Stroke dasharray")
-//         .add_property("stroke_dashoffset",
-//                       &get<double, mapnik::keys::stroke_dashoffset>,
-//                       &set<double, mapnik::keys::stroke_dashoffset>, "Stroke dashoffset")
-//         .add_property("stroke_miterlimit",
-//                       &get<double, mapnik::keys::stroke_miterlimit>,
-//                       &set<double, mapnik::keys::stroke_miterlimit>, "Stroke miterlimit")
-
 //         ;
 // }
 

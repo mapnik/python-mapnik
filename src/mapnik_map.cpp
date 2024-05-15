@@ -36,6 +36,9 @@
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
 
+// boost
+//#include <boost/compute/iterator/transform_iterator.hpp>
+
 namespace py = pybind11;
 
 using mapnik::color;
@@ -46,6 +49,7 @@ using mapnik::Map;
 
 PYBIND11_MAKE_OPAQUE(std::vector<mapnik::layer>);
 
+namespace {
 std::vector<layer>& (Map::*set_layers)() =  &Map::layers;
 std::vector<layer> const& (Map::*get_layers)() const =  &Map::layers;
 mapnik::parameters& (Map::*params_nonconst)() =  &Map::get_extra_parameters;
@@ -114,15 +118,15 @@ void set_maximum_extent(mapnik::Map & m, boost::optional<mapnik::box2d<double> >
 
 // struct extract_style
 // {
-//     using result_type = py::tuple;
-//     result_type operator() (std::map<std::string, mapnik::feature_type_style>::value_type const& val) const
-//     {
-//         return py::make_tuple(val.first, val.second);
-//     }
+//      using result_type = py::tuple;
+//      result_type operator() (std::map<std::string, mapnik::feature_type_style>::value_type const& val) const
+//      {
+//          return py::make_tuple(val.first, val.second);
+//      }
 // };
 
-// using style_extract_iterator = boost::transform_iterator<extract_style, Map::const_style_iterator>;
-// using style_range = std::pair<style_extract_iterator,style_extract_iterator>;
+//using style_extract_iterator = boost::transform_iterator<extract_style, Map::const_style_iterator>;
+//using style_range = std::pair<style_extract_iterator,style_extract_iterator>;
 
 // style_range _styles_ (mapnik::Map const& m)
 // {
@@ -130,6 +134,7 @@ void set_maximum_extent(mapnik::Map & m, boost::optional<mapnik::box2d<double> >
 //         boost::make_transform_iterator<extract_style>(m.begin_styles(), extract_style()),
 //         boost::make_transform_iterator<extract_style>(m.end_styles(), extract_style()));
 // }
+} //namespace
 
 void export_map(py::module const& m)
 {
@@ -237,7 +242,9 @@ void export_map(py::module const& m)
              py::arg("name")
             )
 
-        //.add_property("styles", _styles_)
+        .def("styles", [] (mapnik::Map const& m) {
+            return py::make_iterator(m.begin_styles(), m.end_styles());
+        }, py::keep_alive<0, 1>())
 
         .def("pan",&Map::pan,
              "Set the Map center at a given x,y location\n"
