@@ -34,11 +34,7 @@
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
 
-#define PYBIND11_DETAILED_ERROR_MESSAGES
-
 namespace py = pybind11;
-
-
 
 void export_polygon_symbolizer(py::module const& m)
 {
@@ -65,8 +61,7 @@ void export_polygon_symbolizer(py::module const& m)
                       "Fill gamma")
 
         .def_property("gamma_method",
-                      //&get_property<polygon_symbolizer, mapnik::keys::gamma_method>,
-                      &get<mapnik::gamma_method_enum, mapnik::keys::gamma_method>,
+                      &get_property<polygon_symbolizer, mapnik::keys::gamma_method>,
                       &set_enum_property<polygon_symbolizer,mapnik::gamma_method_enum, mapnik::keys::gamma_method>,
                       "Fill gamma method")
         ;
