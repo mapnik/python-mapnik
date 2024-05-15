@@ -36,9 +36,6 @@
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
 
-// boost
-//#include <boost/compute/iterator/transform_iterator.hpp>
-
 namespace py = pybind11;
 
 using mapnik::color;
@@ -48,6 +45,8 @@ using mapnik::layer;
 using mapnik::Map;
 
 PYBIND11_MAKE_OPAQUE(std::vector<mapnik::layer>);
+PYBIND11_MAKE_OPAQUE(std::map<std::string, mapnik::feature_type_style>);
+
 
 namespace {
 std::vector<layer>& (Map::*set_layers)() =  &Map::layers;
@@ -116,29 +115,13 @@ void set_maximum_extent(mapnik::Map & m, boost::optional<mapnik::box2d<double> >
     }
 }
 
-// struct extract_style
-// {
-//      using result_type = py::tuple;
-//      result_type operator() (std::map<std::string, mapnik::feature_type_style>::value_type const& val) const
-//      {
-//          return py::make_tuple(val.first, val.second);
-//      }
-// };
 
-//using style_extract_iterator = boost::transform_iterator<extract_style, Map::const_style_iterator>;
-//using style_range = std::pair<style_extract_iterator,style_extract_iterator>;
-
-// style_range _styles_ (mapnik::Map const& m)
-// {
-//     return style_range(
-//         boost::make_transform_iterator<extract_style>(m.begin_styles(), extract_style()),
-//         boost::make_transform_iterator<extract_style>(m.end_styles(), extract_style()));
-// }
 } //namespace
 
 void export_map(py::module const& m)
 {
     py::bind_vector<std::vector<mapnik::layer>>(m, "Layers", py::module_local());
+    py::bind_map<std::map<std::string, mapnik::feature_type_style>>(m, "Styles", py::module_local());
     // aspect ratio fix modes
     py::enum_<mapnik::Map::aspect_fix_mode>(m, "aspect_fix_mode")
         .value("GROW_BBOX", mapnik::Map::GROW_BBOX)
@@ -151,11 +134,6 @@ void export_map(py::module const& m)
         .value("ADJUST_CANVAS_HEIGHT", mapnik::Map::ADJUST_CANVAS_HEIGHT)
         .value("RESPECT", mapnik::Map::RESPECT)
         ;
-
-    //py::class_<style_range>(m, "StyleRange")
-        //.def("__iter__",
-        //     boost::python::range(&style_range::first, &style_range::second))
-    //;
 
     py::class_<Map>(m, "Map","The map object.")
         .def(py::init<int, int, std::string const&>(),
@@ -241,10 +219,16 @@ void export_map(py::module const& m)
              "<mapnik._mapnik.Style object at 0x654f0>\n",
              py::arg("name")
             )
-
-        .def("styles", [] (mapnik::Map const& m) {
-            return py::make_iterator(m.begin_styles(), m.end_styles());
-        }, py::keep_alive<0, 1>())
+        .def_property("styles",
+                      (std::map<std::string, mapnik::feature_type_style> const& (mapnik::Map::*)() const)
+                      &mapnik::Map::styles,
+                      (std::map<std::string, mapnik::feature_type_style>& (mapnik::Map::*)())
+                      &mapnik::Map::styles,
+                      "Returns list of Styles"
+                      "associated with this Map object")
+        // .def("styles", [] (mapnik::Map const& m) {
+        //     return py::make_iterator(m.begin_styles(), m.end_styles());
+        // }, py::keep_alive<0, 1>())
 
         .def("pan",&Map::pan,
              "Set the Map center at a given x,y location\n"
