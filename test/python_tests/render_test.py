@@ -19,7 +19,7 @@ def test_simplest_render(setup):
     mapnik.render(m, im)
     assert not im.painted()
     assert im.is_solid()
-    s = im.tostring()
+    s = im.to_string()
     assert s ==  256 * 256 * b'\x00\x00\x00\x00'
 
 
@@ -28,7 +28,7 @@ def test_render_image_to_string():
     im.fill(mapnik.Color('black'))
     assert not im.painted()
     assert im.is_solid()
-    s = im.tostring()
+    s = im.to_string()
     assert s ==  256 * 256 * b'\x00\x00\x00\xff'
 
 
@@ -74,7 +74,7 @@ def test_setting_alpha():
     im2.apply_opacity(c1.a / 255.0)
     assert not im2.painted()
     assert im2.is_solid()
-    assert len(im1.tostring('png32')) ==  len(im2.tostring('png32'))
+    assert len(im1.to_string('png32')) ==  len(im2.to_string('png32'))
 
 
 def test_render_image_to_file():
@@ -114,11 +114,11 @@ def test_render_from_serialization():
     try:
         im, im2 = get_paired_images(
             100, 100, '../data/good_maps/building_symbolizer.xml')
-        assert im.tostring('png32') ==  im2.tostring('png32')
+        assert im.to_string('png32') ==  im2.to_string('png32')
 
         im, im2 = get_paired_images(
             100, 100, '../data/good_maps/polygon_symbolizer.xml')
-        assert im.tostring('png32') ==  im2.tostring('png32')
+        assert im.to_string('png32') ==  im2.to_string('png32')
     except RuntimeError as e:
         # only test datasources that we have installed
         if not 'Could not create datasource' in str(e):
@@ -147,7 +147,7 @@ def test_render_points():
     r = mapnik.Rule()
     symb = mapnik.PointSymbolizer()
     symb.allow_overlap = True
-    r.symbols.append(symb)
+    r.symbolizers.append(symb)
     s.rules.append(r)
     lyr = mapnik.Layer(
         'Places',
@@ -204,7 +204,7 @@ def test_render_with_detector():
     lyr.styles.append('point')
     symb = mapnik.MarkersSymbolizer()
     symb.allow_overlap = False
-    r.symbols.append(symb)
+    r.symbolizers.append(symb)
     s.rules.append(r)
     m = mapnik.Map(256, 256)
     m.append_style('point', s)
@@ -218,7 +218,7 @@ def test_render_with_detector():
     im.save(actual_file, 'png8')
     actual = mapnik.Image.open(expected_file)
     expected = mapnik.Image.open(expected_file)
-    assert actual.tostring('png32') == expected.tostring('png32'), 'failed comparing actual (%s) and expected (%s)' % (actual_file, expected_file)
+    assert actual.to_string('png32') == expected.to_string('png32'), 'failed comparing actual (%s) and expected (%s)' % (actual_file, expected_file)
     # now render will a collision detector that should
     # block out the placement of this point
     detector = mapnik.LabelCollisionDetector(m)
@@ -254,4 +254,4 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
             # color png
             actual = mapnik.Image.open(actual_file)
             expected = mapnik.Image.open(expected_file)
-            assert actual.tostring('png32') == expected.tostring('png32'), 'failed comparing actual (%s) and expected (%s)' % (actual_file, expected_file)
+            assert actual.to_string('png32') == expected.to_string('png32'), 'failed comparing actual (%s) and expected (%s)' % (actual_file, expected_file)
