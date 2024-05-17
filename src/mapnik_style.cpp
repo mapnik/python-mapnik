@@ -29,12 +29,16 @@
 //pybind11
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/stl_bind.h>
+
 
 namespace py = pybind11;
 
 using mapnik::feature_type_style;
 using mapnik::rules;
 using mapnik::rule;
+
+PYBIND11_MAKE_OPAQUE(rules);
 
 std::string get_image_filters(feature_type_style & style)
 {
@@ -57,16 +61,12 @@ void set_image_filters(feature_type_style & style, std::string const& filters)
 
 void export_style(py::module const& m)
 {
-
     py::enum_<mapnik::filter_mode_enum>(m, "filter_mode")
         .value("ALL",mapnik::filter_mode_enum::FILTER_ALL)
         .value("FIRST",mapnik::filter_mode_enum::FILTER_FIRST)
         ;
 
-    //py::class_<rules>(m, "Rules")
-    //    .def(py::init<>(), "default ctor")
-    //    .def(vector_indexing_suite<rules>())
-    //    ;
+    py::bind_vector<rules>(m, "Rules", py::module_local());
 
     py::class_<feature_type_style>(m, "Style")
         .def(py::init<>(), "default style constructor")
