@@ -22,19 +22,22 @@
 
 
 #include <mapnik/config.hpp>
-
-
-#pragma GCC diagnostic push
-#include <mapnik/warning_ignore.hpp>
-#include <boost/python.hpp>
-#include <boost/python/module.hpp>
-#include <boost/python/def.hpp>
-#pragma GCC diagnostic pop
-
+#include <mapnik/symbolizer.hpp>
+#include <mapnik/symbolizer_hash.hpp>
+#include <mapnik/symbolizer_utils.hpp>
+#include <mapnik/symbolizer_keys.hpp>
+#include <mapnik/symbolizer_enumerations.hpp>
 #include <mapnik/text/placements/dummy.hpp>
 #include <mapnik/text/text_properties.hpp>
 #include <mapnik/text/formatting/text.hpp>
 
+//pybind11
+#include <pybind11/pybind11.h>
+//#include <pybind11/operators.h>
+//#include <pybind11/stl.h>
+//#include <pybind11/stl_bind.h>
+
+namespace py = pybind11;
 
 namespace
 {
@@ -59,7 +62,7 @@ mapnik::symbolizer_base::value_type get_text_size(mapnik::text_placements_dummy 
     return finder.defaults.format_defaults.text_size;
 }
 
-void set_fill(mapnik::text_placements_dummy & finder, mapnik::color const& fill )
+void set_fill(mapnik::text_placements_dummy & finder, mapnik::color const& fill)
 {
     finder.defaults.format_defaults.fill = fill;
 }
@@ -102,9 +105,9 @@ std::string get_format_expr(mapnik::text_placements_dummy & finder)
 
 }
 
-void export_placement_finder()
+void export_placement_finder(py::module const& m)
 {
-    using namespace boost::python;
+    //using namespace boost::python;
     //implicitly_convertible<mapnik::symbolizer_base::value_type, mapnik::value_double>();
 /*
   text_placements_ptr placement_finder = std::make_shared<text_placements_dummy>();
@@ -117,15 +120,13 @@ void export_placement_finder()
                   std::make_shared<mapnik::formatting::text_node>(parse_expression("[GEONAME]")));
                 put<text_placements_ptr>(text_sym, keys::text_placements_, placement_finder);
 */
-    class_<mapnik::text_placements_dummy, std::shared_ptr<mapnik::text_placements_dummy>, boost::noncopyable>
-        ("PlacementFinder",
-         "TODO: PlacementFinder docs",
-         init<>("Default ctor"))
-        .add_property("face_name", &get_face_name, &set_face_name, "Font face name")
-        .add_property("text_size", &get_text_size, &set_text_size, "Size of text")
-        .add_property("fill", &get_fill, &set_fill, "Fill")
-        .add_property("halo_fill", &get_halo_fill, &set_halo_fill, "Halo fill")
-        .add_property("halo_radius", &get_halo_radius, &set_halo_radius, "Halo radius")
-        .add_property("format_expression", &get_format_expr, &set_format_expr, "Format expression")
+    py::class_<mapnik::text_placements_dummy, std::shared_ptr<mapnik::text_placements_dummy>>(m, "PlacementFinder")
+        .def(py::init<>(), "Default ctor")
+        .def_property("face_name", &get_face_name, &set_face_name, "Font face name")
+        .def_property("text_size", &get_text_size, &set_text_size, "Size of text")
+        .def_property("fill", &get_fill, &set_fill, "Fill")
+        .def_property("halo_fill", &get_halo_fill, &set_halo_fill, "Halo fill")
+        .def_property("halo_radius", &get_halo_radius, &set_halo_radius, "Halo radius")
+        .def_property("format_expression", &get_format_expr, &set_format_expr, "Format expression")
         ;
 }

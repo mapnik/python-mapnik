@@ -232,18 +232,6 @@ std::size_t hash_impl_2(T const& sym)
     return mapnik::symbolizer_hash::value<T>(sym);
 }
 
-
-// text symbolizer
-// mapnik::text_placements_ptr get_placement_finder(text_symbolizer const& sym)
-// {
-//     return mapnik::get<mapnik::text_placements_ptr>(sym, mapnik::keys::text_placements_);
-// }
-
-// void set_placement_finder(text_symbolizer & sym, std::shared_ptr<text_placements_dummy> const& finder)
-// {
-//     mapnik::put<mapnik::text_placements_ptr>(sym, mapnik::keys::text_placements_, finder);
-// }
-
 template <typename Value, auto Key>
 auto get(symbolizer_base const& sym) -> Value
 {

@@ -602,13 +602,16 @@ void export_layer(py::module const&);
 void export_map(py::module const&);
 void export_projection(py::module&);
 void export_proj_transform(py::module const&);
-void export_query(py::module const& m);
-void export_rule(py::module const& m);
-void export_symbolizer(py::module const& m);
-void export_polygon_symbolizer(py::module const& m);
-void export_line_symbolizer(py::module const& m);
-void export_point_symbolizer(py::module const& m);
-void export_style(py::module const& m);
+void export_query(py::module const&);
+void export_rule(py::module const&);
+void export_symbolizer(py::module const&);
+void export_polygon_symbolizer(py::module const&);
+void export_line_symbolizer(py::module const&);
+void export_point_symbolizer(py::module const&);
+void export_style(py::module const&);
+void export_logger(py::module const&);
+void export_placement_finder(py::module const&);
+void export_text_symbolizer(py::module const&);
 
 using mapnik::load_map;
 using mapnik::load_map_string;
@@ -641,6 +644,9 @@ PYBIND11_MODULE(_mapnik, m) {
     export_line_symbolizer(m);
     export_point_symbolizer(m);
     export_style(m);
+    export_logger(m);
+    export_placement_finder(m);
+    export_text_symbolizer(m);
 
     m.def("mapnik_version", &mapnik_version,"Get the Mapnik version number");
     m.def("mapnik_version_string", &mapnik_version_string,"Get the Mapnik version string");

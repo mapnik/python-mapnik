@@ -2,7 +2,7 @@
  *
  * This file is part of Mapnik (c++ mapping toolkit)
  *
- * Copyright (C) 2015 Artem Pavlenko, Jean-Francois Doyon
+ * Copyright (C) 2024 Artem Pavlenko
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,60 +20,41 @@
  *
  *****************************************************************************/
 
+//mapnik
 #include <mapnik/config.hpp>
-
-
-#pragma GCC diagnostic push
-#include <mapnik/warning_ignore.hpp>
-#include <boost/python.hpp>
-#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
-#pragma GCC diagnostic pop
-
 #include <mapnik/debug.hpp>
 #include <mapnik/util/singleton.hpp>
-#include "mapnik_enumeration.hpp"
 
-void export_logger()
+//pybind11
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
+namespace py = pybind11;
+
+void export_logger(py::module const& m)
 {
     using mapnik::logger;
     using mapnik::singleton;
     using mapnik::CreateStatic;
-    using namespace boost::python;
 
-    class_<singleton<logger,CreateStatic>,boost::noncopyable>("Singleton",no_init)
-        .def("instance",&singleton<logger,CreateStatic>::instance,
-             return_value_policy<reference_existing_object>())
-        .staticmethod("instance")
-        ;
 
-    enum_<mapnik::logger::severity_type>("severity_type")
+    py::enum_<mapnik::logger::severity_type>(m, "severity_type")
         .value("Debug", logger::debug)
         .value("Warn", logger::warn)
         .value("Error", logger::error)
         .value("None", logger::none)
         ;
 
-    class_<logger,bases<singleton<logger,CreateStatic> >,
-        boost::noncopyable>("logger",no_init)
-        .def("get_severity", &logger::get_severity)
-        .def("set_severity", &logger::set_severity)
-        .def("get_object_severity", &logger::get_object_severity)
-        .def("set_object_severity", &logger::set_object_severity)
-        .def("clear_object_severity", &logger::clear_object_severity)
-        .def("get_format", &logger::get_format,return_value_policy<reference_existing_object>())
-        .def("set_format", &logger::set_format)
-        .def("str", &logger::str)
-        .def("use_file", &logger::use_file)
-        .def("use_console", &logger::use_console)
-        .staticmethod("get_severity")
-        .staticmethod("set_severity")
-        .staticmethod("get_object_severity")
-        .staticmethod("set_object_severity")
-        .staticmethod("clear_object_severity")
-        .staticmethod("get_format")
-        .staticmethod("set_format")
-        .staticmethod("str")
-        .staticmethod("use_file")
-        .staticmethod("use_console")
+    py::class_<logger, std::unique_ptr<logger, py::nodelete>>(m, "logger")
+        .def_static("get_severity", &logger::get_severity)
+        .def_static("set_severity", &logger::set_severity)
+        .def_static("get_object_severity", &logger::get_object_severity)
+        .def_static("set_object_severity", &logger::set_object_severity)
+        .def_static("clear_object_severity", &logger::clear_object_severity)
+        .def_static("get_format", &logger::get_format)
+        .def_static("set_format", &logger::set_format)
+        .def_static("str", &logger::str)
+        .def_static("use_file", &logger::use_file)
+        .def_static("use_console", &logger::use_console)
         ;
 }

@@ -38,7 +38,6 @@
 #include <mapnik/group/group_rule.hpp>
 #include <mapnik/group/group_symbolizer_properties.hpp>
 #include <mapnik/util/variant.hpp>
-#include <mapnik/text/placements/dummy.hpp>
 #include <mapnik/transform/parse_transform.hpp>
 #include <mapnik/transform/transform_processor.hpp>
 
@@ -64,7 +63,6 @@ using mapnik::polygon_pattern_symbolizer;
 using mapnik::raster_symbolizer;
 using mapnik::shield_symbolizer;
 using mapnik::text_symbolizer;
-using mapnik::text_placements_dummy;
 using mapnik::building_symbolizer;
 using mapnik::markers_symbolizer;
 using mapnik::debug_symbolizer;
@@ -174,6 +172,7 @@ void export_symbolizer(py::module const& m)
         .def(py::init<point_symbolizer>())
         .def(py::init<line_symbolizer>())
         .def(py::init<line_pattern_symbolizer>())
+        .def(py::init<text_symbolizer>())
         .def("type_name", symbolizer_type_name)
         .def("__hash__", hash_impl)
         .def("__getitem__",&getitem_impl)
@@ -227,49 +226,6 @@ void export_symbolizer(py::module const& m)
     py::implicitly_convertible<debug_symbolizer,symbolizer>();
 }
 
-// void export_text_symbolizer()
-// {
-//     using namespace boost::python;
-//     mapnik::enumeration_<mapnik::label_placement_e>("label_placement")
-//         .value("LINE_PLACEMENT", mapnik::label_placement_enum::LINE_PLACEMENT)
-//         .value("POINT_PLACEMENT", mapnik::label_placement_enum::POINT_PLACEMENT)
-//         .value("VERTEX_PLACEMENT", mapnik::label_placement_enum::VERTEX_PLACEMENT)
-//         .value("INTERIOR_PLACEMENT", mapnik::label_placement_enum::INTERIOR_PLACEMENT);
-
-//     mapnik::enumeration_<mapnik::vertical_alignment_e>("vertical_alignment")
-//         .value("TOP", mapnik::vertical_alignment_enum::V_TOP)
-//         .value("MIDDLE", mapnik::vertical_alignment_enum::V_MIDDLE)
-//         .value("BOTTOM", mapnik::vertical_alignment_enum::V_BOTTOM)
-//         .value("AUTO", mapnik::vertical_alignment_enum::V_AUTO);
-
-//     mapnik::enumeration_<mapnik::horizontal_alignment_e>("horizontal_alignment")
-//         .value("LEFT", mapnik::horizontal_alignment_enum::H_LEFT)
-//         .value("MIDDLE", mapnik::horizontal_alignment_enum::H_MIDDLE)
-//         .value("RIGHT", mapnik::horizontal_alignment_enum::H_RIGHT)
-//         .value("AUTO", mapnik::horizontal_alignment_enum::H_AUTO);
-
-//     mapnik::enumeration_<mapnik::justify_alignment_e>("justify_alignment")
-//         .value("LEFT", mapnik::justify_alignment_enum::J_LEFT)
-//         .value("MIDDLE", mapnik::justify_alignment_enum::J_MIDDLE)
-//         .value("RIGHT", mapnik::justify_alignment_enum::J_RIGHT)
-//         .value("AUTO", mapnik::justify_alignment_enum::J_AUTO);
-
-//     mapnik::enumeration_<mapnik::text_transform_e>("text_transform")
-//         .value("NONE", mapnik::text_transform_enum::NONE)
-//         .value("UPPERCASE", mapnik::text_transform_enum::UPPERCASE)
-//         .value("LOWERCASE", mapnik::text_transform_enum::LOWERCASE)
-//         .value("CAPITALIZE", mapnik::text_transform_enum::CAPITALIZE);
-
-//     mapnik::enumeration_<mapnik::halo_rasterizer_e>("halo_rasterizer")
-//         .value("FULL", mapnik::halo_rasterizer_enum::HALO_RASTERIZER_FULL)
-//         .value("FAST", mapnik::halo_rasterizer_enum::HALO_RASTERIZER_FAST);
-
-//     class_<text_symbolizer>("TextSymbolizer", init<>("Default ctor"))
-//         .def("__hash__",hash_impl_2<text_symbolizer>)
-//         .add_property("placement_finder", &get_placement_finder, &set_placement_finder, "Placement finder")
-//         ;
-
-// }
 
 // void export_shield_symbolizer()
 // {
