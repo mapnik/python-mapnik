@@ -28,7 +28,6 @@
 #include <mapnik/feature_layer_desc.hpp>
 #include <mapnik/memory_datasource.hpp>
 #include "mapnik_value_converter.hpp"
-#include "python_optional.hpp"
 #include "create_datasource.hpp"
 // stl
 #include <vector>
@@ -48,14 +47,6 @@ namespace py = pybind11;
 
 namespace
 {
-
-struct mapnik_param_to_python
-{
-    static PyObject* convert(mapnik::value_holder const& v)
-    {
-        return mapnik::util::apply_visitor(value_converter(),v);
-    }
-};
 
 py::dict describe(std::shared_ptr<mapnik::datasource> const& ds)
 {

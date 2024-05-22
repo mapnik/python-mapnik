@@ -25,58 +25,67 @@
 
 // mapnik
 #include <mapnik/value.hpp>
+#include <mapnik/params.hpp>
 #include <mapnik/unicode.hpp>
 //pybind11
 #include <pybind11/pybind11.h>
-//stl
-//#include <iostream>
 
 namespace {
 
-    struct value_converter
+struct value_converter
+{
+    PyObject * operator() (mapnik::value_integer val) const
     {
-        PyObject * operator() (mapnik::value_integer val) const
-        {
-            return ::PyLong_FromLongLong(val);
-        }
+        return ::PyLong_FromLongLong(val);
+    }
 
-        PyObject * operator() (mapnik::value_double val) const
-        {
-            return ::PyFloat_FromDouble(val);
-        }
-
-        PyObject * operator() (mapnik::value_bool val) const
-        {
-            return ::PyBool_FromLong(val);
-        }
-
-        PyObject * operator() (std::string const& s) const
-        {
-            return ::PyUnicode_DecodeUTF8(s.c_str(), static_cast<ssize_t>(s.length()),0);
-        }
-
-        PyObject * operator() (mapnik::value_unicode_string const& s) const
-        {
-            const char* data = reinterpret_cast<const char*>(s.getBuffer());
-            Py_ssize_t size = static_cast<Py_ssize_t>(s.length() * sizeof(s[0]));
-            return ::PyUnicode_DecodeUTF16(data, size, nullptr, nullptr);
-        }
-
-        PyObject * operator() (mapnik::value_null const& /*s*/) const
-        {
-            Py_RETURN_NONE;
-        }
-    };
-
-
-    struct mapnik_value_to_python
+    PyObject * operator() (mapnik::value_double val) const
     {
-        static PyObject* convert(mapnik::value const& v)
-        {
-            return mapnik::util::apply_visitor(value_converter(),v);
-        }
-    };
-}
+        return ::PyFloat_FromDouble(val);
+    }
+
+    PyObject * operator() (mapnik::value_bool val) const
+    {
+        return ::PyBool_FromLong(val);
+    }
+
+    PyObject * operator() (std::string const& s) const
+    {
+        return ::PyUnicode_DecodeUTF8(s.c_str(), static_cast<ssize_t>(s.length()),0);
+    }
+
+    PyObject * operator() (mapnik::value_unicode_string const& s) const
+    {
+        const char* data = reinterpret_cast<const char*>(s.getBuffer());
+        Py_ssize_t size = static_cast<Py_ssize_t>(s.length() * sizeof(s[0]));
+        return ::PyUnicode_DecodeUTF16(data, size, nullptr, nullptr);
+    }
+
+    PyObject * operator() (mapnik::value_null const& /*s*/) const
+    {
+        Py_RETURN_NONE;
+    }
+};
+
+} // namespace
+
+struct mapnik_value_to_python
+{
+    static PyObject* convert(mapnik::value const& v)
+    {
+        return mapnik::util::apply_visitor(value_converter(),v);
+    }
+};
+
+struct mapnik_param_to_python
+{
+    static PyObject* convert(mapnik::value_holder const& v)
+    {
+        return mapnik::util::apply_visitor(value_converter(),v);
+    }
+};
+
+
 
 namespace PYBIND11_NAMESPACE { namespace detail {
 
