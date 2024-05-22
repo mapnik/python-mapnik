@@ -173,7 +173,7 @@ mapnik::image_dtype get_type(mapnik::image_any & im)
 
 std::shared_ptr<image_any> open_from_file(std::string const& filename)
 {
-    boost::optional<std::string> type = type_from_filename(filename);
+    auto type = type_from_filename(filename);
     if (type)
     {
         std::unique_ptr<image_reader> reader(get_image_reader(filename,*type));

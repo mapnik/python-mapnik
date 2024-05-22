@@ -25,7 +25,6 @@
 #include <mapnik/rule.hpp>
 #include <mapnik/expression.hpp>
 #include <mapnik/expression_string.hpp>
-//#include "python_variant.hpp"
 //pybind11
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>

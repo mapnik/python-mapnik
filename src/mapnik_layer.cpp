@@ -25,7 +25,6 @@
 #include <mapnik/layer.hpp>
 #include <mapnik/datasource.hpp>
 #include <mapnik/datasource_cache.hpp>
-#include "python_optional.hpp"
 //pybind11
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
