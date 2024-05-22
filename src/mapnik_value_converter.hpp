@@ -144,6 +144,60 @@ public:
     }
 };
 
+template <>
+struct type_caster<mapnik::value_holder>
+{
+public:
+
+    PYBIND11_TYPE_CASTER(mapnik::value_holder, const_name("ValueHolder"));
+
+    bool load(handle src, bool)
+    {
+        PyObject *source = src.ptr();
+        if (PyUnicode_Check(source))
+        {
+            PyObject* tmp = PyUnicode_AsUTF8String(source);
+            if (!tmp) return false;
+            char* c_str = PyBytes_AsString(tmp);
+            value = std::string(c_str);
+            Py_DecRef(tmp);
+            return !PyErr_Occurred();
+        }
+        else if (PyBool_Check(source))
+        {
+            value = (source == Py_True) ? true : false;
+            return !PyErr_Occurred();
+        }
+        else if (PyFloat_Check(source))
+        {
+            PyObject *tmp = PyNumber_Float(source);
+            if (!tmp) return false;
+            value = PyFloat_AsDouble(tmp);
+            Py_DecRef(tmp);
+            return !PyErr_Occurred();
+        }
+        else if(PyLong_Check(source))
+        {
+            PyObject *tmp = PyNumber_Long(source);
+            if (!tmp) return false;
+            value = PyLong_AsLongLong(tmp);
+            Py_DecRef(tmp);
+            return !PyErr_Occurred();
+        }
+        else if (source == Py_None)
+        {
+            value = mapnik::value_null{};
+            return true;
+        }
+        return false;
+    }
+
+    static handle cast(mapnik::value_holder src, return_value_policy /*policy*/, handle /*parent*/)
+    {
+        return mapnik_param_to_python::convert(src);
+    }
+};
+
 }} // namespace PYBIND11_NAMESPACE::detail
 
 
