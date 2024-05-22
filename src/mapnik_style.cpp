@@ -92,7 +92,7 @@ void export_style(py::module const& m)
         .def_property("image_filters",
                       get_image_filters,
                       set_image_filters,
-                      "Set/get the comp-op (composite operation) of the style")
+                      "Set/get image filters for the style")
         ;
 
 }
