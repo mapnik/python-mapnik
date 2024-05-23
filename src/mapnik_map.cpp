@@ -29,6 +29,7 @@
 #include <mapnik/projection.hpp>
 #include <mapnik/view_transform.hpp>
 #include <mapnik/feature_type_style.hpp>
+#include "mapnik_value_converter.hpp"
 #include "python_optional.hpp"
 //pybind11
 #include <pybind11/pybind11.h>
@@ -46,11 +47,12 @@ using mapnik::Map;
 
 PYBIND11_MAKE_OPAQUE(std::vector<mapnik::layer>);
 PYBIND11_MAKE_OPAQUE(std::map<std::string, mapnik::feature_type_style>);
-
+PYBIND11_MAKE_OPAQUE(mapnik::parameters);
 
 namespace {
 std::vector<layer>& (Map::*set_layers)() =  &Map::layers;
 std::vector<layer> const& (Map::*get_layers)() const =  &Map::layers;
+mapnik::parameters const& (Map::*params_const)() const =  &Map::get_extra_parameters;
 mapnik::parameters& (Map::*params_nonconst)() =  &Map::get_extra_parameters;
 
 void insert_style(mapnik::Map & m, std::string const& name, mapnik::feature_type_style const& style)
@@ -368,8 +370,10 @@ void export_map(py::module const& m)
              ">>> m.zoom_to_box(extent)\n",
              py::arg("bounding_box")
             )
-
-        //.add_property("parameters",make_function(params_nonconst,return_value_policy<reference_existing_object>()),"TODO")
+        .def_property("parameters",
+                      params_const,
+                      params_nonconst,
+                      "extra parameters")
 
         .def_property("aspect_fix_mode",
                       &Map::get_aspect_fix_mode,

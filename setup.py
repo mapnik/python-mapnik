@@ -86,6 +86,7 @@ ext_modules = [
                "src/mapnik_logger.cpp",
                "src/mapnik_placement_finder.cpp",
                "src/mapnik_text_symbolizer.cpp",
+               "src/mapnik_parameters.cpp",
           ],
           extra_compile_args=extra_comp_args,
           extra_link_args=linkflags,

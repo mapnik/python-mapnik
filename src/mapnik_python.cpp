@@ -612,6 +612,7 @@ void export_style(py::module const&);
 void export_logger(py::module const&);
 void export_placement_finder(py::module const&);
 void export_text_symbolizer(py::module const&);
+void export_parameters(py::module const&);
 
 using mapnik::load_map;
 using mapnik::load_map_string;
@@ -647,6 +648,7 @@ PYBIND11_MODULE(_mapnik, m) {
     export_logger(m);
     export_placement_finder(m);
     export_text_symbolizer(m);
+    export_parameters(m);
 
     m.def("mapnik_version", &mapnik_version,"Get the Mapnik version number");
     m.def("mapnik_version_string", &mapnik_version_string,"Get the Mapnik version string");
@@ -799,6 +801,10 @@ PYBIND11_MODULE(_mapnik, m) {
     m.def("save_map", &save_map,
           py::arg("Map"),
           py::arg("filename"),
+          py::arg("explicit_defaults") = false);
+
+    m.def("save_map_to_string", &save_map_to_string,
+          py::arg("Map"),
           py::arg("explicit_defaults") = false);
 
     m.def("clear_cache", &clear_cache,
