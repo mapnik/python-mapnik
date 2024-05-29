@@ -41,7 +41,6 @@
 #include <mapnik/transform/parse_transform.hpp>
 #include <mapnik/transform/transform_processor.hpp>
 
-#include "mapnik_enumeration.hpp"
 #include "mapnik_symbolizer.hpp"
 
 //pybind11
