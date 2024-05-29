@@ -199,8 +199,9 @@ def postgis_setup():
         (POSTGIS_TEMPLATE_DBNAME,
          MAPNIK_TEST_DBNAME),
         silent=False)
-    call('shp2pgsql -s 3857 -g geom -W LATIN1 %s world_merc | psql -q %s' %
-         (SHAPEFILE, MAPNIK_TEST_DBNAME), silent=True)
+
+    call('''shp2pgsql -s 3857 -g geom -W LATIN1 %s world_merc | psql -q %s''' % (SHAPEFILE, MAPNIK_TEST_DBNAME), silent=False)
+
     call(
         '''psql -q %s -c "CREATE TABLE \"empty\" (key serial);SELECT AddGeometryColumn('','empty','geom','-1','GEOMETRY',4);"''' %
         MAPNIK_TEST_DBNAME,
@@ -287,8 +288,8 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
 
     def test_feature():
         ds = mapnik.PostGIS(dbname=MAPNIK_TEST_DBNAME, table='world_merc')
-        fs = ds.featureset()
-        feature = fs.next()
+        fs = iter(ds)
+        feature = next(fs)
         assert feature['gid'] ==  1
         assert feature['fips'] ==  u'AC'
         assert feature['iso2'] ==  u'AG'
@@ -311,8 +312,8 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         ds = mapnik.PostGIS(
             dbname=MAPNIK_TEST_DBNAME,
             table='(select * from world_merc) as w')
-        fs = ds.featureset()
-        feature = fs.next()
+        fs = iter(ds)
+        feature = next(fs)
         assert feature['gid'] ==  1
         assert feature['fips'] ==  u'AC'
         assert feature['iso2'] ==  u'AG'
@@ -334,8 +335,8 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         ds = mapnik.PostGIS(
             dbname=MAPNIK_TEST_DBNAME,
             table='(select gid,geom,fips as _fips from world_merc) as w')
-        fs = ds.featureset()
-        feature = fs.next()
+        fs = iter(ds)
+        feature = next(fs)
         assert feature['gid'] ==  1
         assert feature['_fips'] ==  u'AC'
         assert len(feature) ==  2
@@ -361,7 +362,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         fs = ds.features(mapnik.Query(mapnik.Box2d(-180,-90,180,90)))
         feature = None
         try:
-            feature = fs.next()
+            feature = next(fs)
         except StopIteration:
             pass
         assert feature ==  None
@@ -376,7 +377,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         fs = ds.features(mapnik.Query(mapnik.Box2d(-180,-90,180,90)))
         feature = None
         try:
-            feature = fs.next()
+            feature = next(fs)
         except StopIteration:
             pass
         assert feature ==  None
@@ -419,23 +420,23 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         ds = mapnik.PostGIS(dbname=MAPNIK_TEST_DBNAME, table='test2',
                             geometry_field='geom',
                             autodetect_key_field=True)
-        fs = ds.featureset()
-        f = fs.next()
+        fs = iter(ds)
+        f = next(fs)
         assert len(ds.fields()) == len(f.attributes)
         assert f['manual_id'] ==  0
-        assert fs.next()['manual_id'] ==  1
-        assert fs.next()['manual_id'] ==  1000
-        assert fs.next()['manual_id'] ==  -1000
-        assert fs.next()['manual_id'] ==  2147483647
-        assert fs.next()['manual_id'] ==  -2147483648
+        assert next(fs)['manual_id'] ==  1
+        assert next(fs)['manual_id'] ==  1000
+        assert next(fs)['manual_id'] ==  -1000
+        assert next(fs)['manual_id'] ==  2147483647
+        assert next(fs)['manual_id'] ==  -2147483648
 
-        fs = ds.featureset()
-        assert fs.next().id() ==  0
-        assert fs.next().id() ==  1
-        assert fs.next().id() ==  1000
-        assert fs.next().id() ==  -1000
-        assert fs.next().id() ==  2147483647
-        assert fs.next().id() ==  -2147483648
+        fs = iter(ds)
+        assert next(fs).id() ==  0
+        assert next(fs).id() ==  1
+        assert next(fs).id() ==  1000
+        assert next(fs).id() ==  -1000
+        assert next(fs).id() ==  2147483647
+        assert next(fs).id() ==  -2147483648
         meta = ds.describe()
         assert meta['srid'] ==  4326
         assert meta.get('key_field') ==  u'manual_id'
@@ -446,17 +447,17 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
                             geometry_field='geom',
                             autodetect_key_field=True,
                             key_field_as_attribute=False)
-        fs = ds.featureset()
-        f = fs.next()
+        fs = iter(ds)
+        f = next(fs)
         assert len(ds.fields()) == len(f.attributes)
         assert len(ds.fields()) == 0
         assert len(f.attributes) == 0
         assert f.id() ==  0
-        assert fs.next().id() ==  1
-        assert fs.next().id() ==  1000
-        assert fs.next().id() ==  -1000
-        assert fs.next().id() ==  2147483647
-        assert fs.next().id() ==  -2147483648
+        assert next(fs).id() ==  1
+        assert next(fs).id() ==  1000
+        assert next(fs).id() ==  -1000
+        assert next(fs).id() ==  2147483647
+        assert next(fs).id() ==  -2147483648
         meta = ds.describe()
         assert meta['srid'] ==  4326
         assert meta.get('key_field') ==  u'manual_id'
@@ -466,25 +467,25 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         ds = mapnik.PostGIS(dbname=MAPNIK_TEST_DBNAME, table='test3',
                             geometry_field='geom',
                             autodetect_key_field=False)
-        fs = ds.featureset()
-        feat = fs.next()
+        fs = iter(ds)
+        feat = next(fs)
         assert feat['manual_id'] ==  0
         assert feat['non_id'] == 9223372036854775807
-        assert fs.next()['manual_id'] ==  1
-        assert fs.next()['manual_id'] ==  1000
-        assert fs.next()['manual_id'] ==  -1000
-        assert fs.next()['manual_id'] ==  2147483647
-        assert fs.next()['manual_id'] ==  -2147483648
+        assert next(fs)['manual_id'] ==  1
+        assert next(fs)['manual_id'] ==  1000
+        assert next(fs)['manual_id'] ==  -1000
+        assert next(fs)['manual_id'] ==  2147483647
+        assert next(fs)['manual_id'] ==  -2147483648
 
         # since no valid primary key will be detected the fallback
         # is auto-incrementing counter
-        fs = ds.featureset()
-        assert fs.next().id() ==  1
-        assert fs.next().id() ==  2
-        assert fs.next().id() ==  3
-        assert fs.next().id() ==  4
-        assert fs.next().id() ==  5
-        assert fs.next().id() ==  6
+        fs = iter(ds)
+        assert next(fs).id() ==  1
+        assert next(fs).id() ==  2
+        assert next(fs).id() ==  3
+        assert next(fs).id() ==  4
+        assert next(fs).id() ==  5
+        assert next(fs).id() ==  6
 
         meta = ds.describe()
         assert meta['srid'] ==  4326
@@ -497,29 +498,29 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
             ds = mapnik.PostGIS(dbname=MAPNIK_TEST_DBNAME, table='test3',
                                 geometry_field='geom',
                                 autodetect_key_field=True)
-            ds.featureset()
+            iter(ds)
 
     def test_auto_detection_of_unique_feature_id_64_bit():
         ds = mapnik.PostGIS(dbname=MAPNIK_TEST_DBNAME, table='test4',
                             geometry_field='geom',
                             autodetect_key_field=True)
-        fs = ds.featureset()
-        f = fs.next()
+        fs = iter(ds)
+        f = next(fs)
         assert len(ds.fields()) == len(f.attributes)
         assert f['manual_id'] ==  0
-        assert fs.next()['manual_id'] ==  1
-        assert fs.next()['manual_id'] ==  1000
-        assert fs.next()['manual_id'] ==  -1000
-        assert fs.next()['manual_id'] ==  2147483647
-        assert fs.next()['manual_id'] ==  -2147483648
+        assert next(fs)['manual_id'] ==  1
+        assert next(fs)['manual_id'] ==  1000
+        assert next(fs)['manual_id'] ==  -1000
+        assert next(fs)['manual_id'] ==  2147483647
+        assert next(fs)['manual_id'] ==  -2147483648
 
-        fs = ds.featureset()
-        assert fs.next().id() ==  0
-        assert fs.next().id() ==  1
-        assert fs.next().id() ==  1000
-        assert fs.next().id() ==  -1000
-        assert fs.next().id() ==  2147483647
-        assert fs.next().id() ==  -2147483648
+        fs = iter(ds)
+        assert next(fs).id() ==  0
+        assert next(fs).id() ==  1
+        assert next(fs).id() ==  1000
+        assert next(fs).id() ==  -1000
+        assert next(fs).id() ==  2147483647
+        assert next(fs).id() ==  -2147483648
 
         meta = ds.describe()
         assert meta['srid'] ==  4326
@@ -530,23 +531,23 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         ds = mapnik.PostGIS(dbname=MAPNIK_TEST_DBNAME, table='''(select geom, 'a'::varchar as name from test2) as t''',
                             geometry_field='geom',
                             autodetect_key_field=False)
-        fs = ds.featureset()
-        feat = fs.next()
+        fs = iter(ds)
+        feat = next(fs)
         assert feat.id() ==  1
         assert feat['name'] ==  'a'
-        feat = fs.next()
+        feat = next(fs)
         assert feat.id() ==  2
         assert feat['name'] ==  'a'
-        feat = fs.next()
+        feat = next(fs)
         assert feat.id() ==  3
         assert feat['name'] ==  'a'
-        feat = fs.next()
+        feat = next(fs)
         assert feat.id() ==  4
         assert feat['name'] ==  'a'
-        feat = fs.next()
+        feat = next(fs)
         assert feat.id() ==  5
         assert feat['name'] ==  'a'
-        feat = fs.next()
+        feat = next(fs)
         assert feat.id() ==  6
         assert feat['name'] ==  'a'
 
@@ -559,23 +560,23 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         ds = mapnik.PostGIS(dbname=MAPNIK_TEST_DBNAME, table='''(select geom, manual_id from test2) as t''',
                             geometry_field='geom',
                             autodetect_key_field=True)
-        fs = ds.featureset()
-        f = fs.next()
+        fs = iter(ds)
+        f = next(fs)
         assert len(ds.fields()) == len(f.attributes)
         assert f['manual_id'] ==  0
-        assert fs.next()['manual_id'] ==  1
-        assert fs.next()['manual_id'] ==  1000
-        assert fs.next()['manual_id'] ==  -1000
-        assert fs.next()['manual_id'] ==  2147483647
-        assert fs.next()['manual_id'] ==  -2147483648
+        assert next(fs)['manual_id'] ==  1
+        assert next(fs)['manual_id'] ==  1000
+        assert next(fs)['manual_id'] ==  -1000
+        assert next(fs)['manual_id'] ==  2147483647
+        assert next(fs)['manual_id'] ==  -2147483648
 
-        fs = ds.featureset()
-        assert fs.next().id() ==  0
-        assert fs.next().id() ==  1
-        assert fs.next().id() ==  1000
-        assert fs.next().id() ==  -1000
-        assert fs.next().id() ==  2147483647
-        assert fs.next().id() ==  -2147483648
+        fs = iter(ds)
+        assert next(fs).id() ==  0
+        assert next(fs).id() ==  1
+        assert next(fs).id() ==  1000
+        assert next(fs).id() ==  -1000
+        assert next(fs).id() ==  2147483647
+        assert next(fs).id() ==  -2147483648
 
         meta = ds.describe()
         assert meta['srid'] ==  4326
@@ -608,23 +609,23 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
                             geometry_field='geom',
                             key_field='manual_id',
                             autodetect_key_field=True)
-        fs = ds.featureset()
-        f = fs.next()
+        fs = iter(ds)
+        f = next(fs)
         assert len(ds.fields()) == len(f.attributes)
         assert f['manual_id'] ==  0
-        assert fs.next()['manual_id'] ==  1
-        assert fs.next()['manual_id'] ==  1000
-        assert fs.next()['manual_id'] ==  -1000
-        assert fs.next()['manual_id'] ==  2147483647
-        assert fs.next()['manual_id'] ==  -2147483648
+        assert next(fs)['manual_id'] ==  1
+        assert next(fs)['manual_id'] ==  1000
+        assert next(fs)['manual_id'] ==  -1000
+        assert next(fs)['manual_id'] ==  2147483647
+        assert next(fs)['manual_id'] ==  -2147483648
 
-        fs = ds.featureset()
-        assert fs.next().id() ==  0
-        assert fs.next().id() ==  1
-        assert fs.next().id() ==  1000
-        assert fs.next().id() ==  -1000
-        assert fs.next().id() ==  2147483647
-        assert fs.next().id() ==  -2147483648
+        fs = iter(ds)
+        assert next(fs).id() ==  0
+        assert next(fs).id() ==  1
+        assert next(fs).id() ==  1000
+        assert next(fs).id() ==  -1000
+        assert next(fs).id() ==  2147483647
+        assert next(fs).id() ==  -2147483648
 
         meta = ds.describe()
         assert meta['srid'] ==  4326
@@ -635,13 +636,13 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         ds = mapnik.PostGIS(dbname=MAPNIK_TEST_DBNAME, table='test5',
                             geometry_field='geom',
                             autodetect_key_field=False)
-        fs = ds.featureset()
-        assert fs.next()['manual_id'] ==  -1
-        assert fs.next()['manual_id'] ==  1
+        fs = iter(ds)
+        assert next(fs)['manual_id'] ==  -1
+        assert next(fs)['manual_id'] ==  1
 
-        fs = ds.featureset()
-        assert fs.next().id() ==  1
-        assert fs.next().id() ==  2
+        fs = iter(ds)
+        assert next(fs).id() ==  1
+        assert next(fs).id() ==  2
 
         meta = ds.describe()
         assert meta['srid'] ==  4326
@@ -652,9 +653,9 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         ds = mapnik.PostGIS(dbname=MAPNIK_TEST_DBNAME, table='"tableWithMixedCase"',
                             geometry_field='geom',
                             autodetect_key_field=True)
-        fs = ds.featureset()
+        fs = iter(ds)
         for id in range(1, 5):
-            assert fs.next().id() ==  id
+            assert next(fs).id() ==  id
 
         meta = ds.describe()
         assert meta['srid'] ==  -1
@@ -665,9 +666,9 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         ds = mapnik.PostGIS(dbname=MAPNIK_TEST_DBNAME, table='(SeLeCt * FrOm "tableWithMixedCase") as MixedCaseQuery',
                             geometry_field='geom',
                             autodetect_key_field=True)
-        fs = ds.featureset()
+        fs = iter(ds)
         for id in range(1, 5):
-            assert fs.next().id() ==  id
+            assert next(fs).id() ==  id
 
         meta = ds.describe()
         assert meta['srid'] ==  -1
@@ -679,9 +680,9 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
            (SeLeCt * FrOm "tableWithMixedCase" where geom && !bbox! ) as MixedCaseQuery''',
                             geometry_field='geom',
                             autodetect_key_field=True)
-        fs = ds.featureset()
+        fs = iter(ds)
         for id in range(1, 5):
-            assert fs.next().id() ==  id
+            assert next(fs).id() ==  id
 
         meta = ds.describe()
         assert meta['srid'] ==  -1
@@ -693,9 +694,9 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
            (SeLeCt * FrOm "tableWithMixedCase" where ST_Intersects(geom,!bbox!) ) as MixedCaseQuery''',
                             geometry_field='geom',
                             autodetect_key_field=True)
-        fs = ds.featureset()
+        fs = iter(ds)
         for id in range(1, 5):
-            assert fs.next().id() ==  id
+            assert next(fs).id() ==  id
 
         meta = ds.describe()
         assert meta['srid'] ==  -1
@@ -705,8 +706,8 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
     def test_empty_geom():
         ds = mapnik.PostGIS(dbname=MAPNIK_TEST_DBNAME, table='test7',
                             geometry_field='geom')
-        fs = ds.featureset()
-        assert fs.next()['gid'] ==  1
+        fs = iter(ds)
+        assert next(fs)['gid'] ==  1
 
         meta = ds.describe()
         assert meta['srid'] ==  4326
@@ -718,7 +719,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
                             table='test',
                             max_size=20,
                             geometry_field='geom')
-        fs = list(ds.all_features())
+        fs = list(iter(ds))
         assert len(fs) ==  8
 
         meta = ds.describe()
@@ -744,7 +745,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
             ds = mapnik.PostGIS(dbname=MAPNIK_TEST_DBNAME,
                                 table='asdfasdfasdfasdfasdf',
                                 max_size=20)
-            ds.all_features()
+            iter(ds)
         except Exception as e:
             assert 'in executeQuery' in str(e)
 
@@ -761,12 +762,12 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         assert len(ds.fields()) ==  2
         assert ds.fields(), ['gid' ==  'int_field']
         assert ds.field_types(), ['int' ==  'int']
-        fs = ds.featureset()
-        feat = fs.next()
+        fs = iter(ds)
+        feat = next(fs)
         assert feat.id() ==  1
         assert feat['gid'] ==  1
         assert feat['int_field'] ==  2147483648
-        feat = fs.next()
+        feat = next(fs)
         assert feat.id() ==  2
         assert feat['gid'] ==  2
         assert feat['int_field'] ==  922337203685477580
@@ -789,8 +790,8 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
                                 persist_connection=False,
                                 table='(select ST_MakePoint(0,0) as g, pg_backend_pid() as p, 1 as v) as w',
                                 geometry_field='g')
-            fs = ds.featureset()
-            assert fs.next()['v'] ==  1
+            fs = iter(ds)
+            assert next(fs)['v'] ==  1
 
             meta = ds.describe()
             assert meta['srid'] ==  -1
@@ -799,8 +800,8 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
     def test_null_comparision():
         ds = mapnik.PostGIS(dbname=MAPNIK_TEST_DBNAME, table='test9',
                             geometry_field='geom')
-        fs = ds.featureset()
-        feat = fs.next()
+        fs = iter(ds)
+        feat = next(fs)
 
         meta = ds.describe()
         assert meta['srid'] ==  -1
@@ -820,7 +821,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         assert mapnik.Expression("[name] != true").evaluate(feat)
         assert mapnik.Expression("[name] != false").evaluate(feat)
 
-        feat = fs.next()
+        feat = next(fs)
         assert feat['gid'] ==  2
         assert feat['name'] ==  ''
         assert mapnik.Expression("[name] = 'name'").evaluate(feat) ==  False
@@ -834,7 +835,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         assert mapnik.Expression("[name] != true").evaluate(feat) ==  True
         assert mapnik.Expression("[name] != false").evaluate(feat) ==  True
 
-        feat = fs.next()
+        feat = next(fs)
         assert feat['gid'] ==  3
         assert feat['name'] ==  None  # null
         assert mapnik.Expression("[name] = 'name'").evaluate(feat) ==  False
@@ -852,8 +853,8 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
     def test_null_comparision2():
         ds = mapnik.PostGIS(dbname=MAPNIK_TEST_DBNAME, table='test10',
                             geometry_field='geom')
-        fs = ds.featureset()
-        feat = fs.next()
+        fs = iter(ds)
+        feat = next(fs)
 
         meta = ds.describe()
         assert meta['srid'] ==  -1
@@ -873,7 +874,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         assert not mapnik.Expression("[bool_field] != true").evaluate(feat)
         assert mapnik.Expression("[bool_field] != false").evaluate(feat)
 
-        feat = fs.next()
+        feat = next(fs)
         assert feat['gid'] ==  2
         assert not feat['bool_field']
         assert not mapnik.Expression("[bool_field] = 'name'").evaluate(feat)
@@ -887,7 +888,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         assert mapnik.Expression("[bool_field] != true").evaluate(feat)
         assert not mapnik.Expression("[bool_field] != false").evaluate(feat)
 
-        feat = fs.next()
+        feat = next(fs)
         assert feat['gid'] ==  3
         assert feat['bool_field'] ==  None  # null
         assert not mapnik.Expression("[bool_field] = 'name'").evaluate(feat)
@@ -915,8 +916,8 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
                 'geometry_field': 'geom',
                 'table': "(select null::bigint as osm_id, GeomFromEWKT('SRID=4326;POINT(0 0)') as geom) as tmp"}
         ds = mapnik.Datasource(**opts)
-        fs = ds.featureset()
-        feat = fs.next()
+        fs = iter(ds)
+        feat = next(fs)
         assert feat.id() ==  int(1)
         assert feat['osm_id'] ==  None
 
@@ -933,11 +934,11 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
                 'geometry_field': 'geom',
                 'table': "(select null::bigint as osm_id, GeomFromEWKT('SRID=4326;POINT(0 0)') as geom) as tmp"}
         ds = mapnik.Datasource(**opts)
-        fs = ds.featureset()
+        fs = iter(ds)
         with pytest.raises(StopIteration):
             # should throw since key_field is null: StopIteration: No more
             # features.
-            fs.next()
+            next(fs)
 
     def test_psql_error_should_not_break_connection_pool():
         # Bad request, will trigger an error when returning result
@@ -951,7 +952,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         # This will/should trigger a PSQL error
         failed = False
         try:
-            fs = ds_bad.featureset()
+            fs = iter(ds_bad)
             count = sum(1 for f in fs)
         except RuntimeError as e:
             assert 'invalid input syntax for type integer' in str(e)
@@ -960,7 +961,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         assert failed ==  True
 
         # Should be ok
-        fs = ds_good.featureset()
+        fs = iter(ds_good)
         count = sum(1 for f in fs)
         assert count ==  8
 
@@ -968,14 +969,14 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         map1 = mapnik.Map(600, 300)
         s = mapnik.Style()
         r = mapnik.Rule()
-        r.symbols.append(mapnik.PolygonSymbolizer())
+        r.symbolizers.append(mapnik.PolygonSymbolizer())
         s.rules.append(r)
         map1.append_style('style', s)
 
         # This layer will fail after a while
         buggy_s = mapnik.Style()
         buggy_r = mapnik.Rule()
-        buggy_r.symbols.append(mapnik.PolygonSymbolizer())
+        buggy_r.symbolizers.append(mapnik.PolygonSymbolizer())
         buggy_r.filter = mapnik.Expression("[fips] = 'FR'")
         buggy_s.rules.append(buggy_r)
         map1.append_style('style for buggy layer', buggy_s)
@@ -1000,8 +1001,8 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         map2.background = mapnik.Color('steelblue')
         s = mapnik.Style()
         r = mapnik.Rule()
-        r.symbols.append(mapnik.LineSymbolizer())
-        r.symbols.append(mapnik.LineSymbolizer())
+        r.symbolizers.append(mapnik.LineSymbolizer())
+        r.symbolizers.append(mapnik.LineSymbolizer())
         s.rules.append(r)
         map2.append_style('style', s)
         layer1 = mapnik.Layer('layer1')
@@ -1030,7 +1031,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         assert len(ds.fields()) ==  3
         assert ds.fields(), ['gid', 'dim' ==  'name']
         assert ds.field_types(), ['int', 'int' ==  'str']
-        fs = ds.featureset()
+        fs = iter(ds)
 
         meta = ds.describe()
         assert meta['srid'] ==  4326
@@ -1039,7 +1040,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         assert meta['geometry_type'] ==  mapnik.DataGeometryType.Point
 
         # Point (2d)
-        feat = fs.next()
+        feat = next(fs)
         assert feat.id() ==  1
         assert feat['gid'] ==  1
         assert feat['dim'] ==  2
@@ -1047,7 +1048,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         assert feat.geometry.to_wkt() ==  'POINT(0 0)'
 
         # PointZ
-        feat = fs.next()
+        feat = next(fs)
         assert feat.id() ==  2
         assert feat['gid'] ==  2
         assert feat['dim'] ==  3
@@ -1055,7 +1056,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         assert feat.geometry.to_wkt() ==  'POINT(0 0)'
 
         # PointM
-        feat = fs.next()
+        feat = next(fs)
         assert feat.id() ==  3
         assert feat['gid'] ==  3
         assert feat['dim'] ==  3
@@ -1063,7 +1064,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         assert feat.geometry.to_wkt() ==  'POINT(0 0)'
 
         # PointZM
-        feat = fs.next()
+        feat = next(fs)
         assert feat.id() ==  4
         assert feat['gid'] ==  4
         assert feat['dim'] ==  4
@@ -1071,7 +1072,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
 
         assert feat.geometry.to_wkt() ==  'POINT(0 0)'
         # MultiPoint
-        feat = fs.next()
+        feat = next(fs)
         assert feat.id() ==  5
         assert feat['gid'] ==  5
         assert feat['dim'] ==  2
@@ -1079,7 +1080,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         assert feat.geometry.to_wkt() == 'MULTIPOINT(0 0,1 1)'
 
         # MultiPointZ
-        feat = fs.next()
+        feat = next(fs)
         assert feat.id() ==  6
         assert feat['gid'] ==  6
         assert feat['dim'] ==  3
@@ -1087,7 +1088,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         assert feat.geometry.to_wkt() == 'MULTIPOINT(0 0,1 1)'
 
         # MultiPointM
-        feat = fs.next()
+        feat = next(fs)
         assert feat.id() ==  7
         assert feat['gid'] ==  7
         assert feat['dim'] ==  3
@@ -1095,7 +1096,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         assert feat.geometry.to_wkt() == 'MULTIPOINT(0 0,1 1)'
 
         # MultiPointZM
-        feat = fs.next()
+        feat = next(fs)
         assert feat.id() ==  8
         assert feat['gid'] ==  8
         assert feat['dim'] ==  4
@@ -1103,7 +1104,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         assert feat.geometry.to_wkt() == 'MULTIPOINT(0 0,1 1)'
 
         # LineString
-        feat = fs.next()
+        feat = next(fs)
         assert feat.id() ==  9
         assert feat['gid'] ==  9
         assert feat['dim'] ==  2
@@ -1111,7 +1112,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         assert feat.geometry.to_wkt() == 'LINESTRING(0 0,1 1)'
 
         # LineStringZ
-        feat = fs.next()
+        feat = next(fs)
         assert feat.id() ==  10
         assert feat['gid'] ==  10
         assert feat['dim'] ==  3
@@ -1119,7 +1120,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         assert feat.geometry.to_wkt() == 'LINESTRING(0 0,1 1)'
 
         # LineStringM
-        feat = fs.next()
+        feat = next(fs)
         assert feat.id() ==  11
         assert feat['gid'] ==  11
         assert feat['dim'] ==  3
@@ -1127,7 +1128,7 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         assert feat.geometry.to_wkt() == 'LINESTRING(0 0,1 1)'
 
         # LineStringZM
-        feat = fs.next()
+        feat = next(fs)
         assert feat.id() ==  12
         assert feat['gid'] ==  12
         assert feat['dim'] ==  4
@@ -1135,84 +1136,84 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
         assert feat.geometry.to_wkt() == 'LINESTRING(0 0,1 1)'
 
         # Polygon
-        feat = fs.next()
+        feat = next(fs)
         assert feat.id() ==  13
         assert feat['gid'] ==  13
         assert feat['name'] ==  'Polygon'
         assert feat.geometry.to_wkt() == 'POLYGON((0 0,1 1,2 2,0 0))'
 
         # PolygonZ
-        feat = fs.next()
+        feat = next(fs)
         assert feat.id() ==  14
         assert feat['gid'] ==  14
         assert feat['name'] ==  'PolygonZ'
         assert feat.geometry.to_wkt() == 'POLYGON((0 0,1 1,2 2,0 0))'
 
         # PolygonM
-        feat = fs.next()
+        feat = next(fs)
         assert feat.id() ==  15
         assert feat['gid'] ==  15
         assert feat['name'] ==  'PolygonM'
         assert feat.geometry.to_wkt() == 'POLYGON((0 0,1 1,2 2,0 0))'
 
         # PolygonZM
-        feat = fs.next()
+        feat = next(fs)
         assert feat.id() ==  16
         assert feat['gid'] ==  16
         assert feat['name'] ==  'PolygonZM'
         assert feat.geometry.to_wkt() == 'POLYGON((0 0,1 1,2 2,0 0))'
 
         # MultiLineString
-        feat = fs.next()
+        feat = next(fs)
         assert feat.id() ==  17
         assert feat['gid'] ==  17
         assert feat['name'] ==  'MultiLineString'
         assert feat.geometry.to_wkt() == 'MULTILINESTRING((0 0,1 1),(2 2,3 3))'
 
         # MultiLineStringZ
-        feat = fs.next()
+        feat = next(fs)
         assert feat.id() ==  18
         assert feat['gid'] ==  18
         assert feat['name'] ==  'MultiLineStringZ'
         assert feat.geometry.to_wkt() == 'MULTILINESTRING((0 0,1 1),(2 2,3 3))'
 
         # MultiLineStringM
-        feat = fs.next()
+        feat = next(fs)
         assert feat.id() ==  19
         assert feat['gid'] ==  19
         assert feat['name'] ==  'MultiLineStringM'
         assert feat.geometry.to_wkt() == 'MULTILINESTRING((0 0,1 1),(2 2,3 3))'
 
         # MultiLineStringZM
-        feat = fs.next()
+        feat = next(fs)
         assert feat.id() ==  20
         assert feat['gid'] ==  20
         assert feat['name'] ==  'MultiLineStringZM'
         assert feat.geometry.to_wkt() == 'MULTILINESTRING((0 0,1 1),(2 2,3 3))'
 
         # MultiPolygon
-        feat = fs.next()
+        feat = next(fs)
         assert feat.id() ==  21
         assert feat['gid'] ==  21
         assert feat['name'] ==  'MultiPolygon'
         assert feat.geometry.to_wkt() == 'MULTIPOLYGON(((0 0,1 1,2 2,0 0)),((0 0,1 1,2 2,0 0)))'
 
         # MultiPolygonZ
-        feat = fs.next()
+        feat = next(fs)
         assert feat.id() ==  22
         assert feat['gid'] ==  22
         assert feat['name'] ==  'MultiPolygonZ'
         assert feat.geometry.to_wkt() == 'MULTIPOLYGON(((0 0,1 1,2 2,0 0)),((0 0,1 1,2 2,0 0)))'
 
         # MultiPolygonM
-        feat = fs.next()
+        feat = next(fs)
         assert feat.id() ==  23
         assert feat['gid'] ==  23
         assert feat['name'] ==  'MultiPolygonM'
         assert feat.geometry.to_wkt() == 'MULTIPOLYGON(((0 0,1 1,2 2,0 0)),((0 0,1 1,2 2,0 0)))'
 
         # MultiPolygonZM
-        feat = fs.next()
+        feat = next(fs)
         assert feat.id() ==  24
         assert feat['gid'] ==  24
         assert feat['name'] ==  'MultiPolygonZM'
@@ -1223,8 +1224,8 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
                             table='(select * from test12) as tmp',
                             key_field='gid',
                             key_field_as_attribute=False)
-        fs = ds.featureset()
-        feat = fs.next()
+        fs = iter(ds)
+        feat = next(fs)
         assert feat['name'] == 'Point'
 
     def test_variable_in_subquery1():
@@ -1232,9 +1233,11 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
            (select * from test where !@zoom! = 30 ) as tmp''',
                             geometry_field='geom', srid=4326,
                             autodetect_key_field=True)
-        fs = ds.featureset(variables={'zoom': 30})
+        q = mapnik.Query(ds.envelope())
+        q.variables = {'zoom': 30}
+        fs = ds.features(q)
         for id in range(1, 5):
-            assert fs.next().id() ==  id
+            assert next(fs).id() ==  id
 
         meta = ds.describe()
         assert meta['srid'] ==  4326
@@ -1251,9 +1254,9 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
              (select * FROM test) AS data
              -- select this from bogus''',
                             geometry_table='test')
-        fs = ds.featureset()
+        fs = iter(ds)
         for id in range(1, 5):
-            assert fs.next().id() ==  id
+            assert next(fs).id() ==  id
 
         meta = ds.describe()
         assert meta['srid'] ==  4326
@@ -1269,9 +1272,9 @@ if 'postgis' in mapnik.DatasourceCache.plugin_names() \
              (select * FROM test) AS data
              -- select this from bogus.''',
                             geometry_table='test')
-        fs = ds.featureset()
+        fs = iter(ds)
         for id in range(1, 5):
-            assert fs.next().id() ==  id
+            assert next(fs).id() ==  id
 
         meta = ds.describe()
         assert meta['srid'] ==  4326

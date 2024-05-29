@@ -26,7 +26,6 @@
 #include <mapnik/symbolizer_hash.hpp>
 #include <mapnik/symbolizer_utils.hpp>
 #include <mapnik/symbolizer_keys.hpp>
-
 #include "mapnik_symbolizer.hpp"
 //pybind11
 #include <pybind11/pybind11.h>

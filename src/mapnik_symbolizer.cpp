@@ -53,20 +53,19 @@
 namespace py = pybind11;
 
 using mapnik::symbolizer;
-using mapnik::dot_symbolizer;
+using mapnik::building_symbolizer;
 using mapnik::debug_symbolizer;
+using mapnik::dot_symbolizer;
+using mapnik::group_symbolizer;
 using mapnik::point_symbolizer;
 using mapnik::line_symbolizer;
 using mapnik::line_pattern_symbolizer;
+using mapnik::markers_symbolizer;
 using mapnik::polygon_symbolizer;
 using mapnik::polygon_pattern_symbolizer;
 using mapnik::raster_symbolizer;
 using mapnik::shield_symbolizer;
 using mapnik::text_symbolizer;
-using mapnik::building_symbolizer;
-using mapnik::markers_symbolizer;
-using mapnik::debug_symbolizer;
-using mapnik::group_symbolizer;
 using mapnik::symbolizer_base;
 
 using namespace python_mapnik;
@@ -164,15 +163,21 @@ py::object symbolizer_base_keys(mapnik::symbolizer_base const& sym)
 void export_symbolizer(py::module const& m)
 {
     py::implicitly_convertible<std::string, mapnik::color>();
-
     py::class_<symbolizer>(m, "Symbolizer")
+        .def(py::init<building_symbolizer>())
+        .def(py::init<debug_symbolizer>())
         .def(py::init<dot_symbolizer>())
+        .def(py::init<group_symbolizer>())
+        .def(py::init<point_symbolizer>())
         .def(py::init<polygon_symbolizer>())
         .def(py::init<polygon_pattern_symbolizer>())
-        .def(py::init<point_symbolizer>())
         .def(py::init<line_symbolizer>())
         .def(py::init<line_pattern_symbolizer>())
+        .def(py::init<markers_symbolizer>())
+        .def(py::init<raster_symbolizer>())
         .def(py::init<text_symbolizer>())
+        .def(py::init<shield_symbolizer>())
+
         .def("type_name", symbolizer_type_name)
         .def("__hash__", hash_impl)
         .def("__getitem__",&getitem_impl)

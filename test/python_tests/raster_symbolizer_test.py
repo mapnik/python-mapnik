@@ -44,7 +44,7 @@ def test_dataraster_coloring(setup):
         ]:
             colorizer.add_stop(value, mapnik.Color(color))
         sym.colorizer = colorizer
-        rule.symbols.append(sym)
+        rule.symbolizers.append(sym)
         style.rules.append(rule)
         _map.append_style('foo', style)
         lyr.styles.append('foo')
@@ -60,7 +60,7 @@ def test_dataraster_coloring(setup):
             im.save(expected_file, 'png32')
         actual = mapnik.Image.open(actual_file)
         expected = mapnik.Image.open(expected_file)
-        assert actual.tostring('png32') == expected.tostring('png32'),'failed comparing actual (%s) and expected (%s)' % (actual_file,
+        assert actual.to_string('png32') == expected.to_string('png32'),'failed comparing actual (%s) and expected (%s)' % (actual_file,
                                                                                                                           expected_file)
 
 
@@ -127,7 +127,7 @@ def test_raster_with_alpha_blends_correctly_with_background():
     symbolizer = mapnik.RasterSymbolizer()
     symbolizer.scaling = mapnik.scaling_method.BILINEAR
 
-    rule.symbols.append(symbolizer)
+    rule.symbolizers.append(symbolizer)
     style.rules.append(rule)
 
     map.append_style('raster_style', style)
@@ -144,7 +144,7 @@ def test_raster_with_alpha_blends_correctly_with_background():
         mim = mapnik.Image(WIDTH, HEIGHT)
 
         mapnik.render(map, mim)
-        mim.tostring()
+        mim.to_string()
         # All white is expected
         assert get_unique_colors(mim) == ['rgba(254,254,254,255)']
 
@@ -162,7 +162,7 @@ def test_raster_warping():
         sym.colorizer = mapnik.RasterColorizer(
             mapnik.COLORIZER_DISCRETE, mapnik.Color(255, 255, 0))
         rule = mapnik.Rule()
-        rule.symbols.append(sym)
+        rule.symbolizers.append(sym)
         style = mapnik.Style()
         style.rules.append(rule)
         _map = mapnik.Map(256, 256, mapSrs)
@@ -184,7 +184,7 @@ def test_raster_warping():
             im.save(expected_file, 'png32')
         actual = mapnik.Image.open(actual_file)
         expected = mapnik.Image.open(expected_file)
-        assert actual.tostring('png32') == expected.tostring('png32'), 'failed comparing actual (%s) and expected (%s)' % (actual_file,
+        assert actual.to_string('png32') == expected.to_string('png32'), 'failed comparing actual (%s) and expected (%s)' % (actual_file,
                                                                                                                            expected_file)
 
 
@@ -201,7 +201,7 @@ def test_raster_warping_does_not_overclip_source():
         sym.colorizer = mapnik.RasterColorizer(
             mapnik.COLORIZER_DISCRETE, mapnik.Color(255, 255, 0))
         rule = mapnik.Rule()
-        rule.symbols.append(sym)
+        rule.symbolizers.append(sym)
         style = mapnik.Style()
         style.rules.append(rule)
         _map = mapnik.Map(256, 256, mapSrs)
@@ -220,5 +220,5 @@ def test_raster_warping_does_not_overclip_source():
             im.save(expected_file, 'png32')
         actual = mapnik.Image.open(actual_file)
         expected = mapnik.Image.open(expected_file)
-        assert actual.tostring('png32') == expected.tostring('png32'), 'failed comparing actual (%s) and expected (%s)' % (actual_file,
+        assert actual.to_string('png32') == expected.to_string('png32'), 'failed comparing actual (%s) and expected (%s)' % (actual_file,
                                                                                                                            expected_file)

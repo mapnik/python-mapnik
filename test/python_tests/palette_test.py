@@ -45,12 +45,12 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
 
         # test saving to a string
         with open('/tmp/mapnik-palette-test2.png', 'wb') as f:
-            f.write(im.tostring('png', palette))
+            f.write(im.to_string('png', palette))
         # compare the two methods
         im1 = mapnik.Image.open('/tmp/mapnik-palette-test.png')
         im2 = mapnik.Image.open('/tmp/mapnik-palette-test2.png')
-        assert im1.tostring('png32') == im1.tostring('png32'),'%s not eq to %s' % ('/tmp/mapnik-palette-test.png',
+        assert im1.to_string('png32') == im1.to_string('png32'),'%s not eq to %s' % ('/tmp/mapnik-palette-test.png',
                                                                                    '/tmp/mapnik-palette-test2.png')
         # compare to expected
-        assert im1.tostring('png32') == mapnik.Image.open(expected).tostring('png32'), '%s not eq to %s' % ('/tmp/mapnik-palette-test.png',
+        assert im1.to_string('png32') == mapnik.Image.open(expected).to_string('png32'), '%s not eq to %s' % ('/tmp/mapnik-palette-test.png',
                                                                                                             expected)

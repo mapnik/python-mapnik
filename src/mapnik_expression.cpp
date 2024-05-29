@@ -34,6 +34,8 @@
 
 //pybind11
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <pybind11/stl_bind.h>
 
 using mapnik::expression_ptr;
 using mapnik::parse_expression;
@@ -41,6 +43,8 @@ using mapnik::to_expression_string;
 using mapnik::path_expression_ptr;
 
 namespace py = pybind11;
+
+PYBIND11_MAKE_OPAQUE(mapnik::path_expression);
 
 // expression
 expression_ptr parse_expression_(std::string const& wkt)
@@ -82,7 +86,7 @@ std::string path_evaluate_(mapnik::path_expression const& expr, mapnik::feature_
     return mapnik::path_processor_type::evaluate(expr, f);
 }
 
-void export_expression(py::module & m)
+void export_expression(py::module const& m)
 {
     py::class_<mapnik::expr_node, mapnik::expression_ptr>(m, "Expression")
         .def(py::init([] (std::string const& wkt) { return parse_expression_(wkt);}))

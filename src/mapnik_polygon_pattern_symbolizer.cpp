@@ -20,34 +20,30 @@
  *
  *****************************************************************************/
 
-//mapnik
+// mapnik
 #include <mapnik/config.hpp>
-#include <mapnik/font_set.hpp>
+#include <mapnik/symbolizer.hpp>
+#include <mapnik/symbolizer_hash.hpp>
+#include <mapnik/symbolizer_utils.hpp>
+#include <mapnik/symbolizer_keys.hpp>
+#include "mapnik_symbolizer.hpp"
 //pybind11
 #include <pybind11/pybind11.h>
 
 namespace py = pybind11;
 
-using mapnik::font_set;
-
-void export_fontset (py::module const& m)
+void export_polygon_pattern_symbolizer(py::module const& m)
 {
-    py::class_<font_set>(m, "FontSet")
-        .def(py::init<std::string const&>(), "default fontset constructor")
-        .def_property("name",
-                       &font_set::get_name,
-                       &font_set::set_name,
-                      "Get/Set the name of the FontSet.\n"
-            )
-        .def("add_face_name", &font_set::add_face_name,
-             "Add a face-name to the fontset.\n"
-             "\n"
-             "Example:\n"
-             ">>> fs = Fontset('book-fonts')\n"
-             ">>> fs.add_face_name('DejaVu Sans Book')\n",
-             py::arg("name"))
-        .def_property_readonly("names",
-                               &font_set::get_face_names,
-                               "List of face names belonging to a FontSet.\n")
+    using namespace python_mapnik;
+    using mapnik::polygon_pattern_symbolizer;
+
+    py::class_<polygon_pattern_symbolizer, symbolizer_base>(m, "PolygonPatternSymbolizer")
+        .def(py::init<>(), "Default ctor")
+        .def("__hash__", hash_impl_2<polygon_pattern_symbolizer>)
+         .def_property("file",
+                       &get_property<polygon_pattern_symbolizer, mapnik::keys::file>,
+                       &set_path_property<polygon_pattern_symbolizer, mapnik::keys::file>,
+                       "File path or mapnik.PathExpression")
         ;
+
 }

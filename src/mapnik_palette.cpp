@@ -2,7 +2,7 @@
  *
  * This file is part of Mapnik (c++ mapping toolkit)
  *
- * Copyright (C) 2015 Artem Pavlenko
+ * Copyright (C) 2024 Artem Pavlenko
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,22 +20,13 @@
  *
  *****************************************************************************/
 
-#include <mapnik/config.hpp>
-
-
-#pragma GCC diagnostic push
-#include <mapnik/warning_ignore.hpp>
-#include <boost/python.hpp>
-#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
-#include <boost/python/iterator.hpp>
-#include <boost/iterator/transform_iterator.hpp>
-#pragma GCC diagnostic pop
-
 //mapnik
+#include <mapnik/config.hpp>
 #include <mapnik/palette.hpp>
+//pybind11
+#include <pybind11/pybind11.h>
 
-// stl
-#include <stdexcept>
+namespace py = pybind11;
 
 static std::shared_ptr<mapnik::rgba_palette> make_palette( std::string const& palette, std::string const& format )
 {
@@ -45,22 +36,18 @@ static std::shared_ptr<mapnik::rgba_palette> make_palette( std::string const& pa
     else if (format == "act")
         type = mapnik::rgba_palette::PALETTE_ACT;
     else
-        throw std::runtime_error("invalid type passed for mapnik.Palette: must be either rgba, rgb, or act");
+        throw std::runtime_error("invalid type passed for `mapnik.Palette`: must be either rgba, rgb, or act");
     return std::make_shared<mapnik::rgba_palette>(palette, type);
 }
 
-void export_palette ()
+void export_palette (py::module const& m)
 {
-    using namespace boost::python;
+    py::class_<mapnik::rgba_palette, std::shared_ptr<mapnik::rgba_palette>>(m, "Palette")
+        .def(py::init([](std::string const& palette, std::string const& format) {
+            return make_palette(palette, format); }),
+            "Creates a new color palette from a file\n",
+            py::arg("palette"), py::arg("type"))
 
-    class_<mapnik::rgba_palette,
-        std::shared_ptr<mapnik::rgba_palette>,
-        boost::noncopyable >("Palette",no_init)
-        //, init<std::string,std::string>(
-        // ( arg("palette"), arg("type")),
-        // "Creates a new color palette from a file\n"
-        // )
-        .def( "__init__", boost::python::make_constructor(make_palette))
         .def("to_string", &mapnik::rgba_palette::to_string,
              "Returns the palette as a string.\n"
             )

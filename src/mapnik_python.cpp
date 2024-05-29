@@ -26,35 +26,23 @@
 #include <mapnik/map.hpp>
 #include <mapnik/load_map.hpp>
 #include <mapnik/save_map.hpp>
-#include "mapnik_value_converter.hpp"
-#include "python_to_value.hpp"
-
-
-// #include <mapnik/version.hpp>
-// #include <mapnik/map.hpp>
 #include <mapnik/datasource.hpp>
 #include <mapnik/layer.hpp>
 #include <mapnik/agg_renderer.hpp>
-// #include <mapnik/rule.hpp>
-// #include <mapnik/image_util.hpp>
 #include <mapnik/image_any.hpp>
-// #include <mapnik/load_map.hpp>
 #include <mapnik/value.hpp>
 #include <mapnik/value/error.hpp>
-//#include <mapnik/save_map.hpp>
 #include <mapnik/scale_denominator.hpp>
-// #if defined(GRID_RENDERER)
-// #include "python_grid_utils.hpp"
-// #endif
-//#include "mapnik_value_converter.hpp"
-// #include "mapnik_enumeration_wrapper_converter.hpp"
-//#include "mapnik_threads.hpp"
-// #include "python_optional.hpp"
-// #include <mapnik/marker_cache.hpp>
-// #if defined(SHAPE_MEMORY_MAPPED_FILE)
-// #include <mapnik/mapped_memory_cache.hpp>
-// #endif
+#include <mapnik/label_collision_detector.hpp>
+#include "mapnik_value_converter.hpp"
+#include "python_to_value.hpp"
 
+#if defined(GRID_RENDERER)
+#include "python_grid_utils.hpp"
+#endif
+#if defined(SHAPE_MEMORY_MAPPED_FILE)
+#include <mapnik/mapped_memory_cache.hpp>
+#endif
 #if defined(SVG_RENDERER)
 #include <mapnik/svg/output/svg_renderer.hpp>
 #endif
@@ -594,13 +582,19 @@ void export_geometry(py::module const&);
 void export_feature(py::module const&);
 void export_featureset(py::module const&);
 void export_font_engine(py::module const&);
-void export_expression(py::module&);
-void export_datasource(py::module&);
+void export_fontset(py::module const&);
+void export_expression(py::module const&);
+void export_datasource(py::module&); // non-const because of m.def(..)
 void export_datasource_cache(py::module const&);
+#if defined(GRID_RENDERER)
+void export_grid(py::module const&);
+void export_grid_view(py::module const&);
+#endif
 void export_image(py::module const&);
+void export_image_view(py::module const&);
 void export_layer(py::module const&);
 void export_map(py::module const&);
-void export_projection(py::module&);
+void export_projection(py::module&); // non-const because of m.def(..)
 void export_proj_transform(py::module const&);
 void export_query(py::module const&);
 void export_rule(py::module const&);
@@ -612,7 +606,16 @@ void export_style(py::module const&);
 void export_logger(py::module const&);
 void export_placement_finder(py::module const&);
 void export_text_symbolizer(py::module const&);
+void export_debug_symbolizer(py::module const&);
+void export_markers_symbolizer(py::module const&);
+void export_polygon_pattern_symbolizer(py::module const&);
+void export_line_pattern_symbolizer(py::module const&);
+void export_raster_symbolizer(py::module const&);
+void export_palette(py::module const&);
 void export_parameters(py::module const&);
+void export_raster_colorizer(py::module const&);
+void export_scaling_method(py::module const&);
+void export_label_collision_detector(py::module const& m);
 
 using mapnik::load_map;
 using mapnik::load_map_string;
@@ -630,10 +633,16 @@ PYBIND11_MODULE(_mapnik, m) {
     export_feature(m);
     export_featureset(m);
     export_font_engine(m);
+    export_fontset(m);
     export_expression(m);
     export_datasource(m);
     export_datasource_cache(m);
+#if defined(GRID_RENDERER)
+    export_grid(m);
+    export_grid_view(m);
+#endif
     export_image(m);
+    export_image_view(m);
     export_layer(m);
     export_map(m);
     export_projection(m);
@@ -648,8 +657,17 @@ PYBIND11_MODULE(_mapnik, m) {
     export_logger(m);
     export_placement_finder(m);
     export_text_symbolizer(m);
+    export_palette(m);
     export_parameters(m);
-
+    export_debug_symbolizer(m);
+    export_markers_symbolizer(m);
+    export_polygon_pattern_symbolizer(m);
+    export_line_pattern_symbolizer(m);
+    export_raster_symbolizer(m);
+    export_raster_colorizer(m);
+    export_scaling_method(m);
+    export_label_collision_detector(m);
+    //
     m.def("mapnik_version", &mapnik_version,"Get the Mapnik version number");
     m.def("mapnik_version_string", &mapnik_version_string,"Get the Mapnik version string");
     m.def("has_proj", &has_proj, "Get proj status");
@@ -677,6 +695,14 @@ PYBIND11_MODULE(_mapnik, m) {
     m.def("render", &render,
           py::arg("Map"),
           py::arg("image"),
+          py::arg("scale_factor") = 1.0,
+          py::arg("offset_x") = 0,
+          py::arg("offset_y") = 0);
+
+    m.def("render_with_detector", &render_with_detector,
+          py::arg("Map"),
+          py::arg("image"),
+          py::arg("detector"),
           py::arg("scale_factor") = 1.0,
           py::arg("offset_x") = 0,
           py::arg("offset_y") = 0);
@@ -795,6 +821,26 @@ PYBIND11_MODULE(_mapnik, m) {
         ">>> detector = LabelCollisionDetector(m)\n"
         ">>> render_with_detector(m, surface, detector, 1, 1, 1)\n"
         );
+#endif
+
+    m.def("render_layer", &render_layer2,
+          py::arg("map"),
+          py::arg("image"),
+          py::arg("layer"),
+          py::arg("scale_factor")=1.0,
+          py::arg("offset_x")=0,
+          py::arg("offset_y")=0
+        );
+
+#if defined(GRID_RENDERER)
+    m.def("render_layer", &mapnik::render_layer_for_grid,
+        py::arg("map"),
+        py::arg("grid"),
+        py::arg("layer"),
+        py::arg("fields") = py::list(),
+        py::arg("scale_factor")=1.0,
+        py::arg("offset_x")=0,
+        py::arg("offset_y")=0);
 #endif
 
     // save
@@ -1124,67 +1170,6 @@ PYBIND11_MODULE(_mapnik, m) {
 //             ">>> detector = LabelCollisionDetector(m)\n"
 //             ">>> render_with_detector(m, im, detector)\n"
 //             ));
-
-//     def("render_layer", &render_layer2,
-//         (arg("map"),
-//          arg("image"),
-//          arg("layer"),
-//          arg("scale_factor")=1.0,
-//          arg("offset_x")=0,
-//          arg("offset_y")=0
-//         )
-//         );
-
-// #if defined(GRID_RENDERER)
-//     def("render_layer", &mapnik::render_layer_for_grid,
-//         (arg("map"),
-//          arg("grid"),
-//          arg("layer"),
-//          arg("fields")=boost::python::list(),
-//          arg("scale_factor")=1.0,
-//          arg("offset_x")=0,
-//          arg("offset_y")=0
-//         )
-//         );
-// #endif
-
-
-//     def("scale_denominator", &scale_denominator,
-//         (arg("map"),arg("is_geographic")),
-//         "\n"
-//         "Return the Map Scale Denominator.\n"
-//         "Also available as Map.scale_denominator()\n"
-//         "\n"
-//         "Usage:\n"
-//         "\n"
-//         ">>> from mapnik import Map, Projection, scale_denominator, load_map\n"
-//         ">>> m = Map(256,256)\n"
-//         ">>> load_map(m,'mapfile.xml')\n"
-//         ">>> scale_denominator(m,Projection(m.srs).geographic)\n"
-//         "\n"
-//         );
-
-//     def("load_map", &load_map, load_map_overloads());
-
-//     def("load_map_from_string", &load_map_string, load_map_string_overloads());
-
-//     def("save_map", &save_map, save_map_overloads());
-// /*
-//   "\n"
-//   "Save Map object to XML file\n"
-//   "\n"
-//   "Usage:\n"
-//   ">>> from mapnik import Map, load_map, save_map\n"
-//   ">>> m = Map(256,256)\n"
-//   ">>> load_map(m,'mapfile_wgs84.xml')\n"
-//   ">>> m.srs\n"
-//   "'epsg:4326'\n"
-//   ">>> m.srs = 'espg:3395'\n"
-//   ">>> save_map(m,'mapfile_mercator.xml')\n"
-//   "\n"
-//   );
-// */
-
 //     def("save_map_to_string", &save_map_to_string, save_map_to_string_overloads());
 //     def("mapnik_version", &mapnik_version,"Get the Mapnik version number");
 //     def("mapnik_version_string", &mapnik_version_string,"Get the Mapnik version string");
@@ -1212,13 +1197,7 @@ PYBIND11_MODULE(_mapnik, m) {
 //     python_optional<mapnik::text_transform_e>();
 //     register_ptr_to_python<mapnik::expression_ptr>();
 //     register_ptr_to_python<mapnik::path_expression_ptr>();
-// #if BOOST_VERSION == 106000 // ref #104
-//     register_ptr_to_python<std::shared_ptr<mapnik::geometry::geometry<double> > >();
-//     register_ptr_to_python<std::shared_ptr<mapnik::datasource> >();
-//     register_ptr_to_python<std::shared_ptr<mapnik::feature_impl> >();
-//     register_ptr_to_python<std::shared_ptr<mapnik::Featureset> >();
-//     register_ptr_to_python<std::shared_ptr<mapnik::image_any> >();
-// #endif
+
 //     to_python_converter<mapnik::value_holder,mapnik_param_to_python>();
 //     to_python_converter<mapnik::value, mapnik_value_to_python>();
 //     to_python_converter<mapnik::enumeration_wrapper,mapnik_enumeration_wrapper_to_python>();

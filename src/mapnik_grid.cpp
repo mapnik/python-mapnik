@@ -2,7 +2,7 @@
  *
  * This file is part of Mapnik (c++ mapping toolkit)
  *
- * Copyright (C) 2015 Artem Pavlenko
+ * Copyright (C) 2024 Artem Pavlenko
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,25 +21,18 @@
  *****************************************************************************/
 
 #if defined(GRID_RENDERER)
-
-#include <mapnik/config.hpp>
-
-
-#pragma GCC diagnostic push
-#include <mapnik/warning_ignore.hpp>
-#include <boost/python.hpp>
-#include <boost/python/module.hpp>
-#include <boost/python/def.hpp>
-#pragma GCC diagnostic pop
-
 // mapnik
+#include <mapnik/config.hpp>
 #include <mapnik/grid/grid.hpp>
 #include "python_grid_utils.hpp"
 
-using namespace boost::python;
+//pybind11
+#include <pybind11/pybind11.h>
+
+namespace py = pybind11;
 
 // help compiler see template definitions
-static dict (*encode)( mapnik::grid const&, std::string const& , bool, unsigned int) = mapnik::grid_encode;
+static py::dict (*encode)( mapnik::grid const&, std::string const& , bool, unsigned int) = mapnik::grid_encode;
 
 bool painted(mapnik::grid const& grid)
 {
@@ -53,32 +46,27 @@ mapnik::grid::value_type get_pixel(mapnik::grid const& grid, int x, int y)
         mapnik::grid::data_type const & data = grid.data();
         return data(x,y);
     }
-    PyErr_SetString(PyExc_IndexError, "invalid x,y for grid dimensions");
-    boost::python::throw_error_already_set();
-    return 0;
+    throw  py::index_error("invalid x,y for grid dimensions");
 }
 
-void export_grid()
+void export_grid(py::module const& m)
 {
-    class_<mapnik::grid,std::shared_ptr<mapnik::grid> >(
-        "Grid",
-        "This class represents a feature hitgrid.",
-        init<int,int,std::string>(
-            ( boost::python::arg("width"), boost::python::arg("height"),boost::python::arg("key")="__id__"),
-            "Create a mapnik.Grid object\n"
-            ))
+    py::class_<mapnik::grid, std::shared_ptr<mapnik::grid>>
+        (m, "Grid", "This class represents a feature hitgrid.")
+        .def(py::init<int,int,std::string>(),
+             "Create a mapnik.Grid object\n",
+             py::arg("width"), py::arg("height"), py::arg("key")="__id__")
         .def("painted",&painted)
         .def("width",&mapnik::grid::width)
         .def("height",&mapnik::grid::height)
         .def("view",&mapnik::grid::get_view)
         .def("get_pixel",&get_pixel)
         .def("clear",&mapnik::grid::clear)
-        .def("encode",encode,
-             ( boost::python::arg("encoding")="utf", boost::python::arg("features")=true,boost::python::arg("resolution")=4 ),
-             "Encode the grid as as optimized json\n"
-            )
-        .add_property("key",
-                      make_function(&mapnik::grid::get_key,return_value_policy<copy_const_reference>()),
+        .def("encode", encode,
+             "Encode the grid as as optimized json\n",
+             py::arg("encoding") = "utf", py::arg("features") = true, py::arg("resolution") = 4)
+        .def_property("key",
+                      &mapnik::grid::get_key,
                       &mapnik::grid::set_key,
                       "Get/Set key to be used as unique indentifier for features\n"
                       "The value should either be __id__ to refer to the feature.id()\n"

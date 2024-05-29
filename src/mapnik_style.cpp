@@ -35,6 +35,7 @@
 namespace py = pybind11;
 
 using mapnik::feature_type_style;
+using mapnik::filter_mode_enum;
 using mapnik::rules;
 using mapnik::rule;
 
@@ -59,6 +60,16 @@ void set_image_filters(feature_type_style & style, std::string const& filters)
     style.image_filters() = std::move(new_filters);
 }
 
+py::object get_filter_mode(feature_type_style const& style)
+{
+    return py::cast(filter_mode_enum(style.get_filter_mode()));
+}
+
+void set_filter_mode(feature_type_style& style, filter_mode_enum mode)
+{
+    style.set_filter_mode(mapnik::filter_mode_e(mode));
+}
+
 void export_style(py::module const& m)
 {
     py::enum_<mapnik::filter_mode_enum>(m, "filter_mode")
@@ -74,8 +85,8 @@ void export_style(py::module const& m)
                                &feature_type_style::get_rules,
                                "Rules assigned to this style.\n")
         .def_property("filter_mode",
-                      &feature_type_style::get_filter_mode,
-                      &feature_type_style::set_filter_mode,
+                      &get_filter_mode,
+                      &set_filter_mode,
                       "Set/get the filter mode of the style")
         .def_property("opacity",
                       &feature_type_style::get_opacity,

@@ -2,7 +2,7 @@
  *
  * This file is part of Mapnik (c++ mapping toolkit)
  *
- * Copyright (C) 2015 Artem Pavlenko, Jean-Francois Doyon
+ * Copyright (C) 2024 Artem Pavlenko
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,7 +22,6 @@
 
 // mapnik
 #include <mapnik/config.hpp>
-//#include "mapnik_enumeration.hpp"
 #include <mapnik/image_compositing.hpp>
 //pybind11
 #include <pybind11/pybind11.h>

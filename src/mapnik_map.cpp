@@ -169,10 +169,10 @@ void export_map(py::module const& m)
              py::arg("style_name"), py::arg("style_object")
             )
 
-        //.def("append_fontset",insert_fontset,
-        //     "Add a FontSet to the map.",
-        //     py::arg("fontset")
-        //    )
+        .def("append_fontset", insert_fontset,
+             "Add a FontSet to the map.",
+             py::arg("name"), py::arg("fontset")
+            )
 
         .def("buffered_envelope",
              &Map::get_buffered_extent,

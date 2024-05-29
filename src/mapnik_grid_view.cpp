@@ -2,7 +2,7 @@
  *
  * This file is part of Mapnik (c++ mapping toolkit)
  *
- * Copyright (C) 2015 Artem Pavlenko
+ * Copyright (C) 2024 Artem Pavlenko
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,39 +21,25 @@
  *****************************************************************************/
 
 #if defined(GRID_RENDERER)
-
-#include <mapnik/config.hpp>
-
-
-#pragma GCC diagnostic push
-#include <mapnik/warning_ignore.hpp>
-#include <boost/python.hpp>
-#include <boost/python/module.hpp>
-#include <boost/python/def.hpp>
-#pragma GCC diagnostic pop
-
 // mapnik
+#include <mapnik/config.hpp>
 #include <string>
 #include <mapnik/grid/grid_view.hpp>
 #include <mapnik/grid/grid.hpp>
 #include "python_grid_utils.hpp"
 
-using namespace boost::python;
-
 // help compiler see template definitions
-static dict (*encode)( mapnik::grid_view const&, std::string const& , bool, unsigned int) = mapnik::grid_encode;
+static py::dict (*encode)( mapnik::grid_view const&, std::string const& , bool, unsigned int) = mapnik::grid_encode;
 
-void export_grid_view()
+void export_grid_view(py::module const& m)
 {
-    class_<mapnik::grid_view,
-        std::shared_ptr<mapnik::grid_view> >("GridView",
-                                               "This class represents a feature hitgrid subset.",no_init)
+    py::class_<mapnik::grid_view, std::shared_ptr<mapnik::grid_view>>
+        (m, "GridView", "This class represents a feature hitgrid subset.")
         .def("width",&mapnik::grid_view::width)
         .def("height",&mapnik::grid_view::height)
         .def("encode",encode,
-             ( boost::python::arg("encoding")="utf",boost::python::arg("add_features")=true,boost::python::arg("resolution")=4 ),
-             "Encode the grid as as optimized json\n"
-            )
+             "Encode the grid as as optimized json\n",
+             py::arg("encoding")="utf",py::arg("add_features")=true,py::arg("resolution")=4)
         ;
 }
 

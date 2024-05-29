@@ -29,17 +29,14 @@
 #include <mapnik/symbolizer_utils.hpp>
 #include <mapnik/symbolizer_keys.hpp>
 #include <mapnik/symbolizer_enumerations.hpp>
+#include <mapnik/path_expression.hpp>
 #include <mapnik/parse_path.hpp>
-
+#include <mapnik/raster_colorizer.hpp>
+//pybind11
 #include <pybind11/pybind11.h>
-#include <pybind11/operators.h>
-#include <pybind11/stl.h>
-#include <pybind11/stl_bind.h>
-
-//#define PYBIND11_DETAILED_ERROR_MESSAGES
-
 
 PYBIND11_MAKE_OPAQUE(mapnik::symbolizer);
+PYBIND11_MAKE_OPAQUE(mapnik::path_expression);
 
 namespace py = pybind11;
 
@@ -49,6 +46,7 @@ using mapnik::symbolizer;
 using mapnik::symbolizer_base;
 using mapnik::parse_path;
 using mapnik::path_processor;
+
 
 template <typename TargetType>
 struct enum_converter
@@ -109,8 +107,7 @@ struct extract_python_object
 
     auto operator() (mapnik::path_expression_ptr const& expr) const ->result_type
     {
-        if (expr) return py::cast(path_processor::to_string(*expr));
-        return py::none();
+        return py::cast(expr);
     }
 
     auto operator() (mapnik::enumeration_wrapper const& wrapper) const ->result_type
@@ -122,6 +119,11 @@ struct extract_python_object
     {
         if (expr) return py::cast(mapnik::transform_processor_type::to_string(*expr));
         return py::none();
+    }
+
+    auto operator() (mapnik::raster_colorizer_ptr const& colorizer) const ->result_type
+    {
+        return py::cast(colorizer);
     }
 
     template <typename T>
@@ -141,7 +143,8 @@ py::object get_property(Symbolizer const& sym)
     {
         return mapnik::util::apply_visitor(extract_python_object<Enum>(Key), itr->second);
     }
-    throw pybind11::key_error("Invalid property name");
+    //throw pybind11::key_error("Invalid property name");
+    return py::none();
 }
 
 template <typename Symbolizer, auto Key>
@@ -170,6 +173,22 @@ void set_boolean_property(Symbolizer & sym, py::object const& obj)
     if (py::isinstance<py::bool_>(obj))
     {
         mapnik::put(sym, Key, obj.cast<mapnik::value_bool>());
+    }
+    else if (py::isinstance<mapnik::expr_node>(obj))
+    {
+        auto expr = obj.cast<mapnik::expression_ptr>();
+        mapnik::put(sym, Key, expr);
+    }
+    else throw pybind11::value_error();
+}
+
+template <typename Symbolizer, auto Key>
+void set_integer_property(Symbolizer & sym, py::object const& obj)
+{
+
+    if (py::isinstance<py::int_>(obj))
+    {
+        mapnik::put(sym, Key, obj.cast<mapnik::value_integer>());
     }
     else if (py::isinstance<mapnik::expr_node>(obj))
     {
@@ -217,9 +236,23 @@ void set_path_property(Symbolizer & sym, py::object const& obj)
     {
         mapnik::put(sym, Key, parse_path(obj.cast<std::string>()));
     }
+    else if (py::isinstance<mapnik::path_expression>(obj))
+    {
+        auto expr = obj.cast<mapnik::path_expression_ptr>();
+        mapnik::put(sym, Key, expr);
+    }
     else throw pybind11::value_error();
 }
 
+template <typename Symbolizer, auto Key>
+void set_colorizer_property(Symbolizer & sym, py::object const& obj)
+{
+    if (py::isinstance<mapnik::raster_colorizer>(obj))
+    {
+        mapnik::put(sym, Key, obj.cast<mapnik::raster_colorizer_ptr>());
+    }
+    else throw pybind11::value_error();
+}
 
 inline std::size_t hash_impl(symbolizer const& sym)
 {

@@ -26,7 +26,7 @@ def make_map():
     s = mapnik.Style()
     r = mapnik.Rule()
     symb = mapnik.PolygonSymbolizer()
-    r.symbols.append(symb)
+    r.symbolizers.append(symb)
     s.rules.append(r)
     lyr = mapnik.Layer('Places')
     lyr.datasource = ds

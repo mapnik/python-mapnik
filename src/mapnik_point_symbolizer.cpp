@@ -30,13 +30,8 @@
 #include "mapnik_symbolizer.hpp"
 //pybind11
 #include <pybind11/pybind11.h>
-#include <pybind11/operators.h>
-#include <pybind11/stl.h>
-#include <pybind11/stl_bind.h>
-
 
 namespace py = pybind11;
-
 
 void export_point_symbolizer(py::module const& m)
 {

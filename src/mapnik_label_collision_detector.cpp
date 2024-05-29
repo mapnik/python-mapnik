@@ -2,7 +2,7 @@
  *
  * This file is part of Mapnik (c++ mapping toolkit)
  *
- * Copyright (C) 2015 Artem Pavlenko
+ * Copyright (C) 2024 Artem Pavlenko
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,20 +20,14 @@
  *
  *****************************************************************************/
 
+//mapnik
 #include <mapnik/config.hpp>
-
-
-#pragma GCC diagnostic push
-#include <mapnik/warning_ignore.hpp>
-#include <boost/python.hpp>
-#include <boost/python/module.hpp>
-#include <boost/python/def.hpp>
-#pragma GCC diagnostic pop
-
 #include <mapnik/label_collision_detector.hpp>
 #include <mapnik/map.hpp>
+//pybind11
+#include <pybind11/pybind11.h>
 
-#include <list>
+namespace py = pybind11;
 
 using mapnik::label_collision_detector4;
 using mapnik::box2d;
@@ -42,69 +36,64 @@ using mapnik::Map;
 namespace
 {
 
-std::shared_ptr<label_collision_detector4>
-create_label_collision_detector_from_extent(box2d<double> const &extent)
+std::shared_ptr<label_collision_detector4> create_label_collision_detector_from_extent(box2d<double> const &extent)
 {
     return std::make_shared<label_collision_detector4>(extent);
 }
 
-std::shared_ptr<label_collision_detector4>
-create_label_collision_detector_from_map(Map const &m)
+std::shared_ptr<label_collision_detector4> create_label_collision_detector_from_map (Map const &m)
 {
     double buffer = m.buffer_size();
     box2d<double> extent(-buffer, -buffer, m.width() + buffer, m.height() + buffer);
     return std::make_shared<label_collision_detector4>(extent);
 }
 
-boost::python::list
-make_label_boxes(std::shared_ptr<label_collision_detector4> det)
-{
-    boost::python::list boxes;
 
+py::list make_label_boxes(std::shared_ptr<label_collision_detector4> det)
+{
+    py::list boxes;
     for (label_collision_detector4::query_iterator jtr = det->begin();
          jtr != det->end(); ++jtr)
     {
-        boxes.append<box2d<double> >(jtr->get().box);
+        boxes.append(jtr->get().box);
     }
-
     return boxes;
 }
 
 }
 
-void export_label_collision_detector()
+void export_label_collision_detector(py::module const& m)
 {
-    using namespace boost::python;
-
     // for overload resolution
     void (label_collision_detector4::*insert_box)(box2d<double> const &) = &label_collision_detector4::insert;
 
-    class_<label_collision_detector4, std::shared_ptr<label_collision_detector4>, boost::noncopyable>
-        ("LabelCollisionDetector",
-         "Object to detect collisions between labels, used in the rendering process.",
-         no_init)
+    py::class_<label_collision_detector4, std::shared_ptr<label_collision_detector4>>
+        (m, "LabelCollisionDetector",
+         "Object to detect collisions between labels, used in the rendering process.")
 
-        .def("__init__", make_constructor(create_label_collision_detector_from_extent),
-             "Creates an empty collision detection object with a given extent. Note "
-             "that the constructor from Map objects is a sensible default and usually "
-             "what you want to do.\n"
-             "\n"
-             "Example:\n"
-             ">>> m = Map(size_x, size_y)\n"
-             ">>> buf_sz = m.buffer_size\n"
-             ">>> extent = mapnik.Box2d(-buf_sz, -buf_sz, m.width + buf_sz, m.height + buf_sz)\n"
-             ">>> detector = mapnik.LabelCollisionDetector(extent)")
+        .def(py::init([](box2d<double> const& box) {
+            return create_label_collision_detector_from_extent(box);}),
+            "Creates an empty collision detection object with a given extent. Note "
+            "that the constructor from Map objects is a sensible default and usually "
+            "what you want to do.\n"
+            "\n"
+            "Example:\n"
+            ">>> m = Map(size_x, size_y)\n"
+            ">>> buf_sz = m.buffer_size\n"
+            ">>> extent = mapnik.Box2d(-buf_sz, -buf_sz, m.width + buf_sz, m.height + buf_sz)\n"
+            ">>> detector = mapnik.LabelCollisionDetector(extent)")
 
-        .def("__init__", make_constructor(create_label_collision_detector_from_map),
-             "Creates an empty collision detection object matching the given Map object. "
-             "The created detector will have the same size, including the buffer, as the "
-             "map object. This is usually what you want to do.\n"
-             "\n"
-             "Example:\n"
-             ">>> m = Map(size_x, size_y)\n"
-             ">>> detector = mapnik.LabelCollisionDetector(m)")
+        .def(py::init([](mapnik::Map const& m){
+            return create_label_collision_detector_from_map(m);}),
+            "Creates an empty collision detection object matching the given Map object. "
+            "The created detector will have the same size, including the buffer, as the "
+            "map object. This is usually what you want to do.\n"
+            "\n"
+            "Example:\n"
+            ">>> m = Map(size_x, size_y)\n"
+            ">>> detector = mapnik.LabelCollisionDetector(m)")
 
-        .def("extent", &label_collision_detector4::extent, return_value_policy<copy_const_reference>(),
+        .def("extent", &label_collision_detector4::extent,
              "Returns the total extent (bounding box) of all labels inside the detector.\n"
              "\n"
              "Example:\n"
