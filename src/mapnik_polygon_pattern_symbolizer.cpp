@@ -40,10 +40,10 @@ void export_polygon_pattern_symbolizer(py::module const& m)
     py::class_<polygon_pattern_symbolizer, symbolizer_base>(m, "PolygonPatternSymbolizer")
         .def(py::init<>(), "Default ctor")
         .def("__hash__", hash_impl_2<polygon_pattern_symbolizer>)
-         .def_property("file",
-                       &get_property<polygon_pattern_symbolizer, mapnik::keys::file>,
-                       &set_path_property<polygon_pattern_symbolizer, mapnik::keys::file>,
-                       "File path or mapnik.PathExpression")
+        .def_property("file",
+                      &get_property<polygon_pattern_symbolizer, mapnik::keys::file>,
+                      &set_path_property<polygon_pattern_symbolizer, mapnik::keys::file>,
+                      "File path or mapnik.PathExpression")
         ;
 
 }
