@@ -292,15 +292,7 @@ popplaces_rule = mapnik.Rule()
 
 # TODO - currently broken: https://github.com/mapnik/mapnik/issues/2324
 
-popplaces_text_sym = mapnik.TextSymbolizer() #mapnik.Expression("[GEONAME]"),
-
-# finder = mapnik.PlacementFinder()
-# finder.face_name = 'DejaVu Sans Book'
-# finder.text_size = 10
-# finder.halo_fill = mapnik.Color(255,255,200)
-# finder.halo_radius = 1.0
-# finder.fill = mapnik.Color("black")
-# finder.format_expression = "[GEONAME]"
+popplaces_text_sym = mapnik.TextSymbolizer()
 
 popplaces_text_sym.placement_finder = mapnik.PlacementFinder()
 popplaces_text_sym.placement_finder.face_name = 'DejaVu Sans Book'
