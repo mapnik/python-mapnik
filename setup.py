@@ -100,7 +100,11 @@ ext_modules = [
                "src/mapnik_parameters.cpp",
                "src/python_grid_utils.cpp",
                "src/mapnik_raster_colorizer.cpp",
-               "src/mapnik_label_collision_detector.cpp"
+               "src/mapnik_label_collision_detector.cpp",
+               "src/mapnik_dot_symbolizer.cpp",
+               "src/mapnik_building_symbolizer.cpp",
+               "src/mapnik_shield_symbolizer.cpp",
+               "src/mapnik_group_symbolizer.cpp"
           ],
           extra_compile_args=extra_comp_args,
           extra_link_args=linkflags,
