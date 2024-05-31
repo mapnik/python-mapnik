@@ -616,6 +616,10 @@ void export_parameters(py::module const&);
 void export_raster_colorizer(py::module const&);
 void export_scaling_method(py::module const&);
 void export_label_collision_detector(py::module const& m);
+void export_dot_symbolizer(py::module const&);
+void export_shield_symbolizer(py::module const&);
+void export_group_symbolizer(py::module const&);
+void export_building_symbolizer(py::module const&);
 
 using mapnik::load_map;
 using mapnik::load_map_string;
@@ -667,6 +671,11 @@ PYBIND11_MODULE(_mapnik, m) {
     export_raster_colorizer(m);
     export_scaling_method(m);
     export_label_collision_detector(m);
+    export_dot_symbolizer(m);
+    export_shield_symbolizer(m);
+    export_group_symbolizer(m);
+    export_building_symbolizer(m);
+
     //
     m.def("mapnik_version", &mapnik_version,"Get the Mapnik version number");
     m.def("mapnik_version_string", &mapnik_version_string,"Get the Mapnik version string");

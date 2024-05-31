@@ -30,12 +30,9 @@
 #include <mapnik/text/placements/dummy.hpp>
 #include <mapnik/text/text_properties.hpp>
 #include <mapnik/text/formatting/text.hpp>
-
+#include "mapnik_symbolizer.hpp"
 //pybind11
 #include <pybind11/pybind11.h>
-//#include <pybind11/operators.h>
-//#include <pybind11/stl.h>
-//#include <pybind11/stl_bind.h>
 
 namespace py = pybind11;
 
@@ -57,9 +54,10 @@ void set_text_size(mapnik::text_placements_dummy & finder, double text_size)
     finder.defaults.format_defaults.text_size = text_size;
 }
 
-mapnik::symbolizer_base::value_type get_text_size(mapnik::text_placements_dummy & finder)
+py::object get_text_size(mapnik::text_placements_dummy const& finder)
 {
-    return finder.defaults.format_defaults.text_size;
+    return mapnik::util::apply_visitor(python_mapnik::extract_python_object<>(mapnik::keys::MAX_SYMBOLIZER_KEY),
+                                       finder.defaults.format_defaults.text_size);
 }
 
 void set_fill(mapnik::text_placements_dummy & finder, mapnik::color const& fill)
@@ -67,18 +65,20 @@ void set_fill(mapnik::text_placements_dummy & finder, mapnik::color const& fill)
     finder.defaults.format_defaults.fill = fill;
 }
 
-mapnik::symbolizer_base::value_type get_fill(mapnik::text_placements_dummy & finder)
+py::object get_fill(mapnik::text_placements_dummy & finder)
 {
-    return finder.defaults.format_defaults.fill;
+    return mapnik::util::apply_visitor(python_mapnik::extract_python_object<>(mapnik::keys::MAX_SYMBOLIZER_KEY),
+                                       finder.defaults.format_defaults.fill);
 }
 void set_halo_fill(mapnik::text_placements_dummy & finder, mapnik::color const& halo_fill )
 {
     finder.defaults.format_defaults.halo_fill = halo_fill;
 }
 
-mapnik::symbolizer_base::value_type get_halo_fill(mapnik::text_placements_dummy & finder)
+py::object get_halo_fill(mapnik::text_placements_dummy & finder)
 {
-    return finder.defaults.format_defaults.halo_fill;
+    return mapnik::util::apply_visitor(python_mapnik::extract_python_object<>(mapnik::keys::MAX_SYMBOLIZER_KEY),
+                                       finder.defaults.format_defaults.halo_fill);
 }
 
 
@@ -87,9 +87,10 @@ void set_halo_radius(mapnik::text_placements_dummy & finder, double halo_radius)
     finder.defaults.format_defaults.halo_radius = halo_radius;
 }
 
-mapnik::symbolizer_base::value_type get_halo_radius(mapnik::text_placements_dummy & finder)
+py::object get_halo_radius(mapnik::text_placements_dummy & finder)
 {
-    return finder.defaults.format_defaults.halo_radius;
+    return mapnik::util::apply_visitor(python_mapnik::extract_python_object<>(mapnik::keys::MAX_SYMBOLIZER_KEY),
+                                       finder.defaults.format_defaults.halo_radius);
 }
 
 void set_format_expr(mapnik::text_placements_dummy & finder, std::string const& expr)
@@ -100,26 +101,21 @@ void set_format_expr(mapnik::text_placements_dummy & finder, std::string const& 
 
 std::string get_format_expr(mapnik::text_placements_dummy & finder)
 {
-    return "FIXME";
+    mapnik::expression_set exprs;
+    finder.defaults.add_expressions(exprs);
+    std::string str = "";
+    for (auto expr : exprs)
+    {
+        if (expr)
+            str += mapnik::to_expression_string(*expr);
+    }
+    return str;
 }
 
 }
 
 void export_placement_finder(py::module const& m)
 {
-    //using namespace boost::python;
-    //implicitly_convertible<mapnik::symbolizer_base::value_type, mapnik::value_double>();
-/*
-  text_placements_ptr placement_finder = std::make_shared<text_placements_dummy>();
-                placement_finder->defaults.format_defaults.face_name = "DejaVu Sans Book";
-                placement_finder->defaults.format_defaults.text_size = 10.0;
-                placement_finder->defaults.format_defaults.fill = color(0, 0, 0);
-                placement_finder->defaults.format_defaults.halo_fill = color(255, 255, 200);
-                placement_finder->defaults.format_defaults.halo_radius = 1.0;
-                placement_finder->defaults.set_format_tree(
-                  std::make_shared<mapnik::formatting::text_node>(parse_expression("[GEONAME]")));
-                put<text_placements_ptr>(text_sym, keys::text_placements_, placement_finder);
-*/
     py::class_<mapnik::text_placements_dummy, std::shared_ptr<mapnik::text_placements_dummy>>(m, "PlacementFinder")
         .def(py::init<>(), "Default ctor")
         .def_property("face_name", &get_face_name, &set_face_name, "Font face name")
