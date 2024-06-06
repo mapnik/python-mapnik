@@ -40,6 +40,20 @@ void export_building_symbolizer(py::module const& m)
     py::class_<building_symbolizer, symbolizer_base>(m, "BuildingSymbolizer")
         .def(py::init<>(), "Default ctor")
         .def("__hash__", hash_impl_2<building_symbolizer>)
+        .def_property("fill",
+                      &get_property<building_symbolizer, mapnik::keys::fill>,
+                      &set_color_property<building_symbolizer, mapnik::keys::fill>,
+                      "Fill - mapnik.Color, CSS color string or a valid mapnik.Expression")
+
+        .def_property("fill_opacity",
+                      &get_property<building_symbolizer, mapnik::keys::fill_opacity>,
+                      &set_double_property<building_symbolizer, mapnik::keys::fill_opacity>,
+                      "Fill opacity - [0-1] or a valid mapnik.Expression")
+
+        .def_property("height",
+                      &get_property<building_symbolizer, mapnik::keys::height>,
+                      &set_double_property<building_symbolizer, mapnik::keys::height>,
+                      "Height - a numeric value or a valid mapnik.Expression")
         ;
 
 }
