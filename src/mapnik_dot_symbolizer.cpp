@@ -37,9 +37,30 @@ void export_dot_symbolizer(py::module const& m)
     using namespace python_mapnik;
     using mapnik::dot_symbolizer;
 
-    py::class_<dot_symbolizer, symbolizer_base>(m, "DotSymbolizer")
+    py::class_<dot_symbolizer>(m, "DotSymbolizer")
         .def(py::init<>(), "Default ctor")
         .def("__hash__", hash_impl_2<dot_symbolizer>)
+        .def_property("fill",
+                      &get_property<dot_symbolizer, mapnik::keys::fill>,
+                      &set_color_property<dot_symbolizer, mapnik::keys::fill>,
+                      "Fill - mapnik.Color, CSS color string or a valid mapnik.Expression")
+        .def_property("opacity",
+                      &get_property<dot_symbolizer, mapnik::keys::opacity>,
+                      &set_double_property<dot_symbolizer, mapnik::keys::opacity>,
+                      "Opacity - [0-1] or a valid mapnik.Expression")
+        .def_property("width",
+                      &get_property<dot_symbolizer, mapnik::keys::width>,
+                      &set_double_property<dot_symbolizer, mapnik::keys::width>,
+                      "Width - a numeric value or a valid mapnik.Expression")
+        .def_property("height",
+                      &get_property<dot_symbolizer, mapnik::keys::height>,
+                      &set_double_property<dot_symbolizer, mapnik::keys::height>,
+                      "Height - a numeric value or a valid mapnik.Expression")
+        .def_property("comp_op",
+                      &get<mapnik::composite_mode_e, mapnik::keys::comp_op>,
+                      &set_enum_property<symbolizer_base, mapnik::composite_mode_e, mapnik::keys::comp_op>,
+                      "Composite mode (comp-op)")
+
         ;
 
 }
