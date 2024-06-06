@@ -43,7 +43,27 @@ void export_shield_symbolizer(py::module const& m)
         .def_property("file",
                       &get_property<shield_symbolizer, mapnik::keys::file>,
                       &set_path_property<shield_symbolizer, mapnik::keys::file>,
-                      "File path or mapnik.PathExpression")
+                      "Shield image file path or mapnik.PathExpression")
+        .def_property("shield_dx",
+                      &get_property<shield_symbolizer, mapnik::keys::shield_dx>,
+                      &set_double_property<shield_symbolizer, mapnik::keys::shield_dx>,
+                      "shield_dx displacement")
+        .def_property("shield_dy",
+                      &get_property<shield_symbolizer, mapnik::keys::shield_dy>,
+                      &set_double_property<shield_symbolizer, mapnik::keys::shield_dy>,
+                      "shield_dy displacement")
+        .def_property("image_transform",
+                      &get_transform<mapnik::keys::image_transform>,
+                      &set_transform<mapnik::keys::image_transform>,
+                      "Shield image transform")
+        .def_property("unlock_image",
+                      &get_property<shield_symbolizer, mapnik::keys::unlock_image>,
+                      &set_boolean_property<shield_symbolizer, mapnik::keys::unlock_image>,
+                      "Unlock shield image")
+        .def_property("offset",
+                      &get_property<shield_symbolizer, mapnik::keys::offset>,
+                      &set_double_property<shield_symbolizer, mapnik::keys::offset>,
+                      "Shield offset")
         ;
 
 }

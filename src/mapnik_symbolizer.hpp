@@ -277,17 +277,19 @@ void set(symbolizer_base & sym, Value const& val)
     mapnik::put<Value>(sym, Key, val);
 }
 
-inline std::string get_transform(symbolizer_base const& sym)
+template <auto Key>
+std::string get_transform(symbolizer_base const& sym)
 {
-    auto expr = mapnik::get<mapnik::transform_type>(sym, mapnik::keys::geometry_transform);
+    auto expr = mapnik::get<mapnik::transform_type>(sym, Key);
     if (expr)
         return mapnik::transform_processor_type::to_string(*expr);
     return "";
 }
 
-inline void set_transform(symbolizer_base & sym, std::string const& str)
+template <auto Key>
+void set_transform(symbolizer_base & sym, std::string const& str)
 {
-    mapnik::put(sym, mapnik::keys::geometry_transform, mapnik::parse_transform(str));
+    mapnik::put(sym, Key, mapnik::parse_transform(str));
 }
 
 } // namespace python_mapnik

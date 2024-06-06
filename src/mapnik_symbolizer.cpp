@@ -210,8 +210,8 @@ void export_symbolizer(py::module const& m)
                       &set_enum_property<symbolizer_base, mapnik::composite_mode_e, mapnik::keys::comp_op>,
                       "Composite mode (comp-op)")
         .def_property("geometry_transform",
-                      &get_transform,
-                      &set_transform,
+                      &get_transform<mapnik::keys::geometry_transform>,
+                      &set_transform<mapnik::keys::geometry_transform>,
                       "Geometry transform")
         ;
 
