@@ -139,7 +139,7 @@ def compare_images(expected, im):
         im.save(expected, 'png32')
     expected_im = mapnik.Image.open(expected)
     diff = expected.replace('.png', '-diff.png')
-    if len(im.tostring("png32")) != len(expected_im.tostring("png32")):
+    if len(im.to_string("png32")) != len(expected_im.to_string("png32")):
         compared = side_by_side_image(expected_im, im)
         compared.save(diff)
         assert False, 'images do not match, check diff at %s' % diff
@@ -166,9 +166,9 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         ds = mapnik.PgRaster(dbname=MAPNIK_TEST_DBNAME, table='"dataRaster"',
                              band=1, use_overviews=1 if overview else 0,
                              prescale_rasters=rescale, clip_rasters=clip)
-        fs = ds.featureset()
-        feature = fs.next()
-        eq_(feature['rid'], 1)
+        fs = iter(ds)
+        feature = next(fs)
+        assert feature['rid'] ==  1
         lyr = mapnik.Layer('dataraster_16bsi')
         lyr.datasource = ds
         expenv = mapnik.Box2d(-14637, 3903178, 1126863, 4859678)
@@ -183,10 +183,10 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         pixsize = 500  # see gdalinfo dataraster.tif
         pixsize = 2497  # see gdalinfo dataraster-small.tif
         tol = pixsize * max(overview.split(',')) if overview else 0
-        assert_almost_equal(env.minx, expenv.minx)
-        assert_almost_equal(env.miny, expenv.miny, delta=tol)
-        assert_almost_equal(env.maxx, expenv.maxx, delta=tol)
-        assert_almost_equal(env.maxy, expenv.maxy)
+        assert env.minx == expenv.minx
+        assert env.miny == pytest.approx(expenv.miny,1.0e-7)
+        assert env.maxx == pytest.approx(expenv.maxx,1.0e-7)
+        assert env.maxy == expenv.maxy
         mm = mapnik.Map(256, 256)
         style = mapnik.Style()
         col = mapnik.RasterColorizer()
@@ -197,7 +197,7 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         sym = mapnik.RasterSymbolizer()
         sym.colorizer = col
         rule = mapnik.Rule()
-        rule.symbols.append(sym)
+        rule.symbolizers.append(sym)
         style.rules.append(rule)
         mm.append_style('foo', style)
         lyr.styles.append('foo')
@@ -209,18 +209,18 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         lap = time.time() - t0
         log('T ' + str(lap) + ' -- ' + lbl + ' E:full')
         # no data
-        eq_(im.view(1, 1, 1, 1).tostring(), b'\x00\x00\x00\x00')
-        eq_(im.view(255, 255, 1, 1).tostring(), b'\x00\x00\x00\x00')
-        eq_(im.view(195, 116, 1, 1).tostring(), b'\x00\x00\x00\x00')
+        assert im.view(1, 1, 1, 1).to_string() ==  b'\x00\x00\x00\x00'
+        assert im.view(255, 255, 1, 1).to_string() == b'\x00\x00\x00\x00'
+        assert im.view(195, 116, 1, 1).to_string() == b'\x00\x00\x00\x00'
         # A0A0A0
-        eq_(im.view(100, 120, 1, 1).tostring(), b'\xa0\xa0\xa0\xff')
-        eq_(im.view(75, 80, 1, 1).tostring(), b'\xa0\xa0\xa0\xff')
+        assert im.view(100, 120, 1, 1).to_string() == b'\xa0\xa0\xa0\xff'
+        assert im.view(75, 80, 1, 1).to_string() == b'\xa0\xa0\xa0\xff'
         # 808080
-        eq_(im.view(74, 170, 1, 1).tostring(), b'\x80\x80\x80\xff')
-        eq_(im.view(30, 50, 1, 1).tostring(), b'\x80\x80\x80\xff')
+        assert im.view(74, 170, 1, 1).to_string() == b'\x80\x80\x80\xff'
+        assert im.view(30, 50, 1, 1).to_string() == b'\x80\x80\x80\xff'
         # 404040
-        eq_(im.view(190, 70, 1, 1).tostring(), b'\x40\x40\x40\xff')
-        eq_(im.view(140, 170, 1, 1).tostring(), b'\x40\x40\x40\xff')
+        assert im.view(190, 70, 1, 1).to_string() == b'\x40\x40\x40\xff'
+        assert im.view(140, 170, 1, 1).to_string() == b'\x40\x40\x40\xff'
 
         # Now zoom over a portion of the env (1/10)
         newenv = mapnik.Box2d(273663, 4024478, 330738, 4072303)
@@ -230,20 +230,20 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         lap = time.time() - t0
         log('T ' + str(lap) + ' -- ' + lbl + ' E:1/10')
         # nodata
-        eq_(hexlify(im.view(255, 255, 1, 1).tostring()), b'00000000')
-        eq_(hexlify(im.view(200, 254, 1, 1).tostring()), b'00000000')
+        assert hexlify(im.view(255, 255, 1, 1).to_string()) == b'00000000'
+        assert hexlify(im.view(200, 254, 1, 1).to_string()) == b'00000000'
         # A0A0A0
-        eq_(hexlify(im.view(90, 232, 1, 1).tostring()), b'a0a0a0ff')
-        eq_(hexlify(im.view(96, 245, 1, 1).tostring()), b'a0a0a0ff')
+        assert hexlify(im.view(90, 232, 1, 1).to_string()) == b'a0a0a0ff'
+        assert hexlify(im.view(96, 245, 1, 1).to_string()) == b'a0a0a0ff'
         # 808080
-        eq_(hexlify(im.view(1, 1, 1, 1).tostring()), b'808080ff')
-        eq_(hexlify(im.view(128, 128, 1, 1).tostring()), b'808080ff')
+        assert hexlify(im.view(1, 1, 1, 1).to_string()) == b'808080ff'
+        assert hexlify(im.view(128, 128, 1, 1).to_string()) == b'808080ff'
         # 404040
-        eq_(hexlify(im.view(255, 0, 1, 1).tostring()), b'404040ff')
+        assert hexlify(im.view(255, 0, 1, 1).to_string()) == b'404040ff'
 
     def _test_dataraster_16bsi(lbl, tilesize, constraint, overview):
         import_raster(
-            '../data/raster/dataraster-small.tif',
+            './test/data/raster/dataraster-small.tif',
             'dataRaster',
             tilesize,
             constraint,
@@ -277,9 +277,9 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         ds = mapnik.PgRaster(dbname=MAPNIK_TEST_DBNAME, table='(select * from "River") foo',
                              use_overviews=1 if overview else 0,
                              prescale_rasters=rescale, clip_rasters=clip)
-        fs = ds.featureset()
-        feature = fs.next()
-        eq_(feature['rid'], 1)
+        fs = iter(ds)
+        feature = next(fs)
+        assert feature['rid'] == 1
         lyr = mapnik.Layer('rgba_8bui')
         lyr.datasource = ds
         expenv = mapnik.Box2d(0, -210, 256, 0)
@@ -293,15 +293,15 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         # NOTE: the overview table extent only grows north and east
         pixsize = 1  # see gdalinfo river.tif
         tol = pixsize * max(overview.split(',')) if overview else 0
-        assert_almost_equal(env.minx, expenv.minx)
-        assert_almost_equal(env.miny, expenv.miny, delta=tol)
-        assert_almost_equal(env.maxx, expenv.maxx, delta=tol)
-        assert_almost_equal(env.maxy, expenv.maxy)
+        assert env.minx == expenv.minx
+        assert env.miny == expenv.miny
+        assert env.maxx == expenv.maxx
+        assert env.maxy == expenv.maxy
         mm = mapnik.Map(256, 256)
         style = mapnik.Style()
         sym = mapnik.RasterSymbolizer()
         rule = mapnik.Rule()
-        rule.symbols.append(sym)
+        rule.symbolizers.append(sym)
         style.rules.append(rule)
         mm.append_style('foo', style)
         lyr.styles.append('foo')
@@ -312,16 +312,16 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         mapnik.render(mm, im)
         lap = time.time() - t0
         log('T ' + str(lap) + ' -- ' + lbl + ' E:full')
-        expected = 'images/support/pgraster/%s-%s-%s-%s-box1.png' % (
+        expected = './test/python_tests/images/support/pgraster/%s-%s-%s-%s-box1.png' % (
             lyr.name, lbl, overview, clip)
         compare_images(expected, im)
         # no data
-        eq_(hexlify(im.view(3, 3, 1, 1).tostring()), b'00000000')
-        eq_(hexlify(im.view(250, 250, 1, 1).tostring()), b'00000000')
+        assert hexlify(im.view(3, 3, 1, 1).to_string()) == b'00000000'
+        assert hexlify(im.view(250, 250, 1, 1).to_string()) == b'00000000'
         # full opaque river color
-        eq_(hexlify(im.view(175, 118, 1, 1).tostring()), b'b9d8f8ff')
+        assert hexlify(im.view(175, 118, 1, 1).to_string()) == b'b9d8f8ff'
         # half-transparent pixel
-        pxstr = hexlify(im.view(122, 138, 1, 1).tostring()).decode()
+        pxstr = hexlify(im.view(122, 138, 1, 1).to_string()).decode()
         apat = ".*(..)$"
         match = re.match(apat, pxstr)
         assert match, 'pixel ' + pxstr + ' does not match pattern ' + apat
@@ -337,16 +337,16 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         mapnik.render(mm, im)
         lap = time.time() - t0
         log('T ' + str(lap) + ' -- ' + lbl + ' E:1/10')
-        expected = 'images/support/pgraster/%s-%s-%s-%s-box2.png' % (
+        expected = './test/python_tests/images/support/pgraster/%s-%s-%s-%s-box2.png' % (
             lyr.name, lbl, overview, clip)
         compare_images(expected, im)
         # no data
-        eq_(hexlify(im.view(255, 255, 1, 1).tostring()), b'00000000')
-        eq_(hexlify(im.view(200, 40, 1, 1).tostring()), b'00000000')
+        assert hexlify(im.view(255, 255, 1, 1).to_string()) == b'00000000'
+        assert hexlify(im.view(200, 40, 1, 1).to_string()) == b'00000000'
         # full opaque river color
-        eq_(hexlify(im.view(100, 168, 1, 1).tostring()), b'b9d8f8ff')
+        assert hexlify(im.view(100, 168, 1, 1).to_string()) == b'b9d8f8ff'
         # half-transparent pixel
-        pxstr = hexlify(im.view(122, 138, 1, 1).tostring()).decode()
+        pxstr = hexlify(im.view(122, 138, 1, 1).to_string()).decode()
         apat = ".*(..)$"
         match = re.match(apat, pxstr)
         assert match, 'pixel ' + pxstr + ' does not match pattern ' + apat
@@ -356,7 +356,7 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
 
     def _test_rgba_8bui(lbl, tilesize, constraint, overview):
         import_raster(
-            '../data/raster/river.tiff',
+            './test/data/raster/river.tiff',
             'River',
             tilesize,
             constraint,
@@ -388,9 +388,9 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         ds = mapnik.PgRaster(dbname=MAPNIK_TEST_DBNAME, table=tnam,
                              use_overviews=1 if overview else 0,
                              prescale_rasters=rescale, clip_rasters=clip)
-        fs = ds.featureset()
-        feature = fs.next()
-        eq_(feature['rid'], 1)
+        fs = iter(ds)
+        feature = next(fs)
+        assert feature['rid'] == 1
         lyr = mapnik.Layer('rgba_8bui')
         lyr.datasource = ds
         expenv = mapnik.Box2d(-12329035.7652168, 4508650.39854396,
@@ -405,15 +405,15 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         # NOTE: the overview table extent only grows north and east
         pixsize = 2  # see gdalinfo nodata-edge.tif
         tol = pixsize * max(overview.split(',')) if overview else 0
-        assert_almost_equal(env.minx, expenv.minx, places=0)
-        assert_almost_equal(env.miny, expenv.miny, delta=tol)
-        assert_almost_equal(env.maxx, expenv.maxx, delta=tol)
-        assert_almost_equal(env.maxy, expenv.maxy, places=0)
+        assert env.minx == expenv.minx
+        assert env.miny == expenv.miny
+        assert env.maxx == expenv.maxx
+        assert env.maxy == expenv.maxy
         mm = mapnik.Map(256, 256)
         style = mapnik.Style()
         sym = mapnik.RasterSymbolizer()
         rule = mapnik.Rule()
-        rule.symbols.append(sym)
+        rule.symbolizers.append(sym)
         style.rules.append(rule)
         mm.append_style('foo', style)
         lyr.styles.append('foo')
@@ -424,20 +424,20 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         mapnik.render(mm, im)
         lap = time.time() - t0
         log('T ' + str(lap) + ' -- ' + lbl + ' E:full')
-        expected = 'images/support/pgraster/%s-%s-%s-%s-%s-box1.png' % (
+        expected = './test/python_tests/images/support/pgraster/%s-%s-%s-%s-%s-box1.png' % (
             lyr.name, tnam, lbl, overview, clip)
         compare_images(expected, im)
         # no data
-        eq_(hexlify(im.view(3, 16, 1, 1).tostring()), b'00000000')
-        eq_(hexlify(im.view(128, 16, 1, 1).tostring()), b'00000000')
-        eq_(hexlify(im.view(250, 16, 1, 1).tostring()), b'00000000')
-        eq_(hexlify(im.view(3, 240, 1, 1).tostring()), b'00000000')
-        eq_(hexlify(im.view(128, 240, 1, 1).tostring()), b'00000000')
-        eq_(hexlify(im.view(250, 240, 1, 1).tostring()), b'00000000')
+        assert hexlify(im.view(3, 16, 1, 1).to_string()) == b'00000000'
+        assert hexlify(im.view(128, 16, 1, 1).to_string()) == b'00000000'
+        assert hexlify(im.view(250, 16, 1, 1).to_string()) == b'00000000'
+        assert hexlify(im.view(3, 240, 1, 1).to_string()) == b'00000000'
+        assert hexlify(im.view(128, 240, 1, 1).to_string()) == b'00000000'
+        assert hexlify(im.view(250, 240, 1, 1).to_string()) == b'00000000'
         # dark brown
-        eq_(hexlify(im.view(174, 39, 1, 1).tostring()), b'c3a698ff')
+        assert hexlify(im.view(174, 39, 1, 1).to_string()) == b'c3a698ff'
         # dark gray
-        eq_(hexlify(im.view(195, 132, 1, 1).tostring()), b'575f62ff')
+        assert hexlify(im.view(195, 132, 1, 1).to_string()) == b'575f62ff'
         # Now zoom over a portion of the env (1/10)
         newenv = mapnik.Box2d(-12329035.7652168, 4508926.651484220,
                               -12328997.49148983, 4508957.34625536)
@@ -447,26 +447,26 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         mapnik.render(mm, im)
         lap = time.time() - t0
         log('T ' + str(lap) + ' -- ' + lbl + ' E:1/10')
-        expected = 'images/support/pgraster/%s-%s-%s-%s-%s-box2.png' % (
+        expected = './test/python_tests/images/support/pgraster/%s-%s-%s-%s-%s-box2.png' % (
             lyr.name, tnam, lbl, overview, clip)
         compare_images(expected, im)
         # no data
-        eq_(hexlify(im.view(3, 16, 1, 1).tostring()), b'00000000')
-        eq_(hexlify(im.view(128, 16, 1, 1).tostring()), b'00000000')
-        eq_(hexlify(im.view(250, 16, 1, 1).tostring()), b'00000000')
+        assert hexlify(im.view(3, 16, 1, 1).to_string()) == b'00000000'
+        assert hexlify(im.view(128, 16, 1, 1).to_string()) == b'00000000'
+        assert hexlify(im.view(250, 16, 1, 1).to_string()) == b'00000000'
         # black
-        eq_(hexlify(im.view(3, 42, 1, 1).tostring()), b'000000ff')
-        eq_(hexlify(im.view(3, 134, 1, 1).tostring()), b'000000ff')
-        eq_(hexlify(im.view(3, 244, 1, 1).tostring()), b'000000ff')
+        assert hexlify(im.view(3, 42, 1, 1).to_string()) == b'000000ff'
+        assert hexlify(im.view(3, 134, 1, 1).to_string()) == b'000000ff'
+        assert hexlify(im.view(3, 244, 1, 1).to_string()) == b'000000ff'
         # gray
-        eq_(hexlify(im.view(135, 157, 1, 1).tostring()), b'4e555bff')
+        assert hexlify(im.view(135, 157, 1, 1).to_string()) == b'4e555bff'
         # brown
-        eq_(hexlify(im.view(195, 223, 1, 1).tostring()), b'f2cdbaff')
+        assert hexlify(im.view(195, 223, 1, 1).to_string()) == b'f2cdbaff'
 
     def _test_rgb_8bui(lbl, tilesize, constraint, overview):
         tnam = 'nodataedge'
         import_raster(
-            '../data/raster/nodata-edge.tif',
+            './test/data/raster/nodata-edge.tif',
             tnam,
             tilesize,
             constraint,
@@ -522,22 +522,22 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         ds = mapnik.PgRaster(dbname=MAPNIK_TEST_DBNAME, table=sql,
                              raster_field='"R"', use_overviews=1,
                              prescale_rasters=rescale, clip_rasters=clip)
-        fs = ds.featureset()
-        feature = fs.next()
-        eq_(feature['i'], 3)
+        fs = iter(ds)
+        feature = next(fs)
+        assert feature['i'] == 3
         lyr = mapnik.Layer('grayscale_subquery')
         lyr.datasource = ds
         expenv = mapnik.Box2d(0, 0, 14, 14)
         env = lyr.envelope()
-        assert_almost_equal(env.minx, expenv.minx, places=0)
-        assert_almost_equal(env.miny, expenv.miny, places=0)
-        assert_almost_equal(env.maxx, expenv.maxx, places=0)
-        assert_almost_equal(env.maxy, expenv.maxy, places=0)
+        assert env.minx == expenv.minx#, places=0)
+        assert env.miny == expenv.miny#, places=0)
+        assert env.maxx == expenv.maxx#, places=0)
+        assert env.maxy == expenv.maxy#, places=0)
         mm = mapnik.Map(15, 15)
         style = mapnik.Style()
         sym = mapnik.RasterSymbolizer()
         rule = mapnik.Rule()
-        rule.symbols.append(sym)
+        rule.symbolizers.append(sym)
         style.rules.append(rule)
         mm.append_style('foo', style)
         lyr.styles.append('foo')
@@ -548,7 +548,7 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         mapnik.render(mm, im)
         lap = time.time() - t0
         log('T ' + str(lap) + ' -- ' + lbl + ' E:full')
-        expected = 'images/support/pgraster/%s-%s-%s-%s.png' % (
+        expected = './test/python_tests/images/support/pgraster/%s-%s-%s-%s.png' % (
             lyr.name, lbl, pixtype, value)
         compare_images(expected, im)
         h = format(value, '02x')
@@ -560,15 +560,15 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         h = format(val_b, '02x')
         hex_b = h + h + h + 'ff'
         hex_b = hex_b.encode()
-        eq_(hexlify(im.view(3, 3, 1, 1).tostring()), hex_v)
-        eq_(hexlify(im.view(8, 3, 1, 1).tostring()), hex_v)
-        eq_(hexlify(im.view(13, 3, 1, 1).tostring()), hex_v)
-        eq_(hexlify(im.view(3, 8, 1, 1).tostring()), hex_v)
-        eq_(hexlify(im.view(8, 8, 1, 1).tostring()), hex_v)
-        eq_(hexlify(im.view(13, 8, 1, 1).tostring()), hex_a)
-        eq_(hexlify(im.view(3, 13, 1, 1).tostring()), hex_v)
-        eq_(hexlify(im.view(8, 13, 1, 1).tostring()), hex_b)
-        eq_(hexlify(im.view(13, 13, 1, 1).tostring()), hex_v)
+        assert hexlify(im.view(3, 3, 1, 1).to_string()) == hex_v
+        assert hexlify(im.view(8, 3, 1, 1).to_string()) == hex_v
+        assert hexlify(im.view(13, 3, 1, 1).to_string()) == hex_v
+        assert hexlify(im.view(3, 8, 1, 1).to_string()) == hex_v
+        assert hexlify(im.view(8, 8, 1, 1).to_string()) == hex_v
+        assert hexlify(im.view(13, 8, 1, 1).to_string()) == hex_a
+        assert hexlify(im.view(3, 13, 1, 1).to_string()) == hex_v
+        assert hexlify(im.view(8, 13, 1, 1).to_string()) == hex_b
+        assert hexlify(im.view(13, 13, 1, 1).to_string()) == hex_v
 
     def test_grayscale_2bui_subquery():
         _test_grayscale_subquery('grayscale_2bui_subquery', '2BUI', 3)
@@ -635,17 +635,17 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         ds = mapnik.PgRaster(dbname=MAPNIK_TEST_DBNAME, table=sql,
                              raster_field='R', use_overviews=0 if overview else 0,
                              band=1, prescale_rasters=rescale, clip_rasters=clip)
-        fs = ds.featureset()
-        feature = fs.next()
-        eq_(feature['i'], 3)
+        fs = iter(ds)
+        feature = next(fs)
+        assert feature['i'] == 3
         lyr = mapnik.Layer('data_subquery')
         lyr.datasource = ds
         expenv = mapnik.Box2d(0, 0, 14, 14)
         env = lyr.envelope()
-        assert_almost_equal(env.minx, expenv.minx, places=0)
-        assert_almost_equal(env.miny, expenv.miny, places=0)
-        assert_almost_equal(env.maxx, expenv.maxx, places=0)
-        assert_almost_equal(env.maxy, expenv.maxy, places=0)
+        assert env.minx == expenv.minx#, places=0)
+        assert env.miny == expenv.miny#, places=0)
+        assert env.maxx == expenv.maxx#, places=0)
+        assert env.maxy == expenv.maxy#, places=0)
         mm = mapnik.Map(15, 15)
         style = mapnik.Style()
         col = mapnik.RasterColorizer()
@@ -656,7 +656,7 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         sym = mapnik.RasterSymbolizer()
         sym.colorizer = col
         rule = mapnik.Rule()
-        rule.symbols.append(sym)
+        rule.symbolizers.append(sym)
         style.rules.append(rule)
         mm.append_style('foo', style)
         lyr.styles.append('foo')
@@ -667,7 +667,7 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         mapnik.render(mm, im)
         lap = time.time() - t0
         log('T ' + str(lap) + ' -- ' + lbl + ' E:full')
-        expected = 'images/support/pgraster/%s-%s-%s-%s.png' % (
+        expected = './test/python_tests/images/support/pgraster/%s-%s-%s-%s.png' % (
             lyr.name, lbl, pixtype, value)
         compare_images(expected, im)
 
@@ -759,22 +759,22 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         ds = mapnik.PgRaster(dbname=MAPNIK_TEST_DBNAME, table=sql,
                              raster_field='r', use_overviews=0 if overview else 0,
                              prescale_rasters=rescale, clip_rasters=clip)
-        fs = ds.featureset()
-        feature = fs.next()
-        eq_(feature['i'], 3)
+        fs = iter(ds)
+        feature = next(fs)
+        assert feature['i'] == 3
         lyr = mapnik.Layer('rgba_subquery')
         lyr.datasource = ds
         expenv = mapnik.Box2d(0, 0, 14, 14)
         env = lyr.envelope()
-        assert_almost_equal(env.minx, expenv.minx, places=0)
-        assert_almost_equal(env.miny, expenv.miny, places=0)
-        assert_almost_equal(env.maxx, expenv.maxx, places=0)
-        assert_almost_equal(env.maxy, expenv.maxy, places=0)
+        assert env.minx == expenv.minx#, places=0)
+        assert env.miny == expenv.miny#, places=0)
+        assert env.maxx == expenv.maxx#, places=0)
+        assert env.maxy == expenv.maxy#, places=0)
         mm = mapnik.Map(15, 15)
         style = mapnik.Style()
         sym = mapnik.RasterSymbolizer()
         rule = mapnik.Rule()
-        rule.symbols.append(sym)
+        rule.symbolizers.append(sym)
         style.rules.append(rule)
         mm.append_style('foo', style)
         lyr.styles.append('foo')
@@ -785,21 +785,21 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         mapnik.render(mm, im)
         lap = time.time() - t0
         log('T ' + str(lap) + ' -- ' + lbl + ' E:full')
-        expected = 'images/support/pgraster/%s-%s-%s-%s-%s-%s-%s-%s-%s.png' % (
+        expected = './test/python_tests/images/support/pgraster/%s-%s-%s-%s-%s-%s-%s-%s-%s.png' % (
             lyr.name, lbl, pixtype, r, g, b, a, g1, b1)
         compare_images(expected, im)
         hex_v = format(r << 24 | g << 16 | b << 8 | a, '08x').encode()
         hex_a = format(r << 24 | g1 << 16 | b << 8 | a, '08x').encode()
         hex_b = format(r << 24 | g << 16 | b1 << 8 | a, '08x').encode()
-        eq_(hexlify(im.view(3, 3, 1, 1).tostring()), hex_v)
-        eq_(hexlify(im.view(8, 3, 1, 1).tostring()), hex_v)
-        eq_(hexlify(im.view(13, 3, 1, 1).tostring()), hex_v)
-        eq_(hexlify(im.view(3, 8, 1, 1).tostring()), hex_v)
-        eq_(hexlify(im.view(8, 8, 1, 1).tostring()), hex_v)
-        eq_(hexlify(im.view(13, 8, 1, 1).tostring()), hex_a)
-        eq_(hexlify(im.view(3, 13, 1, 1).tostring()), hex_v)
-        eq_(hexlify(im.view(8, 13, 1, 1).tostring()), hex_b)
-        eq_(hexlify(im.view(13, 13, 1, 1).tostring()), hex_v)
+        assert hexlify(im.view(3, 3, 1, 1).to_string()) ==  hex_v
+        assert hexlify(im.view(8, 3, 1, 1).to_string()) == hex_v
+        assert hexlify(im.view(13, 3, 1, 1).to_string()) == hex_v
+        assert hexlify(im.view(3, 8, 1, 1).to_string()) == hex_v
+        assert hexlify(im.view(8, 8, 1, 1).to_string()) == hex_v
+        assert hexlify(im.view(13, 8, 1, 1).to_string()) == hex_a
+        assert hexlify(im.view(3, 13, 1, 1).to_string()) == hex_v
+        assert hexlify(im.view(8, 13, 1, 1).to_string()) == hex_b
+        assert hexlify(im.view(13, 13, 1, 1).to_string()) == hex_v
 
     def test_rgba_8bui_subquery():
         _test_rgba_subquery(
