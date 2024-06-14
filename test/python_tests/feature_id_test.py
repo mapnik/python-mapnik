@@ -24,8 +24,8 @@ def compare_shape_between_mapnik_and_ogr(shapefile, query=None):
             fs1 = ds1.features(query)
             fs2 = ds2.features(query)
         else:
-            fs1 = ds1.featureset()
-            fs2 = ds2.featureset()
+            fs1 = iter(ds1)
+            fs2 = iter(ds2)
         count = 0
         for feat1, feat2 in zip(fs1, fs2):
             count += 1

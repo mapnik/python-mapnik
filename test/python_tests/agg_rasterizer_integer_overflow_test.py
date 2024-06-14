@@ -27,7 +27,7 @@ def test_that_coordinates_do_not_overflow_and_polygon_is_rendered_memory():
     r = mapnik.Rule()
     sym = mapnik.PolygonSymbolizer()
     sym.fill = expected_color
-    r.symbols.append(sym)
+    r.symbolizers.append(sym)
     s.rules.append(r)
     lyr = mapnik.Layer('Layer', projection)
     lyr.datasource = ds
@@ -58,7 +58,7 @@ def test_that_coordinates_do_not_overflow_and_polygon_is_rendered_csv():
     r = mapnik.Rule()
     sym = mapnik.PolygonSymbolizer()
     sym.fill = expected_color
-    r.symbols.append(sym)
+    r.symbolizers.append(sym)
     s.rules.append(r)
     lyr = mapnik.Layer('Layer', projection)
     lyr.datasource = ds

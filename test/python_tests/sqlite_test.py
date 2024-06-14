@@ -22,8 +22,8 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
                            table='point',
                            attachdb='scratch@qgis_spatiallite.sqlite'
                            )
-        fs = ds.featureset()
-        feature = fs.next()
+        fs = iter(ds)
+        feature = next(fs)
         assert feature['pkuid'] == 1
 
     test_attachdb_with_relative_file.requires_data = True
@@ -38,10 +38,10 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
                 insert into scratch2.idx_attachedtest_the_geom values (1,-7799225.5,-7778571.0,1393264.125,1417719.375);
                 '''
                            )
-        fs = ds.featureset()
+        fs = iter(ds)
         feature = None
         try:
-            feature = fs.next()
+            feature = next(fs)
         except StopIteration:
             pass
         # the above should not throw but will result in no features
@@ -56,8 +56,8 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
                            table='point',
                            attachdb='scratch@qgis_spatiallite.sqlite'
                            )
-        fs = ds.featureset()
-        feature = fs.next()
+        fs = iter(ds)
+        feature = next(fs)
         assert feature['pkuid'] ==  1
 
     test_attachdb_with_absolute_file.requires_data = True
@@ -73,10 +73,10 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
                 '''
                            )
 
-        fs = ds.featureset()
+        fs = iter(ds)
         feature = None
         try:
-            feature = fs.next()
+            feature = next(fs)
         except StopIteration:
             pass
         assert feature ==  None
@@ -94,10 +94,10 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
                 insert into scratch.myindex values (1,-7799225.5,-7778571.0,1393264.125,1417719.375);
                 '''
                            )
-        fs = ds.featureset()
+        fs = iter(ds)
         feature = None
         try:
-            feature = fs.next()
+            feature = next(fs)
         except StopIteration:
             pass
         assert feature ==  None
@@ -168,8 +168,8 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
                                     'int',
                                     'int',
                                     'int']
-        fs = ds.featureset()
-        feature = fs.next()
+        fs = iter(ds)
+        feature = next(fs)
         assert feature.id() ==  1
         expected = {
             1995: 0,
@@ -277,7 +277,7 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
                                     'int',
                                     'int',
                                     'int']
-        assert len(list(ds.all_features())) ==  100
+        assert len(list(iter(ds))) ==  100
 
     test_attachdb_with_sql_join_count.requires_data = True
 
@@ -350,7 +350,7 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
                                     'int',
                                     'int',
                                     'int']
-        assert len(list(ds.all_features())) ==  192
+        assert len(list(iter(ds))) ==  192
 
     test_attachdb_with_sql_join_count2.requires_data = True
 
@@ -421,7 +421,7 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
                                     'int',
                                     'int',
                                     'int']
-        assert len(list(ds.all_features())) ==  192
+        assert len(list(iter(ds))) ==  192
 
     test_attachdb_with_sql_join_count3.requires_data = True
 
@@ -492,7 +492,7 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
                                     'int',
                                     'int',
                                     'int']
-        assert len(list(ds.all_features())) ==  1
+        assert len(list(iter(ds))) ==  1
 
     test_attachdb_with_sql_join_count4.requires_data = True
 
@@ -531,7 +531,7 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
                                     'int',
                                     'float',
                                     'float']
-        assert len(list(ds.all_features())) ==  0
+        assert len(list(iter(ds))) ==  0
 
     test_attachdb_with_sql_join_count5.requires_data = True
 
@@ -539,8 +539,8 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.SQLite(file='../data/sqlite/world.sqlite',
                            table='world_merc',
                            )
-        fs = ds.featureset()
-        feature = fs.next()
+        fs = iter(ds)
+        feature = next(fs)
         assert feature['OGC_FID'] ==  1
         assert feature['fips'] ==  u'AC'
         assert feature['iso2'] ==  u'AG'
@@ -557,8 +557,8 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.SQLite(file='../data/sqlite/world.sqlite',
                            table='(select * from world_merc)',
                            )
-        fs = ds.featureset()
-        feature = fs.next()
+        fs = iter(ds)
+        feature = next(fs)
         assert feature['OGC_FID'] ==  1
         assert feature['fips'] ==  u'AC'
         assert feature['iso2'] ==  u'AG'
@@ -575,16 +575,16 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.SQLite(file='../data/sqlite/world.sqlite',
                            table='(select OGC_FID,GEOMETRY from world_merc)',
                            )
-        fs = ds.featureset()
-        feature = fs.next()
+        fs = iter(ds)
+        feature = next(fs)
         assert feature['OGC_FID'] ==  1
         assert len(feature) ==  1
 
         ds = mapnik.SQLite(file='../data/sqlite/world.sqlite',
                            table='(select GEOMETRY,OGC_FID,fips from world_merc)',
                            )
-        fs = ds.featureset()
-        feature = fs.next()
+        fs = iter(ds)
+        feature = next(fs)
         assert feature['OGC_FID'] ==  1
         assert feature['fips'] ==  u'AC'
 
@@ -594,16 +594,16 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         #    table='(select GEOMETRY,rowid as aliased_id,fips from world_merc) as table',
         #    key_field='aliased_id'
         #    )
-        #fs = ds.featureset()
-        #feature = fs.next()
+        #fs = iter(ds)
+        #feature = next(fs)
         # assert feature['aliased_id'] == 1
         # assert feature['fips'] == u'AC'
 
         ds = mapnik.SQLite(file='../data/sqlite/world.sqlite',
                            table='(select GEOMETRY,OGC_FID,OGC_FID as rowid,fips from world_merc)',
                            )
-        fs = ds.featureset()
-        feature = fs.next()
+        fs = iter(ds)
+        feature = next(fs)
         assert feature['rowid'] ==  1
         assert feature['fips'] ==  u'AC'
 
@@ -613,10 +613,10 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.SQLite(file='../data/sqlite/empty.db',
                            table='empty',
                            )
-        fs = ds.featureset()
+        fs = iter(ds)
         feature = None
         try:
-            feature = fs.next()
+            feature = next(fs)
         except StopIteration:
             pass
         assert feature ==  None
@@ -693,10 +693,10 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.SQLite(file='../data/sqlite/empty.db',
                            table='(select * from empty where !intersects!)',
                            )
-        fs = ds.featureset()
+        fs = iter(ds)
         feature = None
         try:
-            feature = fs.next()
+            feature = next(fs)
         except StopIteration:
             pass
         assert feature ==  None
@@ -707,10 +707,10 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.SQLite(file='../data/sqlite/empty.db',
                            table='(select * from empty where "a"!="b" and !intersects!)',
                            )
-        fs = ds.featureset()
+        fs = iter(ds)
         feature = None
         try:
-            feature = fs.next()
+            feature = next(fs)
         except StopIteration:
             pass
         assert feature ==  None
@@ -721,10 +721,10 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.SQLite(file='../data/sqlite/empty.db',
                            table='(select * from empty where "a"!="b" and !intersects!)',
                            )
-        fs = ds.featureset()
+        fs = iter(ds)
         feature = None
         try:
-            feature = fs.next()
+            feature = next(fs)
         except StopIteration:
             pass
         assert feature ==  None
@@ -749,7 +749,7 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         assert len(ds.fields()) ==  1
         assert ds.fields() ==  ['alias']
         assert ds.field_types() ==  ['str']
-        fs = list(ds.all_features())
+        fs = list(iter(ds))
         assert len(fs) ==  1
         feat = fs[0]
         assert feat.id() ==  0  # should be 1?
@@ -802,12 +802,12 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         assert len(ds.fields()) ==  3
         assert ds.fields(), ['OGC_FID', 'id' ==  'bigint']
         assert ds.field_types(), ['int', 'int' ==  'int']
-        fs = ds.featureset()
-        feat = fs.next()
+        fs = iter(ds)
+        feat = next(fs)
         assert feat.id() ==  1
         assert feat['OGC_FID'] ==  1
         assert feat['bigint'] ==  2147483648
-        feat = fs.next()
+        feat = next(fs)
         assert feat.id() ==  2
         assert feat['OGC_FID'] ==  2
         assert feat['bigint'] ==  922337203685477580
@@ -834,10 +834,10 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
                            use_spatial_index=False,
                            key_field='osm_id'
                            )
-        fs = ds.featureset()
+        fs = iter(ds)
         feature = None
         try:
-            feature = fs.next()
+            feature = next(fs)
         except StopIteration:
             pass
         assert feature ==  None

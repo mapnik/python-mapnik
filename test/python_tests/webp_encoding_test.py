@@ -45,26 +45,26 @@ if mapnik.has_webp():
 
     def test_quality_threshold(setup):
         im = mapnik.Image(256, 256)
-        im.tostring('webp:quality=99.99000')
-        im.tostring('webp:quality=0')
-        im.tostring('webp:quality=0.001')
+        im.to_string('webp:quality=99.99000')
+        im.to_string('webp:quality=0')
+        im.to_string('webp:quality=0.001')
 
 
     def test_quality_threshold_invalid():
         im = mapnik.Image(256, 256)
         with pytest.raises(RuntimeError):
-            im.tostring('webp:quality=101')
+            im.to_string('webp:quality=101')
 
 
     def test_quality_threshold_invalid2():
         im = mapnik.Image(256, 256)
         with pytest.raises(RuntimeError):
-            im.tostring('webp:quality=-1')
+            im.to_string('webp:quality=-1')
 
     def test_quality_threshold_invalid3():
         im = mapnik.Image(256, 256)
         with pytest.raises(RuntimeError):
-            im.tostring('webp:quality=101.1')
+            im.to_string('webp:quality=101.1')
 
     generate = os.environ.get('UPDATE')
 
@@ -80,14 +80,14 @@ if mapnik.has_webp():
                     im.save(expected, opt)
                 im.save(actual, opt)
                 try:
-                    expected_bytes = mapnik.Image.open(expected).tostring()
+                    expected_bytes = mapnik.Image.open(expected).to_string()
                 except RuntimeError:
                     # this will happen if libweb is old, since it cannot open
                     # images created by more recent webp
                     print(
                         'warning, cannot open webp expected image (your libwebp is likely too old)')
                     continue
-                if mapnik.Image.open(actual).tostring() != expected_bytes:
+                if mapnik.Image.open(actual).to_string() != expected_bytes:
                     fails.append(
                         '%s (actual) not == to %s (expected)' %
                         (actual, expected))
@@ -102,14 +102,14 @@ if mapnik.has_webp():
                     im.save(expected, opt)
                 im.save(actual, opt)
                 try:
-                    expected_bytes = mapnik.Image.open(expected).tostring()
+                    expected_bytes = mapnik.Image.open(expected).to_string()
                 except RuntimeError:
                     # this will happen if libweb is old, since it cannot open
                     # images created by more recent webp
                     print(
                         'warning, cannot open webp expected image (your libwebp is likely too old)')
                     continue
-                if mapnik.Image.open(actual).tostring() != expected_bytes:
+                if mapnik.Image.open(actual).to_string() != expected_bytes:
                     fails.append(
                         '%s (actual) not == to %s (expected)' %
                         (actual, expected))
@@ -124,14 +124,14 @@ if mapnik.has_webp():
                     im.save(expected, opt)
                 im.save(actual, opt)
                 try:
-                    expected_bytes = mapnik.Image.open(expected).tostring()
+                    expected_bytes = mapnik.Image.open(expected).to_string()
                 except RuntimeError:
                     # this will happen if libweb is old, since it cannot open
                     # images created by more recent webp
                     print(
                         'warning, cannot open webp expected image (your libwebp is likely too old)')
                     continue
-                if mapnik.Image.open(actual).tostring() != expected_bytes:
+                if mapnik.Image.open(actual).to_string() != expected_bytes:
                     fails.append(
                         '%s (actual) not == to %s (expected)' %
                         (actual, expected))
@@ -163,9 +163,9 @@ if mapnik.has_webp():
                 im.save('images/support/transparency/white0.webp')
             im.save(t0, format)
             im_in = mapnik.Image.open(t0)
-            t0_len = len(im_in.tostring(format))
+            t0_len = len(im_in.to_string(format))
             try:
-                expected_bytes = mapnik.Image.open(expected).tostring(format)
+                expected_bytes = mapnik.Image.open(expected).to_string(format)
             except RuntimeError:
                 # this will happen if libweb is old, since it cannot open
                 # images created by more recent webp

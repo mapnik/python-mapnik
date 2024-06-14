@@ -88,10 +88,10 @@ def validate_pixels_are_premultiplied(image):
 def test_compare_images(setup):
     b = mapnik.Image.open('images/support/b.png')
     b.premultiply()
-    num_ops = len(mapnik.CompositeOp.names)
+    num_ops = len(mapnik.CompositeOp.__members__)
     successes = []
     fails = []
-    for name in mapnik.CompositeOp.names:
+    for name in mapnik.CompositeOp.__members__.keys():
         a = mapnik.Image.open('images/support/a.png')
         a.premultiply()
         a.composite(b, getattr(mapnik.CompositeOp, name))
@@ -112,7 +112,7 @@ def test_compare_images(setup):
             a.save(expected, 'png32')
         expected_im = mapnik.Image.open(expected)
         # compare them
-        if a.tostring('png32') == expected_im.tostring('png32'):
+        if a.to_string('png32') == expected_im.to_string('png32'):
             successes.append(name)
         else:
             fails.append(
@@ -130,7 +130,7 @@ def test_compare_images(setup):
     # TODO - write test to ensure the image is 99% the same.
     #expected_b = mapnik.Image.open('./images/support/b.png')
     # b.save('/tmp/mapnik-comp-op-test-original-mask.png')
-    #assert b.tostring('png32') == expected_b.tostring('png32'), '/tmp/mapnik-comp-op-test-original-mask.png is no longer equivalent to original mask: ./images/support/b.png'
+    #assert b.to_string('png32') == expected_b.to_string('png32'), '/tmp/mapnik-comp-op-test-original-mask.png is no longer equivalent to original mask: ./images/support/b.png'
 
 
 def test_pre_multiply_status():
@@ -179,7 +179,8 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
         m.zoom_all()
         successes = []
         fails = []
-        for name in mapnik.CompositeOp.names:
+
+        for name in mapnik.CompositeOp.__members__.keys():
             # find_style returns a copy of the style object
             style_markers = m.find_style("markers")
             style_markers.comp_op = getattr(mapnik.CompositeOp, name)
@@ -195,7 +196,7 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
                 im.save(expected, 'png32')
             expected_im = mapnik.Image.open(expected)
             # compare them
-            if im.tostring('png32') == expected_im.tostring('png32'):
+            if im.to_string('png32') == expected_im.to_string('png32'):
                 successes.append(name)
             else:
                 fails.append(
@@ -220,7 +221,7 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
         expected = 'images/support/mapnik-style-level-opacity.png'
         im.save(actual, 'png32')
         expected_im = mapnik.Image.open(expected)
-        assert im.tostring('png32') == expected_im.tostring('png32'), 'failed comparing actual (%s) and expected (%s)' % (actual,
+        assert im.to_string('png32') == expected_im.to_string('png32'), 'failed comparing actual (%s) and expected (%s)' % (actual,
                                                                                                                           'tests/python_tests/' + expected)
 
 

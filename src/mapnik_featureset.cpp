@@ -2,7 +2,7 @@
  *
  * This file is part of Mapnik (c++ mapping toolkit)
  *
- * Copyright (C) 2015 Artem Pavlenko, Jean-Francois Doyon
+ * Copyright (C) 2024 Artem Pavlenko
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,47 +20,35 @@
  *
  *****************************************************************************/
 
-#include <mapnik/config.hpp>
-#include "boost_std_shared_shim.hpp"
-
-#pragma GCC diagnostic push
-#include <mapnik/warning_ignore.hpp>
-#include <boost/python.hpp>
-#include <boost/noncopyable.hpp>
-#pragma GCC diagnostic pop
-
 // mapnik
+#include <mapnik/config.hpp>
 #include <mapnik/feature.hpp>
 #include <mapnik/datasource.hpp>
 
-namespace {
-using namespace boost::python;
+//pybind11
+#include <pybind11/pybind11.h>
+#include <pybind11/operators.h>
+#include <pybind11/stl.h>
 
-inline object pass_through(object const& o) { return o; }
+namespace py = pybind11;
+
+namespace {
 
 inline mapnik::feature_ptr next(mapnik::featureset_ptr const& itr)
 {
     mapnik::feature_ptr f = itr->next();
-    if (!f)
-    {
-        PyErr_SetString(PyExc_StopIteration, "No more features.");
-        boost::python::throw_error_already_set();
-    }
-
+    if (!f) throw py::stop_iteration();
     return f;
 }
 
 }
 
-void export_featureset()
+void export_featureset(py::module const& m)
 {
-    using namespace boost::python;
     // Featureset implements Python iterator interface
-    class_<mapnik::Featureset, std::shared_ptr<mapnik::Featureset>,
-           boost::noncopyable>("Featureset", no_init)
-        .def("__iter__", pass_through)
+    py::class_<mapnik::Featureset, std::shared_ptr<mapnik::Featureset>>
+        (m, "Featureset")
+        .def("__iter__", [](mapnik::Featureset& itr) -> mapnik::Featureset& { return itr; })
         .def("__next__", next)
-        // Python2 support
-        .def("next", next)
         ;
 }

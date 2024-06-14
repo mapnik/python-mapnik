@@ -4,14 +4,14 @@ import mapnik
 def test_clearing_image_data():
     im = mapnik.Image(256, 256)
     # make sure it equals itself
-    bytes = im.tostring()
-    assert im.tostring() == bytes
+    bytes = im.to_string()
+    assert im.to_string() == bytes
     # set background, then clear
     im.fill(mapnik.Color('green'))
-    assert not im.tostring() == bytes
+    assert not im.to_string() == bytes
     # clear image, should now equal original
     im.clear()
-    assert im.tostring() == bytes
+    assert im.to_string() == bytes
 
 def make_map():
     ds = mapnik.MemoryDatasource()
@@ -26,7 +26,7 @@ def make_map():
     s = mapnik.Style()
     r = mapnik.Rule()
     symb = mapnik.PolygonSymbolizer()
-    r.symbols.append(symb)
+    r.symbolizers.append(symb)
     s.rules.append(r)
     lyr = mapnik.Layer('Places')
     lyr.datasource = ds

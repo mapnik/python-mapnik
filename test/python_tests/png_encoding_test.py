@@ -53,7 +53,7 @@ if mapnik.has_png():
                 im.save(expected, opt)
             else:
                 im.save(actual, opt)
-                assert mapnik.Image.open(actual).tostring('png32') == mapnik.Image.open(expected).tostring('png32'), '%s (actual) not == to %s (expected)' % (actual, expected)
+                assert mapnik.Image.open(actual).to_string('png32') == mapnik.Image.open(expected).to_string('png32'), '%s (actual) not == to %s (expected)' % (actual, expected)
 
         # solid image
         im.fill(mapnik.Color('green'))
@@ -65,7 +65,7 @@ if mapnik.has_png():
                 im.save(expected, opt)
             else:
                 im.save(actual, opt)
-                assert mapnik.Image.open(actual).tostring('png32') == mapnik.Image.open(expected).tostring('png32'), '%s (actual) not == to %s (expected)' % (actual, expected)
+                assert mapnik.Image.open(actual).to_string('png32') == mapnik.Image.open(expected).to_string('png32'), '%s (actual) not == to %s (expected)' % (actual, expected)
 
         # aerial
         im = mapnik.Image.open('./images/support/transparency/aerial_rgba.png')
@@ -77,7 +77,7 @@ if mapnik.has_png():
                 im.save(expected, opt)
             else:
                 im.save(actual, opt)
-                assert mapnik.Image.open(actual).tostring('png32') == mapnik.Image.open(expected).tostring('png32'), '%s (actual) not == to %s (expected)' % (actual, expected)
+                assert mapnik.Image.open(actual).to_string('png32') == mapnik.Image.open(expected).to_string('png32'), '%s (actual) not == to %s (expected)' % (actual, expected)
 
     def test_transparency_levels():
         # create partial transparency image
@@ -100,84 +100,84 @@ if mapnik.has_png():
         format = 'png8:m=o:t=0'
         im.save(t0, format)
         im_in = mapnik.Image.open(t0)
-        t0_len = len(im_in.tostring(format))
-        assert t0_len == len(mapnik.Image.open('images/support/transparency/white0.png').tostring(format))
+        t0_len = len(im_in.to_string(format))
+        assert t0_len == len(mapnik.Image.open('images/support/transparency/white0.png').to_string(format))
         format = 'png8:m=o:t=1'
         im.save(t1, format)
         im_in = mapnik.Image.open(t1)
-        t1_len = len(im_in.tostring(format))
-        assert len(im.tostring(format)) == len(mapnik.Image.open('images/support/transparency/white1.png').tostring(format))
+        t1_len = len(im_in.to_string(format))
+        assert len(im.to_string(format)) == len(mapnik.Image.open('images/support/transparency/white1.png').to_string(format))
         format = 'png8:m=o:t=2'
         im.save(t2, format)
         im_in = mapnik.Image.open(t2)
-        t2_len = len(im_in.tostring(format))
-        assert len(im.tostring(format)) == len(mapnik.Image.open('images/support/transparency/white2.png').tostring(format))
+        t2_len = len(im_in.to_string(format))
+        assert len(im.to_string(format)) == len(mapnik.Image.open('images/support/transparency/white2.png').to_string(format))
         assert t0_len < t1_len < t2_len
 
         # hextree
         format = 'png8:m=h:t=0'
         im.save(t0, format)
         im_in = mapnik.Image.open(t0)
-        t0_len = len(im_in.tostring(format))
-        assert t0_len == len(mapnik.Image.open('images/support/transparency/white0.png').tostring(format))
+        t0_len = len(im_in.to_string(format))
+        assert t0_len == len(mapnik.Image.open('images/support/transparency/white0.png').to_string(format))
         format = 'png8:m=h:t=1'
         im.save(t1, format)
         im_in = mapnik.Image.open(t1)
-        t1_len = len(im_in.tostring(format))
-        assert len(im.tostring(format)) == len(mapnik.Image.open('images/support/transparency/white1.png').tostring(format))
+        t1_len = len(im_in.to_string(format))
+        assert len(im.to_string(format)) == len(mapnik.Image.open('images/support/transparency/white1.png').to_string(format))
         format = 'png8:m=h:t=2'
         im.save(t2, format)
         im_in = mapnik.Image.open(t2)
-        t2_len = len(im_in.tostring(format))
-        assert len(im.tostring(format)) == len(mapnik.Image.open('images/support/transparency/white2.png').tostring(format))
+        t2_len = len(im_in.to_string(format))
+        assert len(im.to_string(format)) == len(mapnik.Image.open('images/support/transparency/white2.png').to_string(format))
         assert t0_len < t1_len < t2_len
 
     def test_transparency_levels_aerial():
         im = mapnik.Image.open('../data/images/12_654_1580.png')
         im_in = mapnik.Image.open(
             './images/support/transparency/aerial_rgba.png')
-        assert len(im.tostring('png8')) == len(im_in.tostring('png8'))
-        assert len(im.tostring('png32')) == len(im_in.tostring('png32'))
+        assert len(im.to_string('png8')) == len(im_in.to_string('png8'))
+        assert len(im.to_string('png32')) == len(im_in.to_string('png32'))
 
         im_in = mapnik.Image.open(
             './images/support/transparency/aerial_rgb.png')
-        assert len(im.tostring('png32')) == len(im_in.tostring('png32'))
-        assert len(im.tostring('png32:t=0')) == len(im_in.tostring('png32:t=0'))
-        assert not len(im.tostring('png32:t=0')) == len(im_in.tostring('png32'))
-        assert len(im.tostring('png8')) == len(im_in.tostring('png8'))
-        assert len(im.tostring('png8:t=0')) == len(im_in.tostring('png8:t=0'))
+        assert len(im.to_string('png32')) == len(im_in.to_string('png32'))
+        assert len(im.to_string('png32:t=0')) == len(im_in.to_string('png32:t=0'))
+        assert not len(im.to_string('png32:t=0')) == len(im_in.to_string('png32'))
+        assert len(im.to_string('png8')) == len(im_in.to_string('png8'))
+        assert len(im.to_string('png8:t=0')) == len(im_in.to_string('png8:t=0'))
         # unlike png32 paletted images without alpha will look the same even if
         # no alpha is forced
-        assert len(im.tostring('png8:t=0')) == len(im_in.tostring('png8'))
-        assert len(im.tostring('png8:t=0:m=o')) == len(im_in.tostring('png8:m=o'))
+        assert len(im.to_string('png8:t=0')) == len(im_in.to_string('png8'))
+        assert len(im.to_string('png8:t=0:m=o')) == len(im_in.to_string('png8:m=o'))
 
     def test_9_colors_hextree():
         expected = './images/support/encoding-opts/png8-9cols.png'
         im = mapnik.Image.open(expected)
         t0 = tmp_dir + 'png-encoding-9-colors.result-hextree.png'
         im.save(t0, 'png8:m=h')
-        assert mapnik.Image.open(t0).tostring() == mapnik.Image.open(expected).tostring(), '%s (actual) not == to %s (expected)' % (t0, expected)
+        assert mapnik.Image.open(t0).to_string() == mapnik.Image.open(expected).to_string(), '%s (actual) not == to %s (expected)' % (t0, expected)
 
     def test_9_colors_octree():
         expected = './images/support/encoding-opts/png8-9cols.png'
         im = mapnik.Image.open(expected)
         t0 = tmp_dir + 'png-encoding-9-colors.result-octree.png'
         im.save(t0, 'png8:m=o')
-        assert mapnik.Image.open(t0).tostring() == mapnik.Image.open(expected).tostring(), '%s (actual) not == to %s (expected)' % (t0, expected)
+        assert mapnik.Image.open(t0).to_string() == mapnik.Image.open(expected).to_string(), '%s (actual) not == to %s (expected)' % (t0, expected)
 
     def test_17_colors_hextree():
         expected = './images/support/encoding-opts/png8-17cols.png'
         im = mapnik.Image.open(expected)
         t0 = tmp_dir + 'png-encoding-17-colors.result-hextree.png'
         im.save(t0, 'png8:m=h')
-        assert mapnik.Image.open(t0).tostring() == mapnik.Image.open(expected).tostring(), '%s (actual) not == to %s (expected)' % (t0, expected)
+        assert mapnik.Image.open(t0).to_string() == mapnik.Image.open(expected).to_string(), '%s (actual) not == to %s (expected)' % (t0, expected)
 
     def test_17_colors_octree():
         expected = './images/support/encoding-opts/png8-17cols.png'
         im = mapnik.Image.open(expected)
         t0 = tmp_dir + 'png-encoding-17-colors.result-octree.png'
         im.save(t0, 'png8:m=o')
-        assert mapnik.Image.open(t0).tostring() == mapnik.Image.open(expected).tostring(), '%s (actual) not == to %s (expected)' % (t0, expected)
+        assert mapnik.Image.open(t0).to_string() == mapnik.Image.open(expected).to_string(), '%s (actual) not == to %s (expected)' % (t0, expected)
 
     def test_2px_regression_hextree():
         im = mapnik.Image.open('./images/support/encoding-opts/png8-2px.A.png')
@@ -185,11 +185,11 @@ if mapnik.has_png():
 
         t0 = tmp_dir + 'png-encoding-2px.result-hextree.png'
         im.save(t0, 'png8:m=h')
-        assert mapnik.Image.open(t0).tostring() == mapnik.Image.open(expected).tostring(), '%s (actual) not == to %s (expected)' % (t0, expected)
+        assert mapnik.Image.open(t0).to_string() == mapnik.Image.open(expected).to_string(), '%s (actual) not == to %s (expected)' % (t0, expected)
 
     def test_2px_regression_octree():
         im = mapnik.Image.open('./images/support/encoding-opts/png8-2px.A.png')
         expected = './images/support/encoding-opts/png8-2px.png'
         t0 = tmp_dir + 'png-encoding-2px.result-octree.png'
         im.save(t0, 'png8:m=o')
-        assert mapnik.Image.open(t0).tostring() == mapnik.Image.open(expected).tostring(), '%s (actual) not == to %s (expected)' % (t0, expected)
+        assert mapnik.Image.open(t0).to_string() == mapnik.Image.open(expected).to_string(), '%s (actual) not == to %s (expected)' % (t0, expected)

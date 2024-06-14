@@ -1,0 +1,31 @@
+[build-system]
+requires = [
+         "setuptools >= 69.0",
+         "pybind11 >= 2.10.0",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mapnik"
+version = "4.0.0.beta"
+description = "Python bindings for Mapnik"
+license = { text = "GNU LESSER GENERAL PUBLIC LICENSE"}
+keywords = ["mapnik", "beautiful maps", "cartography", "python-mapnik"]
+classifiers = [
+   "Development Status :: 4 - Beta",
+]
+authors = [
+{name= "Artem Pavlenko", email = "artem@mapnik.org"},
+]
+maintainers = [
+{name= "Artem Pavlenko", email = "artem@mapnik.org"},
+]
+
+requires-python = ">= 3.8"
+
+[project.urls]
+Homepage = "https://mapnik.org"
+Documentation = "https://github.com/mapnik/python-mapnik/wiki"
+Repository = "https://github.com/mapnik/python-mapnik"
+"Bug Tracker" = "https://github.com/mapnik/python-mapnik/issues"
+Changelog = "https://github.com/mapnik/python-mapnik/blob/master/CHANGELOG.md"

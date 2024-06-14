@@ -66,7 +66,7 @@ def do_encoding():
 
     if 'blank' in tiles:
         def blank():
-            return eval('image.tostring("%s")' % c)
+            return eval('image.to_string("%s")' % c)
         blank_im = mapnik.Image(512, 512)
         for c in combinations:
             t = Timer(blank)
@@ -74,7 +74,7 @@ def do_encoding():
 
     if 'solid' in tiles:
         def solid():
-            return eval('image.tostring("%s")' % c)
+            return eval('image.to_string("%s")' % c)
         solid_im = mapnik.Image(512, 512)
         solid_im.fill(mapnik.Color("#f2efe9"))
         for c in combinations:
@@ -83,7 +83,7 @@ def do_encoding():
 
     if 'many_colors' in tiles:
         def many_colors():
-            return eval('image.tostring("%s")' % c)
+            return eval('image.to_string("%s")' % c)
         # lots of colors: http://tile.osm.org/13/4194/2747.png
         many_colors_im = mapnik.Image.open('../data/images/13_4194_2747.png')
         for c in combinations:
@@ -92,7 +92,7 @@ def do_encoding():
 
     if 'aerial_24' in tiles:
         def aerial_24():
-            return eval('image.tostring("%s")' % c)
+            return eval('image.to_string("%s")' % c)
         aerial_24_im = mapnik.Image.open('../data/images/12_654_1580.png')
         for c in combinations:
             t = Timer(aerial_24)

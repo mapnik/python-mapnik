@@ -14,8 +14,8 @@ def setup():
 
 def test_debug_symbolizer(setup):
     s = mapnik.DebugSymbolizer()
-    s.mode = mapnik.debug_symbolizer_mode.collision
-    assert s.mode == mapnik.debug_symbolizer_mode.collision
+    s.mode = mapnik.debug_symbolizer_mode.COLLISION
+    assert s.mode == mapnik.debug_symbolizer_mode.COLLISION
 
 def test_raster_symbolizer():
     s = mapnik.RasterSymbolizer()
@@ -55,7 +55,7 @@ def test_map_style_access():
     m = mapnik.Map(256, 256)
     sty = mapnik.Style()
     m.append_style("style",sty)
-    styles = list(m.styles)
+    styles = list(m.styles.items())
     assert len(styles) == 1
     assert styles[0][0] == 'style'
     # returns a copy so let's just check it is the right instance

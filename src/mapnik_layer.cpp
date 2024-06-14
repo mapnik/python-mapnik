@@ -2,7 +2,7 @@
  *
  * This file is part of Mapnik (c++ mapping toolkit)
  *
- * Copyright (C) 2015 Artem Pavlenko, Jean-Francois Doyon
+ * Copyright (C) 2024 Artem Pavlenko
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,144 +20,47 @@
  *
  *****************************************************************************/
 
-#include <mapnik/config.hpp>
-#include "boost_std_shared_shim.hpp"
-
-#pragma GCC diagnostic push
-#include <mapnik/warning_ignore.hpp>
-#include <boost/python.hpp>
-#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
-#pragma GCC diagnostic pop
-
 // mapnik
+#include <mapnik/config.hpp>
 #include <mapnik/layer.hpp>
 #include <mapnik/datasource.hpp>
 #include <mapnik/datasource_cache.hpp>
+//pybind11
+#include <pybind11/pybind11.h>
+#include <pybind11/operators.h>
+#include <pybind11/stl.h>
+#include <pybind11/stl_bind.h>
+
+namespace py = pybind11;
 
 using mapnik::layer;
 using mapnik::parameters;
 using mapnik::datasource_cache;
 
+PYBIND11_MAKE_OPAQUE(std::vector<std::string>);
 
-struct layer_pickle_suite : boost::python::pickle_suite
+std::vector<std::string> & (mapnik::layer::*set_styles_)() = &mapnik::layer::styles;
+std::vector<std::string> const& (mapnik::layer::*get_styles_)() const = &mapnik::layer::styles;
+
+void export_layer(py::module const& m)
 {
-    static boost::python::tuple
-    getinitargs(const layer& l)
-    {
-        return boost::python::make_tuple(l.name(),l.srs());
-    }
+    py::bind_vector<std::vector<std::string>>(m, "StyleNames", py::module_local());
 
-    static  boost::python::tuple
-    getstate(const layer& l)
-    {
-        boost::python::list s;
-        std::vector<std::string> const& style_names = l.styles();
-        for (unsigned i = 0; i < style_names.size(); ++i)
-        {
-            s.append(style_names[i]);
-        }
-        return boost::python::make_tuple(l.clear_label_cache(),l.minimum_scale_denominator(),l.maximum_scale_denominator(),l.queryable(),l.datasource()->params(),l.cache_features(),s);
-    }
-
-    static void
-    setstate (layer& l, boost::python::tuple state)
-    {
-        using namespace boost::python;
-        if (len(state) != 9)
-        {
-            PyErr_SetObject(PyExc_ValueError,
-                            ("expected 9-item tuple in call to __setstate__; got %s"
-                             % state).ptr()
-                );
-            throw_error_already_set();
-        }
-
-        l.set_clear_label_cache(extract<bool>(state[0]));
-
-        l.set_minimum_scale_denominator(extract<double>(state[1]));
-
-        l.set_maximum_scale_denominator(extract<double>(state[2]));
-
-        l.set_queryable(extract<bool>(state[3]));
-
-        mapnik::parameters params = extract<parameters>(state[4]);
-        l.set_datasource(datasource_cache::instance().create(params));
-
-        boost::python::list s = extract<boost::python::list>(state[5]);
-        for (int i=0;i<len(s);++i)
-        {
-            l.add_style(extract<std::string>(s[i]));
-        }
-
-        l.set_cache_features(extract<bool>(state[6]));
-    }
-};
-
-std::vector<std::string> & (mapnik::layer::*_styles_)() = &mapnik::layer::styles;
-
-void set_maximum_extent(mapnik::layer & l, boost::optional<mapnik::box2d<double> > const& box)
-{
-    if (box)
-    {
-        l.set_maximum_extent(*box);
-    }
-    else
-    {
-        l.reset_maximum_extent();
-    }
-}
-
-void set_buffer_size(mapnik::layer & l, boost::optional<int> const& buffer_size)
-{
-    if (buffer_size)
-    {
-        l.set_buffer_size(*buffer_size);
-    }
-    else
-    {
-        l.reset_buffer_size();
-    }
-}
-
-PyObject * get_buffer_size(mapnik::layer & l)
-{
-    boost::optional<int> buffer_size = l.buffer_size();
-    if (buffer_size)
-    {
-#if PY_VERSION_HEX >= 0x03000000
-        return PyLong_FromLong(*buffer_size);
-#else
-        return PyInt_FromLong(*buffer_size);
-#endif
-    }
-    else
-    {
-        Py_RETURN_NONE;
-    }
-}
-
-void export_layer()
-{
-    using namespace boost::python;
-    class_<std::vector<std::string> >("Names")
-        .def(vector_indexing_suite<std::vector<std::string>,true >())
-        ;
-
-    class_<layer>("Layer", "A Mapnik map layer.", init<std::string const&,optional<std::string const&> >(
-                      "Create a Layer with a named string and, optionally, an srs string.\n"
-                      "\n"
-                      "The srs can be either a Proj epsg code ('epsg:<code>') or\n"
-                      "of a Proj literal ('+proj=<literal>').\n"
-                      "If no srs is specified it will default to 'epsg:4326'\n"
-                      "\n"
-                      "Usage:\n"
-                      ">>> from mapnik import Layer\n"
-                      ">>> lyr = Layer('My Layer','epsg:4326')\n"
-                      ">>> lyr\n"
-                      "<mapnik._mapnik.Layer object at 0x6a270>\n"
-                      ))
-
-        .def_pickle(layer_pickle_suite())
+    py::class_<layer>(m, "Layer", "A Mapnik map layer.")
+        .def(py::init<std::string const&, std::string const&>(),
+             "Create a Layer with a named string and, optionally, an srs string.\n"
+             "\n"
+             "The srs can be either a Proj epsg code ('epsg:<code>') or\n"
+             "of a Proj literal ('+proj=<literal>').\n"
+             "If no srs is specified it will default to 'epsg:4326'\n"
+             "\n"
+             "Usage:\n"
+             ">>> from mapnik import Layer\n"
+             ">>> lyr = Layer('My Layer','epsg:4326')\n"
+             ">>> lyr\n"
+             "<mapnik._mapnik.Layer object at 0x6a270>\n",
+             py::arg("name"), py::arg("srs") = mapnik::MAPNIK_GEOGRAPHIC_PROJ
+            )
 
         .def("envelope",&layer::envelope,
              "Return the geographic envelope/bounding box."
@@ -191,7 +94,7 @@ void export_layer()
              "False\n"
             )
 
-        .add_property("active",
+        .def_property("active",
                       &layer::active,
                       &layer::set_active,
                       "Get/Set whether this layer is active and will be rendered (same as status property).\n"
@@ -206,7 +109,7 @@ void export_layer()
                       "False\n"
             )
 
-        .add_property("status",
+        .def_property("status",
                       &layer::active,
                       &layer::set_active,
                       "Get/Set whether this layer is active and will be rendered.\n"
@@ -221,7 +124,7 @@ void export_layer()
                       "False\n"
             )
 
-        .add_property("clear_label_cache",
+        .def_property("clear_label_cache",
                       &layer::clear_label_cache,
                       &layer::set_clear_label_cache,
                       "Get/Set whether to clear the label collision detector cache for this layer during rendering\n"
@@ -232,7 +135,7 @@ void export_layer()
                       ">>> lyr.clear_label_cache = True # set to True to clear the label collision detector cache\n"
             )
 
-        .add_property("cache_features",
+        .def_property("cache_features",
                       &layer::cache_features,
                       &layer::set_cache_features,
                       "Get/Set whether features should be cached during rendering if used between multiple styles\n"
@@ -243,7 +146,7 @@ void export_layer()
                       ">>> lyr.cache_features = True # set to True to enable feature caching\n"
             )
 
-        .add_property("datasource",
+        .def_property("datasource",
                       &layer::datasource,
                       &layer::set_datasource,
                       "The datasource attached to this layer.\n"
@@ -256,9 +159,9 @@ void export_layer()
                       "<mapnik.Datasource object at 0x65470>\n"
             )
 
-        .add_property("buffer_size",
-                      &get_buffer_size,
-                      &set_buffer_size,
+        .def_property("buffer_size",
+                      &layer::buffer_size,
+                      &layer::set_buffer_size,
                       "Get/Set the size of buffer around layer in pixels.\n"
                       "\n"
                       "Usage:\n"
@@ -269,16 +172,16 @@ void export_layer()
                       "2\n"
             )
 
-        .add_property("maximum_extent",make_function
-                      (&layer::maximum_extent,return_value_policy<copy_const_reference>()),
-                      &set_maximum_extent,
+        .def_property("maximum_extent",
+                      &layer::maximum_extent,
+                      &layer::set_maximum_extent,
                       "The maximum extent of the map.\n"
                       "\n"
                       "Usage:\n"
                       ">>> m.maximum_extent = Box2d(-180,-90,180,90)\n"
             )
 
-        .add_property("maximum_scale_denominator",
+        .def_property("maximum_scale_denominator",
                       &layer::maximum_scale_denominator,
                       &layer::set_maximum_scale_denominator,
                       "Get/Set the maximum scale denominator of the layer.\n"
@@ -293,7 +196,7 @@ void export_layer()
                       "9.9999999999999995e-07\n"
             )
 
-        .add_property("minimum_scale_denominator",
+        .def_property("minimum_scale_denominator",
                       &layer::minimum_scale_denominator,
                       &layer::set_minimum_scale_denominator,
                       "Get/Set the minimum scale denominator of the layer.\n"
@@ -308,8 +211,8 @@ void export_layer()
                       "9.9999999999999995e-07\n"
             )
 
-        .add_property("name",
-                      make_function(&layer::name, return_value_policy<copy_const_reference>()),
+        .def_property("name",
+                      &layer::name,
                       &layer::set_name,
                       "Get/Set the name of the layer.\n"
                       "\n"
@@ -323,7 +226,7 @@ void export_layer()
                       "'New Name'\n"
             )
 
-        .add_property("queryable",
+        .def_property("queryable",
                       &layer::queryable,
                       &layer::set_queryable,
                       "Get/Set whether this layer is queryable.\n"
@@ -338,8 +241,8 @@ void export_layer()
                       "True\n"
             )
 
-        .add_property("srs",
-                      make_function(&layer::srs,return_value_policy<copy_const_reference>()),
+        .def_property("srs",
+                      &layer::srs,
                       &layer::set_srs,
                       "Get/Set the SRS of the layer.\n"
                       "\n"
@@ -353,16 +256,17 @@ void export_layer()
                       ">>> lyr.srs = 'epsg:3857'\n"
             )
 
-        .add_property("group_by",
-                      make_function(&layer::group_by,return_value_policy<copy_const_reference>()),
+        .def_property("group_by",
+                      &layer::group_by,
                       &layer::set_group_by,
                       "Get/Set the optional layer group name.\n"
                       "\n"
                       "More details at https://github.com/mapnik/mapnik/wiki/Grouped-rendering:\n"
             )
 
-        .add_property("styles",
-                      make_function(_styles_,return_value_policy<reference_existing_object>()),
+        .def_property("styles",
+                      get_styles_,
+                      set_styles_,
                       "The styles list attached to this layer.\n"
                       "\n"
                       "Usage:\n"
@@ -379,6 +283,6 @@ void export_layer()
                       "'My Style'\n"
             )
         // comparison
-        .def(self == self)
+        .def(py::self == py::self)
         ;
 }

@@ -2,7 +2,7 @@
  *
  * This file is part of Mapnik (c++ mapping toolkit)
  *
- * Copyright (C) 2015 Artem Pavlenko
+ * Copyright (C) 2024 Artem Pavlenko
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,46 +25,45 @@
 // mapnik
 #include <mapnik/map.hpp>
 #include <mapnik/grid/grid.hpp>
+// pybind11
+#include <pybind11/pybind11.h>
 
-#pragma GCC diagnostic push
-#include <mapnik/warning_ignore.hpp>
-#include <boost/python.hpp>
-#pragma GCC diagnostic pop
+namespace py = pybind11;
 
 namespace mapnik {
 
 
 template <typename T>
 void grid2utf(T const& grid_type,
-                     boost::python::list& l,
+                     py::list& l,
                      std::vector<typename T::lookup_type>& key_order);
 
 
 template <typename T>
 void grid2utf(T const& grid_type,
-                     boost::python::list& l,
+                     py::list& l,
                      std::vector<typename T::lookup_type>& key_order,
                      unsigned int resolution);
 
 
 template <typename T>
 void write_features(T const& grid_type,
-                           boost::python::dict& feature_data,
+                           py::dict& feature_data,
                            std::vector<typename T::lookup_type> const& key_order);
 
 template <typename T>
 void grid_encode_utf(T const& grid_type,
-                            boost::python::dict & json,
+                            py::dict & json,
                             bool add_features,
                             unsigned int resolution);
 
 template <typename T>
-boost::python::dict grid_encode( T const& grid, std::string const& format, bool add_features, unsigned int resolution);
+py::dict grid_encode( T const& grid, std::string const& format, bool add_features, unsigned int resolution);
 
 void render_layer_for_grid(const mapnik::Map& map,
                            mapnik::grid& grid,
                            unsigned layer_idx, // TODO - layer by name or index
-                           boost::python::list const& fields,
+                           py::list const& fields,
                            double scale_factor,
                            unsigned offset_x,
                            unsigned offset_y);

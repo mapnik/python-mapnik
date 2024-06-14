@@ -20,7 +20,7 @@ TOTAL = 245
 
 def create_ds(test_db, table):
     ds = mapnik.SQLite(file=test_db, table=table)
-    ds.all_features()
+    iter(ds)
     del ds
 
 if 'sqlite' in mapnik.DatasourceCache.plugin_names():
@@ -60,18 +60,18 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         conn.close()
 
         ds = mapnik.SQLite(file=test_db, table=table)
-        fs = list(ds.all_features())
+        fs = list(iter(ds))
         del ds
         assert len(fs) == TOTAL
         os.unlink(index)
         ds = mapnik.SQLite(file=test_db, table=table, use_spatial_index=False)
-        fs = list(ds.all_features())
+        fs = list(iter(ds))
         del ds
         assert len(fs) == TOTAL
         assert os.path.exists(index) ==  False
 
         ds = mapnik.SQLite(file=test_db, table=table, use_spatial_index=True)
-        fs = list(ds.all_features())
+        fs = list(iter(ds))
         # TODO - this loop is not releasing something
         # because it causes the unlink below to fail on windows
         # as the file is still open
@@ -149,8 +149,8 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         # ensure we can read this data back out properly with mapnik
         ds = mapnik.Datasource(
             **{'type': 'sqlite', 'file': test_db, 'table': 'point_table'})
-        fs = ds.featureset()
-        feat = fs.next()
+        fs = iter(ds)
+        feat = next(fs)
         assert feat.id() ==  1
         assert feat['name'] == 'test point'
         geom = feat.geometry

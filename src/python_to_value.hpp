@@ -2,7 +2,7 @@
  *
  * This file is part of Mapnik (c++ mapping toolkit)
  *
- * Copyright (C) 2015 Artem Pavlenko
+ * Copyright (C) 2024 Artem Pavlenko
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,94 +22,45 @@
 #ifndef MAPNIK_PYTHON_BINDING_PYTHON_TO_VALUE
 #define MAPNIK_PYTHON_BINDING_PYTHON_TO_VALUE
 
-#pragma GCC diagnostic push
-#include <mapnik/warning_ignore.hpp>
-#include <boost/python.hpp>
-#pragma GCC diagnostic pop
-
 // mapnik
 #include <mapnik/value.hpp>
 #include <mapnik/unicode.hpp>
 #include <mapnik/attribute.hpp>
 
+//pybind11
+#include <pybind11/pybind11.h>
+
+namespace py = pybind11;
+
 namespace mapnik {
 
-    static mapnik::attributes dict2attr(boost::python::dict const& d)
+    static mapnik::attributes dict2attr(py::dict const& d)
     {
-        using namespace boost::python;
         mapnik::attributes vars;
         mapnik::transcoder tr_("utf8");
-        boost::python::list keys=d.keys();
-        for (int i=0; i < len(keys); ++i)
+        for (auto item : d)
         {
-            std::string key;
-            object obj_key = keys[i];
-            if (PyUnicode_Check(obj_key.ptr()))
+            std::string key = std::string(py::str(item.first));
+            py::handle handle = item.second;
+            if (py::isinstance<py::str>(handle))
             {
-                PyObject* temp = PyUnicode_AsUTF8String(obj_key.ptr());
-                if (temp)
-                {
-    #if PY_VERSION_HEX >= 0x03000000
-                    char* c_str = PyBytes_AsString(temp);
-    #else
-                    char* c_str = PyString_AsString(temp);
-    #endif
-                    key = c_str;
-                    Py_DecRef(temp);
-                }
+                vars[key] = tr_.transcode(handle.cast<std::string>().c_str());
+            }
+            else if (py::isinstance<py::bool_>(handle))
+            {
+                vars[key] = handle.cast<bool>();
+            }
+            else if (py::isinstance<py::float_>(handle))
+            {
+                vars[key] = handle.cast<double>();
+            }
+            else if (py::isinstance<py::int_>(handle))
+            {
+                  vars[key] = handle.cast<long long>();
             }
             else
             {
-                key = extract<std::string>(keys[i]);
-            }
-            object obj = d[key];
-            if (PyUnicode_Check(obj.ptr()))
-            {
-                PyObject* temp = PyUnicode_AsUTF8String(obj.ptr());
-                if (temp)
-                {
-    #if PY_VERSION_HEX >= 0x03000000
-                    char* c_str = PyBytes_AsString(temp);
-    #else
-                    char* c_str = PyString_AsString(temp);
-    #endif
-                    vars[key] = tr_.transcode(c_str);
-                    Py_DecRef(temp);
-                }
-                continue;
-            }
-
-            if (PyBool_Check(obj.ptr()))
-            {
-                extract<mapnik::value_bool> ex(obj);
-                if (ex.check())
-                {
-                    vars[key] = ex();
-                }
-            }
-            else if (PyFloat_Check(obj.ptr()))
-            {
-                extract<mapnik::value_double> ex(obj);
-                if (ex.check())
-                {
-                    vars[key] = ex();
-                }
-            }
-            else
-            {
-                extract<mapnik::value_integer> ex(obj);
-                if (ex.check())
-                {
-                    vars[key] = ex();
-                }
-                else
-                {
-                    extract<std::string> ex0(obj);
-                    if (ex0.check())
-                    {
-                        vars[key] = tr_.transcode(ex0().c_str());
-                    }
-                }
+                vars[key] = tr_.transcode(py::str(handle).cast<std::string>().c_str());
             }
         }
         return vars;

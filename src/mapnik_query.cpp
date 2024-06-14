@@ -2,7 +2,7 @@
  *
  * This file is part of Mapnik (c++ mapping toolkit)
  *
- * Copyright (C) 2015 Artem Pavlenko, Jean-Francois Doyon
+ * Copyright (C) 2024 Artem Pavlenko
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,85 +20,59 @@
  *
  *****************************************************************************/
 
-#include <mapnik/config.hpp>
-#include "boost_std_shared_shim.hpp"
-
-#pragma GCC diagnostic push
-#include <mapnik/warning_ignore.hpp>
-#include <boost/python.hpp>
-#pragma GCC diagnostic pop
-
-#include "python_to_value.hpp"
-
 // mapnik
+#include <mapnik/config.hpp>
 #include <mapnik/query.hpp>
 #include <mapnik/geometry/box2d.hpp>
-
+#include "python_to_value.hpp"
+#include "mapnik_value_converter.hpp"
+//stl
 #include <string>
 #include <set>
+//pybind11
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
-using mapnik::query;
-using mapnik::box2d;
+namespace py = pybind11;
 
-namespace python = boost::python;
-
-struct resolution_to_tuple
+void export_query(py::module const& m)
 {
-    static PyObject* convert(query::resolution_type const& x)
-    {
-        python::object tuple(python::make_tuple(std::get<0>(x), std::get<1>(x)));
-        return python::incref(tuple.ptr());
-    }
+    using mapnik::query;
+    using mapnik::box2d;
 
-    static PyTypeObject const* get_pytype()
-    {
-        return &PyTuple_Type;
-    }
-};
-
-struct names_to_list
-{
-    static PyObject* convert(std::set<std::string> const& names)
-    {
-        boost::python::list l;
-        for ( std::string const& name : names )
-        {
-            l.append(name);
-        }
-        return python::incref(l.ptr());
-    }
-
-    static PyTypeObject const* get_pytype()
-    {
-        return &PyList_Type;
-    }
-};
-
-namespace {
-
-    void set_variables(mapnik::query & q, boost::python::dict const& d)
-    {
-        mapnik::attributes vars = mapnik::dict2attr(d);
-        q.set_variables(vars);
-    }
-}
-
-void export_query()
-{
-    using namespace boost::python;
-
-    to_python_converter<query::resolution_type, resolution_to_tuple> ();
-    to_python_converter<std::set<std::string>, names_to_list> ();
-
-    class_<query>("Query", "a spatial query data object",
-                  init<box2d<double>,query::resolution_type const&,double>() )
-        .def(init<box2d<double> >())
-        .add_property("resolution",make_function(&query::resolution,
-                                                 return_value_policy<copy_const_reference>()))
-        .add_property("bbox", make_function(&query::get_bbox,
-                                            return_value_policy<copy_const_reference>()) )
-        .add_property("property_names", make_function(&query::property_names,
-                                                      return_value_policy<copy_const_reference>()) )
+    py::class_<query>(m, "Query", "a spatial query data object")
+        .def(py::init<box2d<double>,query::resolution_type const&, double>())
+        .def(py::init<box2d<double>>())
+        .def_property_readonly("resolution", [] (query const& q) {
+            auto resolution = q.resolution();
+            return py::make_tuple(std::get<0>(resolution),
+                                  std::get<1>(resolution));
+        })
+        .def_property_readonly("scale_denominator", &query::scale_denominator)
+        .def_property_readonly("bbox", &query::get_bbox)
+        .def_property_readonly("unbuffered_bbox", &query::get_unbuffered_bbox)
+        .def_property_readonly("property_names",[] (query const& q){
+            auto names = q.property_names();
+            py::list obj;
+            for (std::string const& name : names)
+            {
+                obj.append(name);
+            }
+            return obj;
+        })
         .def("add_property_name", &query::add_property_name)
-        .def("set_variables",&set_variables);
+        .def_property("variables",
+                      [] (query const& q) {
+                          py::dict d;
+                          for (auto kv : q.variables())
+                          {
+                              d[kv.first.c_str()] = kv.second;
+                          }
+                          return d;
+                      },
+                      [] (query& q, py::dict const& d) {
+                          mapnik::attributes vars = mapnik::dict2attr(d);
+                          q.set_variables(vars);
+                      })
+        ;
 }

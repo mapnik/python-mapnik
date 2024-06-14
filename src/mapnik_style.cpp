@@ -2,7 +2,7 @@
  *
  * This file is part of Mapnik (c++ mapping toolkit)
  *
- * Copyright (C) 2015 Artem Pavlenko, Jean-Francois Doyon
+ * Copyright (C) 2024 Artem Pavlenko
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,25 +20,26 @@
  *
  *****************************************************************************/
 
-#include <mapnik/config.hpp>
-#include "boost_std_shared_shim.hpp"
-
-#pragma GCC diagnostic push
-#include <mapnik/warning_ignore.hpp>
-#include <boost/python.hpp>
-#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
-#pragma GCC diagnostic pop
-
 // mapnik
+#include <mapnik/config.hpp>
 #include <mapnik/value/error.hpp>
 #include <mapnik/rule.hpp>
-#include "mapnik_enumeration.hpp"
 #include <mapnik/feature_type_style.hpp>
 #include <mapnik/image_filter_types.hpp> // generate_image_filters
+//pybind11
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <pybind11/stl_bind.h>
+
+
+namespace py = pybind11;
 
 using mapnik::feature_type_style;
+using mapnik::filter_mode_enum;
 using mapnik::rules;
 using mapnik::rule;
+
+PYBIND11_MAKE_OPAQUE(rules);
 
 std::string get_image_filters(feature_type_style & style)
 {
@@ -56,59 +57,53 @@ void set_image_filters(feature_type_style & style, std::string const& filters)
     {
         throw mapnik::value_error("failed to parse image-filters: '" + filters + "'");
     }
-#ifdef _WINDOWS
-    style.image_filters() = new_filters;
-    // FIXME : https://svn.boost.org/trac/boost/ticket/2839
-#else
     style.image_filters() = std::move(new_filters);
-#endif
 }
 
-void export_style()
+py::object get_filter_mode(feature_type_style const& style)
 {
-    using namespace boost::python;
+    return py::cast(filter_mode_enum(style.get_filter_mode()));
+}
 
-    mapnik::enumeration_<mapnik::filter_mode_e>("filter_mode")
+void set_filter_mode(feature_type_style& style, filter_mode_enum mode)
+{
+    style.set_filter_mode(mapnik::filter_mode_e(mode));
+}
+
+void export_style(py::module const& m)
+{
+    py::enum_<mapnik::filter_mode_enum>(m, "filter_mode")
         .value("ALL",mapnik::filter_mode_enum::FILTER_ALL)
         .value("FIRST",mapnik::filter_mode_enum::FILTER_FIRST)
         ;
 
-    class_<rules>("Rules",init<>("default ctor"))
-        .def(vector_indexing_suite<rules>())
-        ;
-    class_<feature_type_style>("Style",init<>("default style constructor"))
+    py::bind_vector<rules>(m, "Rules", py::module_local());
 
-        .add_property("rules",make_function
-                      (&feature_type_style::get_rules,
-                       return_value_policy<reference_existing_object>()),
-                      "List of rules belonging to a style as rule objects.\n"
-                      "\n"
-                      "Usage:\n"
-                      ">>> for r in m.find_style('style 1').rules:\n"
-                      ">>>    print r\n"
-                      "<mapnik._mapnik.Rule object at 0x100549910>\n"
-                      "<mapnik._mapnik.Rule object at 0x100549980>\n"
-            )
-        .add_property("filter_mode",
-                      &feature_type_style::get_filter_mode,
-                      &feature_type_style::set_filter_mode,
+    py::class_<feature_type_style>(m, "Style")
+        .def(py::init<>(), "default style constructor")
+        .def_property_readonly("rules",
+                               &feature_type_style::get_rules,
+                               "Rules assigned to this style.\n")
+        .def_property("filter_mode",
+                      &get_filter_mode,
+                      &set_filter_mode,
                       "Set/get the filter mode of the style")
-        .add_property("opacity",
+        .def_property("opacity",
                       &feature_type_style::get_opacity,
                       &feature_type_style::set_opacity,
                       "Set/get the opacity of the style")
-        .add_property("comp_op",
+        .def_property("comp_op",
                       &feature_type_style::comp_op,
                       &feature_type_style::set_comp_op,
                       "Set/get the comp-op (composite operation) of the style")
-        .add_property("image_filters_inflate",
+        .def_property("image_filters_inflate",
                       &feature_type_style::image_filters_inflate,
                       &feature_type_style::image_filters_inflate,
                       "Set/get the image_filters_inflate property of the style")
-        .add_property("image_filters",
+        .def_property("image_filters",
                       get_image_filters,
                       set_image_filters,
-                      "Set/get the comp-op (composite operation) of the style")
+                      "Set/get image filters for the style")
         ;
 
 }

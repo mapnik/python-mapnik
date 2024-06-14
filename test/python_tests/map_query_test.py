@@ -54,7 +54,7 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
         m.zoom_all()
         # somewhere in kansas
         fs = m.query_point(0, -11012435.5376, 4599674.6134)
-        feat = fs.next()
+        feat = next(fs)
         assert feat.attributes['NAME_FORMA'] ==  u'United States of America'
 
     def test_map_query_works2():
@@ -73,7 +73,7 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
         assert e.maxx == pytest.approx(179.999999975, abs=1e-7)
         assert e.maxy == pytest.approx(192.048603789, abs=1e-7)
         fs = m.query_point(0, -98.9264, 38.1432)  # somewhere in kansas
-        feat = fs.next()
+        feat = next(fs)
         assert feat.attributes['NAME'] ==  u'United States'
 
     def test_map_query_in_pixels_works1():
@@ -84,7 +84,7 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
         m.maximum_extent = merc_bounds
         m.zoom_all()
         fs = m.query_map_point(0, 55, 100)  # somewhere in middle of us
-        feat = fs.next()
+        feat = next(fs)
         assert feat.attributes['NAME_FORMA'] ==  u'United States of America'
 
     def test_map_query_in_pixels_works2():
@@ -102,5 +102,5 @@ if 'shape' in mapnik.DatasourceCache.plugin_names():
         assert e.maxx == pytest.approx(179.999999975, abs=1e-7)
         assert e.maxy == pytest.approx(192.048603789, abs=1e-7)
         fs = m.query_map_point(0, 55, 100)  # somewhere in Canada
-        feat = fs.next()
+        feat = next(fs)
         assert feat.attributes['NAME'] ==  u'Canada'

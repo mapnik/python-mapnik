@@ -23,7 +23,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         if os.environ.get('UPDATE'):
             im.save(expected, 'png32')
         expected_im = mapnik.Image.open(expected)
-        assert im.tostring('png32') == expected_im.tostring('png32'), 'failed comparing actual (%s) and expected (%s)' % (actual, expected)
+        assert im.to_string('png32') == expected_im.to_string('png32'), 'failed comparing actual (%s) and expected (%s)' % (actual, expected)
 
     def test_marker_ellipse_render2():
         m = mapnik.Map(256, 256)
@@ -37,4 +37,4 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         if os.environ.get('UPDATE'):
             im.save(expected, 'png32')
         expected_im = mapnik.Image.open(expected)
-        assert im.tostring('png32') == expected_im.tostring('png32'), 'failed comparing actual (%s) and expected (%s)' % (actual, expected)
+        assert im.to_string('png32') == expected_im.to_string('png32'), 'failed comparing actual (%s) and expected (%s)' % (actual, expected)

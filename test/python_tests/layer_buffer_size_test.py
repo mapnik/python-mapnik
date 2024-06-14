@@ -29,4 +29,4 @@ if 'sqlite' in mapnik.DatasourceCache.plugin_names():
         expected = 'images/support/mapnik-layer-buffer-size.png'
         im.save(actual, "png32")
         expected_im = mapnik.Image.open(expected)
-        assert im.tostring('png32') == expected_im.tostring('png32'),'failed comparing actual (%s) and expected (%s)' % (actual,'tests/python_tests/' + expected)
+        assert im.to_string('png32') == expected_im.to_string('png32'),'failed comparing actual (%s) and expected (%s)' % (actual,'tests/python_tests/' + expected)

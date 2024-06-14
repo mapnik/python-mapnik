@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 #
 #
-#
 # This file is part of Mapnik (c++ mapping toolkit)
 # Copyright (C) 2005 Jean-Francois Doyon
-#
+# Copyright (C) 2024 Artem Pavlenko
+
 # Mapnik is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 2
@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
-from __future__ import print_function
+
 import sys
 from os import path
 import mapnik
@@ -32,7 +32,7 @@ m = mapnik.Map(800,600,"+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 
 
 # Set its background colour. More on colours later ...
 
-m.background = mapnik.Color('white')
+m.background = 'white' #Color(R=255,G=255,B=255,A=255)
 
 # Now we can start adding layers, in stacking order (i.e. bottom layer first)
 
@@ -92,14 +92,14 @@ provpoly_rule_on.filter = mapnik.Expression("[NAME_EN] = 'Ontario'")
 
 sym = mapnik.PolygonSymbolizer()
 sym.fill = mapnik.Color(250, 190, 183);
-provpoly_rule_on.symbols.append(sym)
+provpoly_rule_on.symbolizers.append(sym)
 provpoly_style.rules.append(provpoly_rule_on)
 
 provpoly_rule_qc = mapnik.Rule()
 provpoly_rule_qc.filter = mapnik.Expression("[NOM_FR] = 'Québec'")
 sym = mapnik.PolygonSymbolizer()
-sym.fill = mapnik.Color(217, 235, 203)
-provpoly_rule_qc.symbols.append(sym)
+sym.fill = 'rgb(217, 235, 203)'
+provpoly_rule_qc.symbolizers.append(sym)
 provpoly_style.rules.append(provpoly_rule_qc)
 
 # Add the style to the map, giving it a name.  This is the name that will be
@@ -130,9 +130,9 @@ qcdrain_style = mapnik.Style()
 qcdrain_rule = mapnik.Rule()
 qcdrain_rule.filter = mapnik.Expression('[HYC] = 8')
 sym = mapnik.PolygonSymbolizer()
-sym.fill = mapnik.Color(153, 204, 255)
+sym.fill = 'rgba(153, 204, 255, 255)'
 sym.smooth = 1.0 # very smooth
-qcdrain_rule.symbols.append(sym)
+qcdrain_rule.symbolizers.append(sym)
 qcdrain_style.rules.append(qcdrain_rule)
 
 m.append_style('drainage', qcdrain_style)
@@ -163,9 +163,10 @@ provlines_rule = mapnik.Rule()
 sym = mapnik.LineSymbolizer()
 # FIXME - currently adding dash arrays is broken
 # https://github.com/mapnik/mapnik/issues/2324
-sym.stroke = mapnik.Color('black')
+sym.stroke = 'black'
 sym.stroke_width = 1
-provlines_rule.symbols.append(sym)
+sym.stroke_dasharray="8 4 2 2 2 2"
+provlines_rule.symbolizers.append(sym)
 provlines_style.rules.append(provlines_rule)
 
 m.append_style('provlines', provlines_style)
@@ -199,7 +200,7 @@ sym.stroke = mapnik.Color(171,158,137)
 sym.stroke_width = 2
 sym.stroke_linecap = mapnik.stroke_linecap.ROUND_CAP
 
-roads34_rule.symbols.append(sym)
+roads34_rule.symbolizers.append(sym)
 roads34_style.rules.append(roads34_rule)
 
 m.append_style('smallroads', roads34_style)
@@ -218,10 +219,10 @@ roads2_rule_1 = mapnik.Rule()
 roads2_rule_1.filter = mapnik.Expression('[CLASS] = 2')
 
 sym = mapnik.LineSymbolizer()
-sym.stroke = mapnik.Color(171,158,137)
+sym.stroke = 'rgb(171,158,137)' #mapnik.Color(R=171,G=158,B=137,A=255)
 sym.stroke_width = 4
 sym.stroke_linecap = mapnik.stroke_linecap.ROUND_CAP
-roads2_rule_1.symbols.append(sym)
+roads2_rule_1.symbolizers.append(sym)
 roads2_style_1.rules.append(roads2_rule_1)
 
 m.append_style('road-border', roads2_style_1)
@@ -230,10 +231,10 @@ roads2_style_2 = mapnik.Style()
 roads2_rule_2 = mapnik.Rule()
 roads2_rule_2.filter = mapnik.Expression('[CLASS] = 2')
 sym = mapnik.LineSymbolizer()
-sym.stroke = mapnik.Color(255,250,115)
+sym.stroke = 'rgb(100%,98%,45%)' #mapnik.Color(R=255,G=250,B=115,A=255)
 sym.stroke_linecap = mapnik.stroke_linecap.ROUND_CAP
 sym.stroke_width = 2
-roads2_rule_2.symbols.append(sym)
+roads2_rule_2.symbolizers.append(sym)
 roads2_style_2.rules.append(roads2_rule_2)
 
 m.append_style('road-fill', roads2_style_2)
@@ -256,7 +257,7 @@ sym = mapnik.LineSymbolizer()
 sym.stroke = mapnik.Color(188,149,28)
 sym.stroke_linecap = mapnik.stroke_linecap.ROUND_CAP
 sym.stroke_width = 7
-roads1_rule_1.symbols.append(sym)
+roads1_rule_1.symbolizers.append(sym)
 roads1_style_1.rules.append(roads1_rule_1)
 m.append_style('highway-border', roads1_style_1)
 
@@ -266,7 +267,7 @@ roads1_rule_2.filter = mapnik.Expression('[CLASS] = 1')
 sym.stroke = mapnik.Color(242,191,36)
 sym.stroke_linecap = mapnik.stroke_linecap.ROUND_CAP
 sym.stroke_width = 5
-roads1_rule_2.symbols.append(sym)
+roads1_rule_2.symbolizers.append(sym)
 roads1_style_2.rules.append(roads1_rule_2)
 
 m.append_style('highway-fill', roads1_style_2)
@@ -290,18 +291,27 @@ popplaces_rule = mapnik.Rule()
 # text to label with.  Then there is font size in points (I think?), and colour.
 
 # TODO - currently broken: https://github.com/mapnik/mapnik/issues/2324
-#popplaces_text_symbolizer = mapnik.TextSymbolizer(mapnik.Expression("[GEONAME]"),
-#                                           'DejaVu Sans Book',
-#                                           10, mapnik.Color('black'))
+
+popplaces_text_sym = mapnik.TextSymbolizer()
+
+popplaces_text_sym.placement_finder = mapnik.PlacementFinder()
+popplaces_text_sym.placement_finder.face_name = 'DejaVu Sans Book'
+popplaces_text_sym.placement_finder.text_size = 10
+popplaces_text_sym.placement_finder.halo_fill = 'rgba(100%,100%,78.5%,1.0)' #mapnik.Color(R=255,G=255,B=200,A=255)
+popplaces_text_sym.placement_finder.halo_radius = 1.0
+popplaces_text_sym.placement_finder.fill = "black"
+popplaces_text_sym.placement_finder.format_expression = "[GEONAME]"
+
 
 # We set a "halo" around the text, which looks like an outline if thin enough,
 # or an outright background if large enough.
-#popplaces_text_symbolizer.label_placement= mapnik.label_placement.POINT_PLACEMENT
-#popplaces_text_symbolizer.halo_fill = mapnik.Color(255,255,200)
-#popplaces_text_symbolizer.halo_radius = 1
-#popplaces_text_symbolizer.avoid_edges = True
-#popplaces_text_symbolizer.minimum_padding = 30
-#popplaces_rule.symbols.append(popplaces_text_symbolizer)
+#popplaces_text_sym.label_placement= mapnik.label_placement.POINT_PLACEMENT
+#popplaces_text_sym.halo_fill = mapnik.Color(255,255,200)
+#popplaces_text_sym.halo_radius = 1
+#popplaces_text_sym.avoid_edges = True
+#popplaces_text_sym.minimum_padding = 30
+
+popplaces_rule.symbolizers.append(popplaces_text_sym)
 
 popplaces_style.rules.append(popplaces_rule)
 
@@ -365,9 +375,9 @@ if  mapnik.has_cairo():
     mapnik.render_to_file(m,'demo.svg')
     images_.append('demo.svg')
     mapnik.render_to_file(m,'demo_cairo_rgb24.png','RGB24')
-    images_.append('demo_cairo_rgb.png')
+    images_.append('demo_cairo_rgb24.png')
     mapnik.render_to_file(m,'demo_cairo_argb32.png','ARGB32')
-    images_.append('demo_cairo_argb.png')
+    images_.append('demo_cairo_argb32.png')
 
 print ("\n\n", len(images_), "maps have been rendered in the current directory:")
 

@@ -2,7 +2,7 @@
  *
  * This file is part of Mapnik (c++ mapping toolkit)
  *
- * Copyright (C) 2015 Artem Pavlenko, Jean-Francois Doyon
+ * Copyright (C) 2024 Artem Pavlenko
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,64 +20,44 @@
  *
  *****************************************************************************/
 
+//mapnik
 #include <mapnik/config.hpp>
-#include "boost_std_shared_shim.hpp"
-
-#pragma GCC diagnostic push
-#include <mapnik/warning_ignore.hpp>
-#include <boost/python.hpp>
-#include <boost/python/module.hpp>
-#include <boost/python/def.hpp>
-#pragma GCC diagnostic pop
-
-// mapnik
 #include <mapnik/image.hpp>
 #include <mapnik/image_view.hpp>
 #include <mapnik/image_view_any.hpp>
 #include <mapnik/image_util.hpp>
 #include <mapnik/palette.hpp>
+#include <mapnik/util/variant.hpp>
+//stl
 #include <sstream>
+//pybind11
+#include <pybind11/pybind11.h>
+#include <pybind11/operators.h>
 
 using mapnik::image_view_any;
 using mapnik::save_to_file;
 
+namespace py = pybind11;
+
 // output 'raw' pixels
-PyObject* view_tostring1(image_view_any const& view)
+py::object view_tostring1(image_view_any const& view)
 {
     std::ostringstream ss(std::ios::out|std::ios::binary);
     mapnik::view_to_stream(view, ss);
-    return
-#if PY_VERSION_HEX >= 0x03000000
-        ::PyBytes_FromStringAndSize
-#else
-        ::PyString_FromStringAndSize
-#endif
-        ((const char*)ss.str().c_str(),ss.str().size());
+    return py::bytes(ss.str().c_str(), ss.str().size());
 }
 
 // encode (png,jpeg)
-PyObject* view_tostring2(image_view_any const & view, std::string const& format)
+py::object view_tostring2(image_view_any const & view, std::string const& format)
 {
     std::string s = save_to_string(view, format);
-    return
-#if PY_VERSION_HEX >= 0x03000000
-        ::PyBytes_FromStringAndSize
-#else
-        ::PyString_FromStringAndSize
-#endif
-        (s.data(),s.size());
+    return py::bytes(s.data(), s.length());
 }
 
-PyObject* view_tostring3(image_view_any const & view, std::string const& format, mapnik::rgba_palette const& pal)
+py::object view_tostring3(image_view_any const & view, std::string const& format, mapnik::rgba_palette const& pal)
 {
     std::string s = save_to_string(view, format, pal);
-    return
-#if PY_VERSION_HEX >= 0x03000000
-        ::PyBytes_FromStringAndSize
-#else
-        ::PyString_FromStringAndSize
-#endif
-        (s.data(),s.size());
+    return py::bytes(s.data(), s.length());
 }
 
 bool is_solid(image_view_any const& view)
@@ -107,16 +87,15 @@ void save_view3(image_view_any const& view,
 }
 
 
-void export_image_view()
+void export_image_view(py::module const& m)
 {
-    using namespace boost::python;
-    class_<image_view_any>("ImageView","A view into an image.",no_init)
+    py::class_<image_view_any>(m, "ImageView", "A view into an image.")
         .def("width",&image_view_any::width)
         .def("height",&image_view_any::height)
         .def("is_solid",&is_solid)
-        .def("tostring",&view_tostring1)
-        .def("tostring",&view_tostring2)
-        .def("tostring",&view_tostring3)
+        .def("to_string",&view_tostring1)
+        .def("to_string",&view_tostring2)
+        .def("to_string",&view_tostring3)
         .def("save",&save_view1)
         .def("save",&save_view2)
         .def("save",&save_view3)

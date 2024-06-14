@@ -2,7 +2,7 @@
  *
  * This file is part of Mapnik (c++ mapping toolkit)
  *
- * Copyright (C) 2015 Artem Pavlenko
+ * Copyright (C) 2024 Artem Pavlenko
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,28 +20,21 @@
  *
  *****************************************************************************/
 
-#ifndef MAPNIK_BINDINGS_PYTHON_ENUMERATION_WRAPPPER
-#define MAPNIK_BINDINGS_PYTHON_ENUMERATION_WRAPPPER
+//pybind11
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <mapnik/util/variant.hpp>
 
-// mapnik
-#include <mapnik/symbolizer.hpp>
+namespace PYBIND11_NAMESPACE { namespace detail {
+template <typename... Ts>
+struct type_caster<mapnik::util::variant<Ts...>> : variant_caster<mapnik::util::variant<Ts...>> {};
 
-#pragma GCC diagnostic push
-#include <mapnik/warning_ignore.hpp>
-#include <boost/python.hpp>
-#pragma GCC diagnostic pop
-
-
-namespace boost { namespace python {
-
-    struct mapnik_enumeration_wrapper_to_python
-    {
-        static PyObject* convert(mapnik::enumeration_wrapper const& v)
-        {
-            return ::PyLong_FromLongLong(v.value); // FIXME: this is a temp hack!!
-        }
-    };
-
-}}
-
-#endif // MAPNIK_BINDINGS_PYTHON_ENUMERATION_WRAPPPER
+// // Specifies the function used to visit the variant -- `apply_visitor` instead of `visit`
+// template <>
+// struct visit_helper<mapnik::util::variant> {
+//     template <typename... Args>
+//     static auto call(Args &&...args) -> decltype(mapnik::util::apply_visitor(args...)) {
+//         return mapnik::util::apply_visitor(args...);
+//     }
+// };
+}} // namespace PYBIND11_NAMESPACE::detail

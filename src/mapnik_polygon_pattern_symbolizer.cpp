@@ -2,7 +2,7 @@
  *
  * This file is part of Mapnik (c++ mapping toolkit)
  *
- * Copyright (C) 2015 Artem Pavlenko
+ * Copyright (C) 2024 Artem Pavlenko
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,30 +20,30 @@
  *
  *****************************************************************************/
 
-#ifndef MAPNIK_PYTHON_BOOST_STD_SHARED_SHIM
-#define MAPNIK_PYTHON_BOOST_STD_SHARED_SHIM
+// mapnik
+#include <mapnik/config.hpp>
+#include <mapnik/symbolizer.hpp>
+#include <mapnik/symbolizer_hash.hpp>
+#include <mapnik/symbolizer_utils.hpp>
+#include <mapnik/symbolizer_keys.hpp>
+#include "mapnik_symbolizer.hpp"
+//pybind11
+#include <pybind11/pybind11.h>
 
-// boost
-#include <boost/version.hpp>
-#include <boost/config.hpp>
+namespace py = pybind11;
 
-#if BOOST_VERSION < 105300 || defined BOOST_NO_CXX11_SMART_PTR
-
-// https://github.com/mapnik/mapnik/issues/2022
-#include <memory>
-
-namespace boost {
-template<class T> const T* get_pointer(std::shared_ptr<T> const& p)
+void export_polygon_pattern_symbolizer(py::module const& m)
 {
-    return p.get();
+    using namespace python_mapnik;
+    using mapnik::polygon_pattern_symbolizer;
+
+    py::class_<polygon_pattern_symbolizer, symbolizer_base>(m, "PolygonPatternSymbolizer")
+        .def(py::init<>(), "Default ctor")
+        .def("__hash__", hash_impl_2<polygon_pattern_symbolizer>)
+        .def_property("file",
+                      &get_property<polygon_pattern_symbolizer, mapnik::keys::file>,
+                      &set_path_property<polygon_pattern_symbolizer, mapnik::keys::file>,
+                      "File path or mapnik.PathExpression")
+        ;
+
 }
-
-template<class T> T* get_pointer(std::shared_ptr<T>& p)
-{
-    return p.get();
-}
-} // namespace boost
-
-#endif
-
-#endif // MAPNIK_PYTHON_BOOST_STD_SHARED_SHIM

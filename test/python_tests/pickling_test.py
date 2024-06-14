@@ -25,12 +25,10 @@ def test_envelope_pickle():
     e = mapnik.Box2d(100, 100, 200, 200)
     assert pickle.loads(pickle.dumps(e)) == e
 
+def test_projection_pickle():
+    p = mapnik.Projection("epsg:4326")
+    assert pickle.loads(pickle.dumps(p)).definition() == p.definition()
 
-def test_parameters_pickle():
-    params = mapnik.Parameters()
-    params.append(mapnik.Parameter('oh', str('yeah')))
-
-    params2 = pickle.loads(pickle.dumps(params, pickle.HIGHEST_PROTOCOL))
-
-    assert params[0][0] == params2[0][0]
-    assert params[0][1] == params2[0][1]
+def test_coord_pickle():
+    c = mapnik.Coord(-1, 52)
+    assert pickle.loads(pickle.dumps(c)) == c

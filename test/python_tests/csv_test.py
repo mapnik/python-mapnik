@@ -63,7 +63,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         fs = ds.features(query)
         desc = ds.describe()
         assert desc['geometry_type'] ==  mapnik.DataGeometryType.Point
-        feat = fs.next()
+        feat = next(fs)
         attr = {'lon': 0, 'lat': 0}
         assert feat.attributes ==  attr
 
@@ -78,7 +78,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         fs = ds.features(query)
         desc = ds.describe()
         assert desc['geometry_type'] ==  mapnik.DataGeometryType.Point
-        feat = fs.next()
+        feat = next(fs)
         attr = {'lng': 0, 'lat': 0}
         assert feat.attributes ==  attr
 
@@ -93,7 +93,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
                                'geo_accuracy']
         assert ds.field_types() == ['str', 'str',
                                     'str', 'str', 'float', 'float', 'str']
-        feat = ds.featureset().next()
+        feat = next(iter(ds))
         attr = {
             'City': u'New York, NY',
             'geo_accuracy': u'house',
@@ -103,7 +103,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
             'geo_longitude': -70,
             'geo_latitude': 40}
         assert feat.attributes ==  attr
-        assert len(list(ds.all_features())) ==  2
+        assert len(list(iter(ds))) ==  2
         desc = ds.describe()
         assert desc['geometry_type'] ==  mapnik.DataGeometryType.Point
         assert desc['name'] ==  'csv'
@@ -114,7 +114,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         ds = get_csv_ds('blank_rows.csv')
         assert ds.fields(), ['x', 'y' ==  'name']
         assert ds.field_types(), ['int', 'int' ==  'str']
-        assert len(list(ds.all_features())) ==  2
+        assert len(list(iter(ds))) ==  2
         desc = ds.describe()
         assert desc['geometry_type'] ==  mapnik.DataGeometryType.Point
         assert desc['name'] ==  'csv'
@@ -129,7 +129,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
                                'boolean', 'float', 'time', 'datetime', 'empty_column']
         assert ds.field_types() == ['int', 'int', 'str', 'str',
                                     'int', 'bool', 'float', 'str', 'str', 'str']
-        fs = ds.featureset()
+        fs = iter(ds)
         attr = {
             'x': 0,
             'empty_column': u'',
@@ -158,7 +158,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
     def test_slashes(**kwargs):
         ds = get_csv_ds('has_attributes_with_slashes.csv')
         assert len(ds.fields()) ==  3
-        fs = list(ds.all_features())
+        fs = list(iter(ds))
         assert fs[0].attributes == {'x': 0, 'y': 0, 'name': u'a/a'}
         assert fs[1].attributes == {'x': 1, 'y': 4, 'name': u'b/b'}
         assert fs[2].attributes == {'x': 10, 'y': 2.5,  'name': u'c/c'}
@@ -173,7 +173,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         assert len(ds.fields()) ==  1
         assert ds.fields() ==  ['type']
         assert ds.field_types() ==  ['str']
-        fs = list(ds.all_features())
+        fs = list(iter(ds))
         assert fs[0].geometry.type() ==  mapnik.GeometryType.Point
         assert fs[1].geometry.type() ==  mapnik.GeometryType.LineString
         assert fs[2].geometry.type() ==  mapnik.GeometryType.Polygon
@@ -192,8 +192,8 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         ds = get_csv_ds('missing_header.csv')
         assert len(ds.fields()) ==  6
         assert ds.fields() == ['one', 'two', 'x', 'y', '_4', 'aftermissing']
-        fs = ds.featureset()
-        feat = fs.next()
+        fs = iter(ds)
+        feat = next(fs)
         assert feat['_4'] ==  'missing'
         desc = ds.describe()
         assert desc['geometry_type'] ==  mapnik.DataGeometryType.Point
@@ -205,8 +205,8 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         ds = get_csv_ds('numbers_for_headers.csv')
         assert len(ds.fields()) ==  5
         assert ds.fields() == ['x', 'y', '1990', '1991', '1992']
-        fs = ds.featureset()
-        feat = fs.next()
+        fs = iter(ds)
+        feat = next(fs)
         assert feat['x'] ==  0
         assert feat['y'] ==  0
         assert feat['1990'] ==  1
@@ -218,7 +218,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         ds = get_csv_ds('points.csv')
         assert len(ds.fields()) ==  6
         assert ds.fields(), ['lat', 'long', 'name', 'nr', 'color' ==  'placements']
-        fs = list(ds.all_features())
+        fs = list(iter(ds))
         assert fs[0]['placements'] == "N,S,E,W,SW,10,5"
         assert fs[1]['placements'] == "N,S,E,W,SW,10,5"
         assert fs[2]['placements'] == "N,S,E,W,SW,10,5"
@@ -233,10 +233,10 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
     def test_reading_windows_newlines(**kwargs):
         ds = get_csv_ds('windows_newlines.csv')
         assert len(ds.fields()) ==  3
-        feats = list(ds.all_features())
+        feats = list(iter(ds))
         assert len(feats) ==  1
-        fs = ds.featureset()
-        feat = fs.next()
+        fs = iter(ds)
+        feat = next(fs)
         assert feat['x'] ==  1
         assert feat['y'] ==  10
         assert feat['z'] ==  9999.9999
@@ -249,10 +249,10 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
     def test_reading_mac_newlines(**kwargs):
         ds = get_csv_ds('mac_newlines.csv')
         assert len(ds.fields()) ==  3
-        feats = list(ds.all_features())
+        feats = list(iter(ds))
         assert len(feats) ==  1
-        fs = ds.featureset()
-        feat = fs.next()
+        fs = iter(ds)
+        feat = next(fs)
         assert feat['x'] ==  1
         assert feat['y'] ==  10
         assert feat['z'] ==  9999.9999
@@ -265,10 +265,10 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
     def check_newlines(filename):
         ds = get_csv_ds(filename)
         assert len(ds.fields()) ==  3
-        feats = list(ds.all_features())
+        feats = list(iter(ds))
         assert len(feats) ==  1
-        fs = ds.featureset()
-        feat = fs.next()
+        fs = iter(ds)
+        feat = next(fs)
         assert feat['x'] ==  0
         assert feat['y'] ==  0
         assert feat['line'] ==  'many\n  lines\n  of text\n  with unix newlines'
@@ -302,8 +302,8 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         ds = get_csv_ds('tabs_in_csv.csv')
         assert len(ds.fields()) ==  3
         assert ds.fields(), ['x', 'y' ==  'z']
-        fs = ds.featureset()
-        feat = fs.next()
+        fs = iter(ds)
+        feat = next(fs)
         assert feat['x'] ==  -122
         assert feat['y'] ==  48
         assert feat['z'] ==  0
@@ -317,8 +317,8 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         ds = get_csv_ds('pipe_delimiters.csv')
         assert len(ds.fields()) ==  3
         assert ds.fields(), ['x', 'y' ==  'z']
-        fs = ds.featureset()
-        feat = fs.next()
+        fs = iter(ds)
+        feat = next(fs)
         assert feat['x'] ==  0
         assert feat['y'] ==  0
         assert feat['z'] ==  'hello'
@@ -332,8 +332,8 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         ds = get_csv_ds('semicolon_delimiters.csv')
         assert len(ds.fields()) ==  3
         assert ds.fields(), ['x', 'y' ==  'z']
-        fs = ds.featureset()
-        feat = fs.next()
+        fs = iter(ds)
+        feat = next(fs)
         assert feat['x'] ==  0
         assert feat['y'] ==  0
         assert feat['z'] ==  'hello'
@@ -348,13 +348,13 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         assert len(ds.fields()) ==  4
         assert ds.fields(), ['x', 'y', 'null' ==  'boolean']
         assert ds.field_types(), ['int', 'int', 'str' ==  'bool']
-        fs = ds.featureset()
-        feat = fs.next()
+        fs = iter(ds)
+        feat = next(fs)
         assert feat['x'] ==  0
         assert feat['y'] ==  0
         assert feat['null'] ==  'null'
         assert feat['boolean'] ==  True
-        feat = fs.next()
+        feat = next(fs)
         assert feat['x'] ==  0
         assert feat['y'] ==  0
         assert feat['null'] ==  ''
@@ -381,16 +381,16 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         assert len(ds.fields()) ==  3
         assert ds.fields(), ['x', 'y' ==  'fips']
         assert ds.field_types(), ['int', 'int' ==  'str']
-        fs = ds.featureset()
-        feat = fs.next()
+        fs = iter(ds)
+        feat = next(fs)
         assert feat['x'] ==  0
         assert feat['y'] ==  0
         assert feat['fips'] ==  '001'
-        feat = fs.next()
+        feat = next(fs)
         assert feat['x'] ==  0
         assert feat['y'] ==  0
         assert feat['fips'] ==  '003'
-        feat = fs.next()
+        feat = next(fs)
         assert feat['x'] ==  0
         assert feat['y'] ==  0
         assert feat['fips'] ==  '005'
@@ -414,8 +414,8 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
           '''  # csv plugin will test lines <= 10 chars for being fully blank
         ds = mapnik.Datasource(**{"type": "csv", "inline": csv_string})
         assert ds.describe()['geometry_type'] ==  mapnik.DataGeometryType.Point
-        fs = ds.featureset()
-        feat = fs.next()
+        fs = iter(ds)
+        feat = next(fs)
         assert feat['Name'], u"Winthrop ==  WA"
 
     def test_creation_of_csv_from_in_memory_string_with_uft8(**kwargs):
@@ -425,15 +425,15 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
           '''  # csv plugin will test lines <= 10 chars for being fully blank
         ds = mapnik.Datasource(**{"type": "csv", "inline": csv_string})
         assert ds.describe()['geometry_type'] ==  mapnik.DataGeometryType.Point
-        fs = ds.featureset()
-        feat = fs.next()
+        fs = iter(ds)
+        feat = next(fs)
         assert feat['Name'] ==  u"Québec"
 
     def validate_geojson_datasource(ds):
         assert len(ds.fields()) ==  1
         assert ds.fields() ==  ['type']
         assert ds.field_types() ==  ['str']
-        fs = list(ds.all_features())
+        fs = list(iter(ds))
         assert fs[0].geometry.type() ==  mapnik.GeometryType.Point
         assert fs[1].geometry.type() ==  mapnik.GeometryType.LineString
         assert fs[2].geometry.type() ==  mapnik.GeometryType.Polygon
@@ -465,7 +465,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         assert len(ds.fields()) ==  0
         assert ds.fields() ==  []
         assert ds.field_types() ==  []
-        fs = list(ds.featureset())
+        fs = list(iter(ds))
         assert len(fs) ==  0
         desc = ds.describe()
         assert desc['geometry_type'] ==  None
@@ -481,20 +481,20 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         assert len(ds.fields()) ==  3
         assert ds.fields(), ['x', 'y' ==  'id']
         assert ds.field_types(), ['int', 'int' ==  'int']
-        fs = ds.featureset()
+        fs = iter(ds)
         # first
-        feat = fs.next()
+        feat = next(fs)
         assert feat['x'] ==  0
         assert feat['y'] ==  0
         assert feat['id'] ==  1
         # second, should have skipped bogus one
-        feat = fs.next()
+        feat = next(fs)
         assert feat['x'] ==  0
         assert feat['y'] ==  0
         assert feat['id'] ==  2
         desc = ds.describe()
         assert desc['geometry_type'] ==  mapnik.DataGeometryType.Point
-        assert len(list(ds.all_features())) ==  2
+        assert len(list(iter(ds))) ==  2
 
     def test_dynamically_defining_headers1(**kwargs):
         ds = mapnik.Datasource(type='csv',
@@ -504,14 +504,14 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         assert len(ds.fields()) ==  3
         assert ds.fields(), ['x', 'y' ==  'name']
         assert ds.field_types(), ['int', 'int' ==  'str']
-        fs = ds.featureset()
-        feat = fs.next()
+        fs = iter(ds)
+        feat = next(fs)
         assert feat['x'] ==  0
         assert feat['y'] ==  0
         assert feat['name'] ==  'data_name'
         desc = ds.describe()
         assert desc['geometry_type'] ==  mapnik.DataGeometryType.Point
-        assert len(list(ds.all_features())) ==  2
+        assert len(list(iter(ds))) ==  2
 
     def test_dynamically_defining_headers2(**kwargs):
         ds = mapnik.Datasource(type='csv',
@@ -521,14 +521,14 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         assert len(ds.fields()) ==  3
         assert ds.fields(), ['x', 'y' ==  'name']
         assert ds.field_types(), ['int', 'int' ==  'str']
-        fs = ds.featureset()
-        feat = fs.next()
+        fs = iter(ds)
+        feat = next(fs)
         assert feat['x'] ==  0
         assert feat['y'] ==  0
         assert feat['name'] ==  'data_name'
         desc = ds.describe()
         assert desc['geometry_type'] ==  mapnik.DataGeometryType.Point
-        assert len(list(ds.all_features())) ==  1
+        assert len(list(iter(ds))) ==  1
 
     def test_dynamically_defining_headers3(**kwargs):
         ds = mapnik.Datasource(type='csv',
@@ -538,53 +538,53 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         assert len(ds.fields()) ==  3
         assert ds.fields(), ['x', 'y' ==  'name']
         assert ds.field_types(), ['int', 'int' ==  'str']
-        fs = ds.featureset()
-        feat = fs.next()
+        fs = iter(ds)
+        feat = next(fs)
         assert feat['x'] ==  0
         assert feat['y'] ==  0
         assert feat['name'] ==  'data_name'
         desc = ds.describe()
         assert desc['geometry_type'] ==  mapnik.DataGeometryType.Point
-        assert len(list(ds.all_features())) ==  1
+        assert len(list(iter(ds))) ==  1
 
     def test_that_64bit_int_fields_work(**kwargs):
         ds = get_csv_ds('64bit_int.csv')
         assert len(ds.fields()) ==  3
         assert ds.fields(), ['x', 'y' ==  'bigint']
         assert ds.field_types(), ['int', 'int' ==  'int']
-        fs = ds.featureset()
-        feat = fs.next()
+        fs = iter(ds)
+        feat = next(fs)
         assert feat['bigint'] ==  2147483648
-        feat = fs.next()
+        feat = next(fs)
         assert feat['bigint'] ==  9223372036854775807
         assert feat['bigint'] ==  0x7FFFFFFFFFFFFFFF
         desc = ds.describe()
         assert desc['geometry_type'] ==  mapnik.DataGeometryType.Point
-        assert len(list(ds.all_features())) ==  2
+        assert len(list(iter(ds))) ==  2
 
     def test_various_number_types(**kwargs):
         ds = get_csv_ds('number_types.csv')
         assert len(ds.fields()) ==  3
         assert ds.fields(), ['x', 'y' ==  'floats']
         assert ds.field_types(), ['int', 'int' ==  'float']
-        fs = ds.featureset()
-        feat = fs.next()
+        fs = iter(ds)
+        feat = next(fs)
         assert feat['floats'] ==  .0
-        feat = fs.next()
+        feat = next(fs)
         assert feat['floats'] ==  +.0
-        feat = fs.next()
+        feat = next(fs)
         assert feat['floats'] ==  1e-06
-        feat = fs.next()
+        feat = next(fs)
         assert feat['floats'] ==  -1e-06
-        feat = fs.next()
+        feat = next(fs)
         assert feat['floats'] ==  0.000001
-        feat = fs.next()
+        feat = next(fs)
         assert feat['floats'] ==  1.234e+16
-        feat = fs.next()
+        feat = next(fs)
         assert feat['floats'] ==  1.234e+16
         desc = ds.describe()
         assert desc['geometry_type'] ==  mapnik.DataGeometryType.Point
-        assert len(list(ds.all_features())) ==  8
+        assert len(list(iter(ds))) ==  8
 
     def test_manually_supplied_extent(**kwargs):
         csv_string = '''
@@ -603,7 +603,7 @@ if 'csv' in mapnik.DatasourceCache.plugin_names():
         ds = mapnik.Datasource(**{"type": "csv", "inline": csv_string})
         assert len(ds.fields()) ==  0
         assert ds.fields() ==  []
-        fs = ds.featureset()
-        feat = fs.next()
+        fs = iter(ds)
+        feat = next(fs)
         assert feat.geometry.type() == mapnik.GeometryType.Point
         assert feat.geometry.to_wkt() == "POINT(-92.22568 38.59553)"

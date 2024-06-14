@@ -2,7 +2,7 @@
  *
  * This file is part of Mapnik (c++ mapping toolkit)
  *
- * Copyright (C) 2015 Artem Pavlenko, Jean-Francois Doyon
+ * Copyright (C) 2024 Artem Pavlenko
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,19 +20,16 @@
  *
  *****************************************************************************/
 
-
+// mapnik
 #include <mapnik/image_scaling.hpp>
+//pybind11
+#include <pybind11/pybind11.h>
 
-#pragma GCC diagnostic push
-#include <mapnik/warning_ignore.hpp>
-#include <boost/python.hpp>
-#pragma GCC diagnostic pop
+namespace py = pybind11;
 
-void export_scaling_method()
+void export_scaling_method(py::module const& m)
 {
-    using namespace boost::python;
-
-    enum_<mapnik::scaling_method_e>("scaling_method")
+    py::enum_<mapnik::scaling_method_e>(m, "scaling_method")
         .value("NEAR", mapnik::SCALING_NEAR)
         .value("BILINEAR", mapnik::SCALING_BILINEAR)
         .value("BICUBIC", mapnik::SCALING_BICUBIC)

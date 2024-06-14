@@ -20,17 +20,17 @@ def test_introspect_symbolizers(setup):
 
     assert p.allow_overlap ==  True
     assert p.opacity ==  0.5
-    assert p.filename ==  '../data/images/dummy.png'
+    assert str(p.file) == '../data/images/dummy.png'
 
     # make sure the defaults
     # are what we think they are
     assert p.allow_overlap ==  True
     assert p.opacity ==  0.5
-    assert p.filename ==  '../data/images/dummy.png'
+    assert str(p.file) ==  '../data/images/dummy.png'
 
     # contruct objects to hold it
     r = mapnik.Rule()
-    r.symbols.append(p)
+    r.symbolizers.append(p)
     s = mapnik.Style()
     s.rules.append(r)
     m = mapnik.Map(0, 0)
@@ -44,7 +44,7 @@ def test_introspect_symbolizers(setup):
     rules = s2.rules
     assert len(rules) ==  1
     r2 = rules[0]
-    syms = r2.symbols
+    syms = r2.symbolizers
     assert len(syms) ==  1
 
     # TODO here, we can do...
@@ -54,4 +54,4 @@ def test_introspect_symbolizers(setup):
 
     assert p2.allow_overlap ==  True
     assert p2.opacity ==  0.5
-    assert p2.filename ==  '../data/images/dummy.png'
+    assert str(p2.file) == '../data/images/dummy.png'

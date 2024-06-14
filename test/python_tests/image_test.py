@@ -39,7 +39,7 @@ def test_image_premultiply_values():
     im = mapnik.Image(256, 256)
     im.fill(mapnik.Color(16, 33, 255, 128))
     im.premultiply()
-    c = im.get_pixel(0, 0, True)
+    c = im.get_pixel_color(0, 0)
     assert c.r ==  8
     assert c.g ==  17
     assert c.b ==  128
@@ -47,7 +47,7 @@ def test_image_premultiply_values():
     im.demultiply()
     # Do to the nature of this operation the result will not be exactly the
     # same
-    c = im.get_pixel(0, 0, True)
+    c = im.get_pixel_color(0, 0)
     assert c.r ==  15
     assert c.g ==  33
     assert c.b ==  255
@@ -58,7 +58,7 @@ def test_apply_opacity():
     im = mapnik.Image(4, 4)
     im.fill(mapnik.Color(128, 128, 128, 128))
     im.apply_opacity(0.75)
-    c = im.get_pixel(0, 0, True)
+    c = im.get_pixel_color(0, 0)
     assert c.r ==  128
     assert c.g ==  128
     assert c.b ==  128
@@ -70,7 +70,7 @@ def test_background():
     assert im.premultiplied() ==  False
     im.fill(mapnik.Color(32, 64, 125, 128))
     assert im.premultiplied() ==  False
-    c = im.get_pixel(0, 0, True)
+    c = im.get_pixel_color(0, 0)
     assert c.get_premultiplied() ==  False
     assert c.r ==  32
     assert c.g ==  64
@@ -79,7 +79,7 @@ def test_background():
     # Now again with a premultiplied alpha
     im.fill(mapnik.Color(32, 64, 125, 128, True))
     assert im.premultiplied() ==  True
-    c = im.get_pixel(0, 0, True)
+    c = im.get_pixel_color(0, 0)
     assert c.get_premultiplied() ==  True
     assert c.r ==  32
     assert c.g ==  64
@@ -100,7 +100,7 @@ def test_set_and_get_pixel():
     assert c0.g ==  c1_int.g
     assert c0.b ==  c1_int.b
     assert c0.a ==  c1_int.a
-    c1 = im.get_pixel(0, 0, True)
+    c1 = im.get_pixel_color(0, 0)
     assert c0.r ==  c1.r
     assert c0.g ==  c1.g
     assert c0.b ==  c1.b
@@ -112,7 +112,7 @@ def test_set_and_get_pixel():
     assert c0_pre.g ==  c1_int.g
     assert c0_pre.b ==  c1_int.b
     assert c0_pre.a ==  c1_int.a
-    c1 = im.get_pixel(1, 1, True)
+    c1 = im.get_pixel_color(1, 1)
     assert c0_pre.r ==  c1.r
     assert c0_pre.g ==  c1.g
     assert c0_pre.b ==  c1.b
@@ -132,7 +132,7 @@ def test_set_and_get_pixel():
     assert c0.g ==  c1_int.g
     assert c0.b ==  c1_int.b
     assert c0.a ==  c1_int.a
-    c1 = im.get_pixel(0, 0, True)
+    c1 = im.get_pixel_color(0, 0)
     assert c0.r ==  c1.r
     assert c0.g ==  c1.g
     assert c0.b ==  c1.b
@@ -143,7 +143,7 @@ def test_set_and_get_pixel():
     assert c0_pre.g ==  c1_int.g
     assert c0_pre.b ==  c1_int.b
     assert c0_pre.a ==  c1_int.a
-    c1 = im.get_pixel(1, 1, True)
+    c1 = im.get_pixel_color(1, 1)
     assert c0_pre.r ==  c1.r
     assert c0_pre.g ==  c1.g
     assert c0_pre.b ==  c1.b
@@ -273,7 +273,7 @@ def test_set_pixel_out_of_range_1():
 
 
 def test_set_pixel_out_of_range_2():
-    with pytest.raises(OverflowError):
+    with pytest.raises(IndexError):
         im = mapnik.Image(4, 4)
         c = mapnik.Color('blue')
         im.set_pixel(-1, 1, c)
@@ -286,7 +286,7 @@ def test_get_pixel_out_of_range_1():
 
 
 def test_get_pixel_out_of_range_2():
-    with pytest.raises(OverflowError):
+    with pytest.raises(IndexError):
         im = mapnik.Image(4, 4)
         c = im.get_pixel(-1, 1)
 
@@ -294,13 +294,13 @@ def test_get_pixel_out_of_range_2():
 def test_get_pixel_color_out_of_range_1():
     with pytest.raises(IndexError):
         im = mapnik.Image(4, 4)
-        c = im.get_pixel(5, 5, True)
+        c = im.get_pixel_color(5, 5)
 
 
 def test_get_pixel_color_out_of_range_2():
-    with pytest.raises(OverflowError):
+    with pytest.raises(IndexError):
         im = mapnik.Image(4, 4)
-        c = im.get_pixel(-1, 1, True)
+        c = im.get_pixel_color(-1, 1)
 
 
 def test_set_color_to_alpha():
@@ -328,15 +328,15 @@ def test_jpeg_round_trip():
     im.save(filepath, 'jpeg')
     im2 = mapnik.Image.open(filepath)
     with open(filepath, READ_FLAGS) as f:
-        im3 = mapnik.Image.fromstring(f.read())
+        im3 = mapnik.Image.from_string(f.read())
     assert im.width() ==  im2.width()
     assert im.height() ==  im2.height()
     assert im.width() ==  im3.width()
     assert im.height() ==  im3.height()
-    assert len(im.tostring()) ==  len(im2.tostring())
-    assert len(im.tostring('jpeg')) ==  len(im2.tostring('jpeg'))
-    assert len(im.tostring()) ==  len(im3.tostring())
-    assert len(im.tostring('jpeg')) ==  len(im3.tostring('jpeg'))
+    assert len(im.to_string()) ==  len(im2.to_string())
+    assert len(im.to_string('jpeg')) ==  len(im2.to_string('jpeg'))
+    assert len(im.to_string()) ==  len(im3.to_string())
+    assert len(im.to_string('jpeg')) ==  len(im3.to_string('jpeg'))
 
 
 def test_png_round_trip():
@@ -346,32 +346,32 @@ def test_png_round_trip():
     im.save(filepath, 'png')
     im2 = mapnik.Image.open(filepath)
     with open(filepath, READ_FLAGS) as f:
-        im3 = mapnik.Image.fromstring(f.read())
+        im3 = mapnik.Image.from_string(f.read())
     assert im.width() ==  im2.width()
     assert im.height() ==  im2.height()
     assert im.width() ==  im3.width()
     assert im.height() ==  im3.height()
-    assert len(im.tostring()) ==  len(im2.tostring())
-    assert len(im.tostring('png')) ==  len(im2.tostring('png'))
-    assert len(im.tostring('png8')) ==  len(im2.tostring('png8'))
-    assert len(im.tostring()) ==  len(im3.tostring())
-    assert len(im.tostring('png')) ==  len(im3.tostring('png'))
-    assert len(im.tostring('png8')) ==  len(im3.tostring('png8'))
+    assert len(im.to_string()) ==  len(im2.to_string())
+    assert len(im.to_string('png')) ==  len(im2.to_string('png'))
+    assert len(im.to_string('png8')) ==  len(im2.to_string('png8'))
+    assert len(im.to_string()) ==  len(im3.to_string())
+    assert len(im.to_string('png')) ==  len(im3.to_string('png'))
+    assert len(im.to_string('png8')) ==  len(im3.to_string('png8'))
 
 
 def test_image_open_from_string():
     filepath = '../data/images/dummy.png'
     im1 = mapnik.Image.open(filepath)
     with open(filepath, READ_FLAGS) as f:
-        im2 = mapnik.Image.fromstring(f.read())
+        im2 = mapnik.Image.from_string(f.read())
     assert im1.width() ==  im2.width()
-    length = len(im1.tostring())
-    assert length ==  len(im2.tostring())
-    assert len(mapnik.Image.fromstring(im1.tostring('png')).tostring()) ==  length
-    assert len(mapnik.Image.fromstring(im1.tostring('jpeg')).tostring()) ==  length
-    assert len(mapnik.Image.frombuffer(memoryview(im1.tostring('png'))).tostring()) ==  length
-    assert len(mapnik.Image.frombuffer(memoryview(im1.tostring('jpeg'))).tostring()) ==  length
+    length = len(im1.to_string())
+    assert length ==  len(im2.to_string())
+    assert len(mapnik.Image.from_string(im1.to_string('png')).to_string()) ==  length
+    assert len(mapnik.Image.from_string(im1.to_string('jpeg')).to_string()) ==  length
+    assert len(mapnik.Image.from_memoryview(memoryview(im1.to_string('png'))).to_string()) ==  length
+    assert len(mapnik.Image.from_memoryview(memoryview(im1.to_string('jpeg'))).to_string()) ==  length
 
     # TODO - https://github.com/mapnik/mapnik/issues/1831
-    assert len(mapnik.Image.fromstring(im1.tostring('tiff')).tostring()) ==  length
-    assert len(mapnik.Image.frombuffer(memoryview(im1.tostring('tiff'))).tostring()) ==  length
+    assert len(mapnik.Image.from_string(im1.to_string('tiff')).to_string()) ==  length
+    assert len(mapnik.Image.from_memoryview(memoryview(im1.to_string('tiff'))).to_string()) ==  length

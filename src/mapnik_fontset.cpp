@@ -2,7 +2,7 @@
  *
  * This file is part of Mapnik (c++ mapping toolkit)
  *
- * Copyright (C) 2015 Artem Pavlenko
+ * Copyright (C) 2024 Artem Pavlenko
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,42 +20,34 @@
  *
  *****************************************************************************/
 
-#include <mapnik/config.hpp>
-#include "boost_std_shared_shim.hpp"
-
-#pragma GCC diagnostic push
-#include <mapnik/warning_ignore.hpp>
-#include <boost/python.hpp>
-#include <boost/noncopyable.hpp>
-#pragma GCC diagnostic pop
-
 //mapnik
+#include <mapnik/config.hpp>
 #include <mapnik/font_set.hpp>
+//pybind11
+#include <pybind11/pybind11.h>
 
+namespace py = pybind11;
 
 using mapnik::font_set;
 
-void export_fontset ()
+void export_fontset (py::module const& m)
 {
-    using namespace boost::python;
-    class_<font_set>("FontSet", init<std::string const&>("default fontset constructor")
-        )
-        .add_property("name",
-                       make_function(&font_set::get_name,return_value_policy<copy_const_reference>()),
+    py::class_<font_set>(m, "FontSet")
+        .def(py::init<std::string const&>(), "default fontset constructor")
+        .def_property("name",
+                       &font_set::get_name,
                        &font_set::set_name,
                       "Get/Set the name of the FontSet.\n"
             )
-        .def("add_face_name",&font_set::add_face_name,
-             (arg("name")),
+        .def("add_face_name", &font_set::add_face_name,
              "Add a face-name to the fontset.\n"
              "\n"
              "Example:\n"
              ">>> fs = Fontset('book-fonts')\n"
-             ">>> fs.add_face_name('DejaVu Sans Book')\n")
-        .add_property("names",make_function
-                      (&font_set::get_face_names,
-                       return_value_policy<reference_existing_object>()),
-                      "List of face names belonging to a FontSet.\n"
-            )
+             ">>> fs.add_face_name('DejaVu Sans Book')\n",
+             py::arg("name"))
+        .def_property_readonly("names",
+                               &font_set::get_face_names,
+                               "List of face names belonging to a FontSet.\n")
         ;
 }
