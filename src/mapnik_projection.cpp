@@ -27,6 +27,7 @@
 #include <mapnik/projection.hpp>
 //pybind11
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 using mapnik::projection;
 
@@ -107,11 +108,13 @@ void export_projection (py::module& m)
         .def_property_readonly("geographic", &projection::is_geographic,
                                "This property is True if the projection is a geographic projection\n"
                                "(i.e. it uses lon/lat coordinates)\n")
+        .def_property_readonly("area_of_use", &projection::area_of_use,
+                               "This property returns projection area of use in lonlat WGS84\n")
         ;
 
-    m.def("forward_",&forward_pt);
-    m.def("inverse_",&inverse_pt);
-    m.def("forward_",&forward_env);
-    m.def("inverse_",&inverse_env);
+    m.def("forward_", &forward_pt);
+    m.def("inverse_", &inverse_pt);
+    m.def("forward_", &forward_env);
+    m.def("inverse_", &inverse_env);
 
 }
