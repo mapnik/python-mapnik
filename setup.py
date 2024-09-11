@@ -125,8 +125,6 @@ setup(
           'mapnik': ['lib/*.*', 'lib/*/*/*', 'share/*/*'],
      },
      ext_modules=ext_modules,
-     #extras_require={"test": "pytest"},
      cmdclass={"build_ext": build_ext},
-     #zip_safe=False,
      python_requires=">=3.7",
 )
