@@ -48,15 +48,15 @@ namespace mapnik {
             }
             else if (py::isinstance<py::bool_>(handle))
             {
-                vars[key] = handle.cast<bool>();
+                vars[key] = handle.cast<mapnik::value_bool>();
             }
             else if (py::isinstance<py::float_>(handle))
             {
-                vars[key] = handle.cast<double>();
+                vars[key] = handle.cast<mapnik::value_double>();
             }
             else if (py::isinstance<py::int_>(handle))
             {
-                  vars[key] = handle.cast<long long>();
+                vars[key] = handle.cast<mapnik::value_integer>();
             }
             else
             {
