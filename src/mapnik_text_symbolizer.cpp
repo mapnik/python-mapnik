@@ -59,12 +59,12 @@ void export_text_symbolizer(py::module const& m)
     using namespace python_mapnik;
     using mapnik::text_symbolizer;
 
-//     using namespace boost::python;
-//     mapnik::enumeration_<mapnik::label_placement_e>("label_placement")
-//         .value("LINE_PLACEMENT", mapnik::label_placement_enum::LINE_PLACEMENT)
-//         .value("POINT_PLACEMENT", mapnik::label_placement_enum::POINT_PLACEMENT)
-//         .value("VERTEX_PLACEMENT", mapnik::label_placement_enum::VERTEX_PLACEMENT)
-//         .value("INTERIOR_PLACEMENT", mapnik::label_placement_enum::INTERIOR_PLACEMENT);
+    py::enum_<mapnik::label_placement_enum>(m, "LabelPlacement")
+        .value("LINE_PLACEMENT", mapnik::label_placement_enum::LINE_PLACEMENT)
+        .value("POINT_PLACEMENT", mapnik::label_placement_enum::POINT_PLACEMENT)
+        .value("VERTEX_PLACEMENT", mapnik::label_placement_enum::VERTEX_PLACEMENT)
+        .value("INTERIOR_PLACEMENT", mapnik::label_placement_enum::INTERIOR_PLACEMENT)
+        ;
 
 //     mapnik::enumeration_<mapnik::vertical_alignment_e>("vertical_alignment")
 //         .value("TOP", mapnik::vertical_alignment_enum::V_TOP)
@@ -90,14 +90,24 @@ void export_text_symbolizer(py::module const& m)
 //         .value("LOWERCASE", mapnik::text_transform_enum::LOWERCASE)
 //         .value("CAPITALIZE", mapnik::text_transform_enum::CAPITALIZE);
 
-//     mapnik::enumeration_<mapnik::halo_rasterizer_e>("halo_rasterizer")
-//         .value("FULL", mapnik::halo_rasterizer_enum::HALO_RASTERIZER_FULL)
-//         .value("FAST", mapnik::halo_rasterizer_enum::HALO_RASTERIZER_FAST);
+    py::enum_<mapnik::halo_rasterizer_enum>(m, "halo_rasterizer")
+        .value("FULL", mapnik::halo_rasterizer_enum::HALO_RASTERIZER_FULL)
+        .value("FAST", mapnik::halo_rasterizer_enum::HALO_RASTERIZER_FAST);
+
+
+    // set_symbolizer_property<symbolizer_base, composite_mode_e>(sym, keys::halo_comp_op, node);
+    // set_symbolizer_property<symbolizer_base, halo_rasterizer_enum>(sym, keys::halo_rasterizer, node);
+    // set_symbolizer_property<symbolizer_base, transform_type>(sym, keys::halo_transform, node);
+    // set_symbolizer_property<symbolizer_base, value_double>(sym, keys::offset, node);
 
     py::class_<text_symbolizer, symbolizer_base>(m, "TextSymbolizer")
         .def(py::init<>(), "Default ctor")
         .def("__hash__",hash_impl_2<text_symbolizer>)
         .def_property("placement_finder", &get_placement_finder, &set_placement_finder, "Placement finder")
+        .def_property("halo_comp_op",
+                      &get<mapnik::composite_mode_e, mapnik::keys::halo_comp_op>,
+                      &set_enum_property<symbolizer_base, mapnik::composite_mode_e, mapnik::keys::halo_comp_op>,
+                      "Composite mode (comp-op)")
         ;
 
 }
