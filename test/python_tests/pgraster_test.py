@@ -24,7 +24,6 @@ def setup():
     # from another directory we need to chdir()
     os.chdir(execution_path('.'))
 
-
 def call(cmd, silent=False):
     stdin, stderr = Popen(cmd, shell=True, stdout=PIPE,
                           stderr=PIPE).communicate()
@@ -129,11 +128,13 @@ def drop_imported(tabname, overview):
 
 
 def compare_images(expected, im):
+    cur_dir = os.path.dirname(os.path.realpath(__file__))
     expected = os.path.join(
         os.path.dirname(expected),
         os.path.basename(expected).replace(
             ':',
             '_'))
+    expected = os.path.join(cur_dir, expected)
     if not os.path.exists(expected) or os.environ.get('UPDATE'):
         print('generating expected image %s' % expected)
         im.save(expected, 'png32')
@@ -243,7 +244,7 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
 
     def _test_dataraster_16bsi(lbl, tilesize, constraint, overview):
         import_raster(
-            './test/data/raster/dataraster-small.tif',
+            os.path.join(os.path.dirname(os.path.realpath(__file__)),'../../test/data/raster/dataraster-small.tif'),
             'dataRaster',
             tilesize,
             constraint,
@@ -268,13 +269,13 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
                     _test_dataraster_16bsi(
                         'data_16bsi', tilesize, constraint, overview)
 
-    # river.tiff, RGBA 8BUI
+    # # river.tiff, RGBA 8BUI
     def _test_rgba_8bui_rendering(lbl, overview, rescale, clip):
         if rescale:
             lbl += ' Sc'
         if clip:
             lbl += ' Cl'
-        ds = mapnik.PgRaster(dbname=MAPNIK_TEST_DBNAME, table='(select * from "River") foo',
+        ds = mapnik.PgRaster(dbname=MAPNIK_TEST_DBNAME, table='(select * from "River" order by rid) foo',
                              use_overviews=1 if overview else 0,
                              prescale_rasters=rescale, clip_rasters=clip)
         fs = iter(ds)
@@ -312,7 +313,7 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         mapnik.render(mm, im)
         lap = time.time() - t0
         log('T ' + str(lap) + ' -- ' + lbl + ' E:full')
-        expected = './test/python_tests/images/support/pgraster/%s-%s-%s-%s-box1.png' % (
+        expected = './images/support/pgraster/%s-%s-%s-%s-box1.png' % (
             lyr.name, lbl, overview, clip)
         compare_images(expected, im)
         # no data
@@ -337,7 +338,7 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         mapnik.render(mm, im)
         lap = time.time() - t0
         log('T ' + str(lap) + ' -- ' + lbl + ' E:1/10')
-        expected = './test/python_tests/images/support/pgraster/%s-%s-%s-%s-box2.png' % (
+        expected = './images/support/pgraster/%s-%s-%s-%s-box2.png' % (
             lyr.name, lbl, overview, clip)
         compare_images(expected, im)
         # no data
@@ -356,7 +357,7 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
 
     def _test_rgba_8bui(lbl, tilesize, constraint, overview):
         import_raster(
-            './test/data/raster/river.tiff',
+            os.path.join(os.path.dirname(os.path.realpath(__file__)),'../../test/data/raster/river.tiff'),
             'River',
             tilesize,
             constraint,
@@ -379,13 +380,13 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
                     _test_rgba_8bui(
                         'rgba_8bui', tilesize, constraint, overview)
 
-    # nodata-edge.tif, RGB 8BUI
+    # # nodata-edge.tif, RGB 8BUI
     def _test_rgb_8bui_rendering(lbl, tnam, overview, rescale, clip):
         if rescale:
             lbl += ' Sc'
         if clip:
             lbl += ' Cl'
-        ds = mapnik.PgRaster(dbname=MAPNIK_TEST_DBNAME, table=tnam,
+        ds = mapnik.PgRaster(dbname=MAPNIK_TEST_DBNAME, table=f'(select * from "{tnam}" order by rid) foo',
                              use_overviews=1 if overview else 0,
                              prescale_rasters=rescale, clip_rasters=clip)
         fs = iter(ds)
@@ -393,8 +394,8 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         assert feature['rid'] == 1
         lyr = mapnik.Layer('rgba_8bui')
         lyr.datasource = ds
-        expenv = mapnik.Box2d(-12329035.7652168, 4508650.39854396,
-                              -12328653.0279471, 4508957.34625536)
+        expenv = mapnik.Box2d(-12329035.765216826, 4508650.398543958,
+                              -12328653.027947055, 4508957.346255356)
         env = lyr.envelope()
         # As the input size is a prime number both horizontally
         # and vertically, we expect the extent of the overview
@@ -424,7 +425,7 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         mapnik.render(mm, im)
         lap = time.time() - t0
         log('T ' + str(lap) + ' -- ' + lbl + ' E:full')
-        expected = './test/python_tests/images/support/pgraster/%s-%s-%s-%s-%s-box1.png' % (
+        expected = './images/support/pgraster/%s-%s-%s-%s-%s-box1.png' % (
             lyr.name, tnam, lbl, overview, clip)
         compare_images(expected, im)
         # no data
@@ -447,7 +448,7 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         mapnik.render(mm, im)
         lap = time.time() - t0
         log('T ' + str(lap) + ' -- ' + lbl + ' E:1/10')
-        expected = './test/python_tests/images/support/pgraster/%s-%s-%s-%s-%s-box2.png' % (
+        expected = 'images/support/pgraster/%s-%s-%s-%s-%s-box2.png' % (
             lyr.name, tnam, lbl, overview, clip)
         compare_images(expected, im)
         # no data
@@ -466,7 +467,7 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
     def _test_rgb_8bui(lbl, tilesize, constraint, overview):
         tnam = 'nodataedge'
         import_raster(
-            './test/data/raster/nodata-edge.tif',
+            os.path.join(os.path.dirname(os.path.realpath(__file__)),'../../test/data/raster/nodata-edge.tif'),
             tnam,
             tilesize,
             constraint,
@@ -480,7 +481,7 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         for prescale in [0, 1]:
             for clip in [0, 1]:
                 _test_rgb_8bui_rendering(lbl, tnam, overview, prescale, clip)
-        #drop_imported(tnam, overview)
+        drop_imported(tnam, overview)
 
     def test_rgb_8bui():
         for tilesize in ['64x64']:
@@ -529,10 +530,10 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         lyr.datasource = ds
         expenv = mapnik.Box2d(0, 0, 14, 14)
         env = lyr.envelope()
-        assert env.minx == expenv.minx#, places=0)
-        assert env.miny == expenv.miny#, places=0)
-        assert env.maxx == expenv.maxx#, places=0)
-        assert env.maxy == expenv.maxy#, places=0)
+        assert env.minx == expenv.minx
+        assert env.miny == expenv.miny
+        assert env.maxx == expenv.maxx
+        assert env.maxy == expenv.maxy
         mm = mapnik.Map(15, 15)
         style = mapnik.Style()
         sym = mapnik.RasterSymbolizer()
@@ -548,7 +549,7 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         mapnik.render(mm, im)
         lap = time.time() - t0
         log('T ' + str(lap) + ' -- ' + lbl + ' E:full')
-        expected = './test/python_tests/images/support/pgraster/%s-%s-%s-%s.png' % (
+        expected = 'images/support/pgraster/%s-%s-%s-%s.png' % (
             lyr.name, lbl, pixtype, value)
         compare_images(expected, im)
         h = format(value, '02x')
@@ -667,7 +668,7 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         mapnik.render(mm, im)
         lap = time.time() - t0
         log('T ' + str(lap) + ' -- ' + lbl + ' E:full')
-        expected = './test/python_tests/images/support/pgraster/%s-%s-%s-%s.png' % (
+        expected = 'images/support/pgraster/%s-%s-%s-%s.png' % (
             lyr.name, lbl, pixtype, value)
         compare_images(expected, im)
 
@@ -785,11 +786,11 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
         mapnik.render(mm, im)
         lap = time.time() - t0
         log('T ' + str(lap) + ' -- ' + lbl + ' E:full')
-        expected = './test/python_tests/images/support/pgraster/%s-%s-%s-%s-%s-%s-%s-%s-%s.png' % (
+        expected = 'images/support/pgraster/%s-%s-%s-%s-%s-%s-%s-%s-%s.png' % (
             lyr.name, lbl, pixtype, r, g, b, a, g1, b1)
         compare_images(expected, im)
-        hex_v = format(r << 24 | g << 16 | b << 8 | a, '08x').encode()
-        hex_a = format(r << 24 | g1 << 16 | b << 8 | a, '08x').encode()
+        hex_v = format(r << 24 | g << 16 | b  << 8 | a, '08x').encode()
+        hex_a = format(r << 24 | g1<< 16 | b  << 8 | a, '08x').encode()
         hex_b = format(r << 24 | g << 16 | b1 << 8 | a, '08x').encode()
         assert hexlify(im.view(3, 3, 1, 1).to_string()) ==  hex_v
         assert hexlify(im.view(8, 3, 1, 1).to_string()) == hex_v
@@ -812,11 +813,11 @@ if 'pgraster' in mapnik.DatasourceCache.plugin_names() \
             255,
             255)
 
-    # def test_rgba_16bui_subquery():
-    #  _test_rgba_subquery('rgba_16bui_subquery', '16BUI', 65535, 0, 0, 65535, 65535, 65535)
+    #def test_rgba_16bui_subquery():
+    #   _test_rgba_subquery('rgba_16bui_subquery', '16BUI', 65535, 0, 0, 65535, 65535, 65535)
 
-    # def test_rgba_32bui_subquery():
-    #  _test_rgba_subquery('rgba_32bui_subquery', '32BUI')
+    #def test_rgba_32bui_subquery():
+    #   _test_rgba_subquery('rgba_32bui_subquery', '32BUI')
 
     atexit.register(postgis_takedown)
 
