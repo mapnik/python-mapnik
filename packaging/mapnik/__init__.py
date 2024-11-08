@@ -19,7 +19,7 @@
 
 """Mapnik Python module.
 
-Boost Python bindings to the Mapnik C++ shared library.
+Python bindings to the Mapnik C++ shared library.
 
 Several things happen when you do:
 
@@ -33,9 +33,6 @@ Several things happen when you do:
     file which was constructed and installed during SCons installation.
 
  3) All available input plugins and TrueType fonts are automatically registered.
-
- 4) Boost Python metaclass injectors are used in the '__init__.py' to extend several
-    objects adding extra convenience when accessed via Python.
 
 """
 
