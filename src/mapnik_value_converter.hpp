@@ -126,7 +126,7 @@ public:
         {
             PyObject *tmp = PyNumber_Long(source);
             if (!tmp) return false;
-            value = PyLong_AsLong(tmp);
+            value = PyLong_AsLongLong(tmp);
             Py_DecRef(tmp);
             return !PyErr_Occurred();
         }
