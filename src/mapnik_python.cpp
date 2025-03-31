@@ -677,8 +677,8 @@ PYBIND11_MODULE(_mapnik, m) {
     export_building_symbolizer(m);
 
     //
-    m.def("mapnik_version", &mapnik_version,"Get the Mapnik version number");
-    m.def("mapnik_version_string", &mapnik_version_string,"Get the Mapnik version string");
+    m.def("version", &mapnik_version,"Get the Mapnik version number");
+    m.def("version_string", &mapnik_version_string,"Get the Mapnik version string");
     m.def("has_proj", &has_proj, "Get proj status");
     m.def("has_jpeg", &has_jpeg, "Get jpeg read/write support status");
     m.def("has_png", &has_png, "Get png read/write support status");
