@@ -7,9 +7,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mapnik"
-version = "4.0.3.beta"
+version = "4.0.6.beta"
 description = "Python bindings for Mapnik"
-license = { text = "GNU LESSER GENERAL PUBLIC LICENSE"}
+license = "LGPL-2.1-or-later"
+
 keywords = ["mapnik", "beautiful maps", "cartography", "python-mapnik"]
 classifiers = [
    "Development Status :: 4 - Beta",
