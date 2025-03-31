@@ -12,104 +12,107 @@ def check_output(args):
      output = subprocess.check_output(args).decode()
      return output.rstrip('\n')
 
+ext_modules = []
+extra_comp_args = []
 linkflags = []
-lib_path = os.path.join(check_output([mapnik_config, '--prefix']),'lib')
-linkflags.extend(check_output([mapnik_config, '--libs']).split(' '))
-linkflags.extend(check_output([mapnik_config, '--ldflags']).split(' '))
-linkflags.extend(check_output([mapnik_config, '--dep-libs']).split(' '))
-linkflags.extend([
-    '-lmapnik-wkt',
-    '-lmapnik-json',
-])
 
-# Dynamically make the mapnik/paths.py file
-f_paths = open('packaging/mapnik/paths.py', 'w')
-f_paths.write('import os\n')
-f_paths.write('\n')
+if 'clean' not in sys.argv:
+    lib_path = os.path.join(check_output([mapnik_config, '--prefix']),'lib')
+    linkflags.extend(check_output([mapnik_config, '--libs']).split(' '))
+    linkflags.extend(check_output([mapnik_config, '--ldflags']).split(' '))
+    linkflags.extend(check_output([mapnik_config, '--dep-libs']).split(' '))
+    linkflags.extend([
+        '-lmapnik-wkt',
+        '-lmapnik-json',
+    ])
 
-input_plugin_path = check_output([mapnik_config, '--input-plugins'])
-font_path = check_output([mapnik_config, '--fonts'])
+    # Dynamically make the mapnik/paths.py file
+    f_paths = open('packaging/mapnik/paths.py', 'w')
+    f_paths.write('import os\n')
+    f_paths.write('\n')
 
-if os.environ.get('LIB_DIR_NAME'):
-    mapnik_lib_path = lib_path + os.environ.get('LIB_DIR_NAME')
-else:
-    mapnik_lib_path = lib_path + "/mapnik"
-    f_paths.write("mapniklibpath = '{path}'\n".format(path=mapnik_lib_path))
-    f_paths.write(
-        "inputpluginspath = '{path}'\n".format(path=input_plugin_path))
-    f_paths.write(
-        "fontscollectionpath = '{path}'\n".format(path=font_path))
-    f_paths.write(
-        "__all__ = [mapniklibpath,inputpluginspath,fontscollectionpath]\n")
-    f_paths.close()
+    input_plugin_path = check_output([mapnik_config, '--input-plugins'])
+    font_path = check_output([mapnik_config, '--fonts'])
 
-extra_comp_args = check_output([mapnik_config, '--cflags']).split(' ')
-extra_comp_args = list(filter(lambda arg: arg != "-fvisibility=hidden", extra_comp_args))
+    if os.environ.get('LIB_DIR_NAME'):
+        mapnik_lib_path = lib_path + os.environ.get('LIB_DIR_NAME')
+    else:
+        mapnik_lib_path = lib_path + "/mapnik"
+        f_paths.write("mapniklibpath = '{path}'\n".format(path=mapnik_lib_path))
+        f_paths.write(
+            "inputpluginspath = '{path}'\n".format(path=input_plugin_path))
+        f_paths.write(
+            "fontscollectionpath = '{path}'\n".format(path=font_path))
+        f_paths.write(
+            "__all__ = [mapniklibpath,inputpluginspath,fontscollectionpath]\n")
+        f_paths.close()
 
-if sys.platform == 'darwin':
-     pass
-else:
-     linkflags.append('-lrt')
-     linkflags.append('-Wl,-z,origin')
-     linkflags.append('-Wl,-rpath=$ORIGIN/lib')
+    extra_comp_args = check_output([mapnik_config, '--cflags']).split(' ')
+    extra_comp_args = list(filter(lambda arg: arg != "-fvisibility=hidden", extra_comp_args))
 
+    if sys.platform == 'darwin':
+         pass
+    else:
+         linkflags.append('-lrt')
+         linkflags.append('-Wl,-z,origin')
+         linkflags.append('-Wl,-rpath=$ORIGIN/lib')
 
-ext_modules = [
-     Pybind11Extension(
-          "mapnik._mapnik",
-          [
-               "src/mapnik_python.cpp",
-               "src/mapnik_layer.cpp",
-               "src/mapnik_query.cpp",
-               "src/mapnik_map.cpp",
-               "src/mapnik_color.cpp",
-               "src/mapnik_composite_modes.cpp",
-               "src/mapnik_coord.cpp",
-               "src/mapnik_envelope.cpp",
-               "src/mapnik_expression.cpp",
-               "src/mapnik_datasource.cpp",
-               "src/mapnik_datasource_cache.cpp",
-               "src/mapnik_gamma_method.cpp",
-               "src/mapnik_geometry.cpp",
-               "src/mapnik_feature.cpp",
-               "src/mapnik_featureset.cpp",
-               "src/mapnik_font_engine.cpp",
-               "src/mapnik_fontset.cpp",
-               "src/mapnik_grid.cpp",
-               "src/mapnik_grid_view.cpp",
-               "src/mapnik_image.cpp",
-               "src/mapnik_image_view.cpp",
-               "src/mapnik_projection.cpp",
-               "src/mapnik_proj_transform.cpp",
-               "src/mapnik_rule.cpp",
-               "src/mapnik_symbolizer.cpp",
-               "src/mapnik_debug_symbolizer.cpp",
-               "src/mapnik_markers_symbolizer.cpp",
-               "src/mapnik_polygon_symbolizer.cpp",
-               "src/mapnik_polygon_pattern_symbolizer.cpp",
-               "src/mapnik_line_symbolizer.cpp",
-               "src/mapnik_line_pattern_symbolizer.cpp",
-               "src/mapnik_point_symbolizer.cpp",
-               "src/mapnik_raster_symbolizer.cpp",
-               "src/mapnik_scaling_method.cpp",
-               "src/mapnik_style.cpp",
-               "src/mapnik_logger.cpp",
-               "src/mapnik_placement_finder.cpp",
-               "src/mapnik_text_symbolizer.cpp",
-               "src/mapnik_palette.cpp",
-               "src/mapnik_parameters.cpp",
-               "src/python_grid_utils.cpp",
-               "src/mapnik_raster_colorizer.cpp",
-               "src/mapnik_label_collision_detector.cpp",
-               "src/mapnik_dot_symbolizer.cpp",
-               "src/mapnik_building_symbolizer.cpp",
-               "src/mapnik_shield_symbolizer.cpp",
-               "src/mapnik_group_symbolizer.cpp"
-          ],
-          extra_compile_args=extra_comp_args,
-          extra_link_args=linkflags,
-     )
-]
+    ext_modules = [
+         Pybind11Extension(
+              "mapnik._mapnik",
+              [
+                   "src/mapnik_python.cpp",
+                   "src/mapnik_layer.cpp",
+                   "src/mapnik_query.cpp",
+                   "src/mapnik_map.cpp",
+                   "src/mapnik_color.cpp",
+                   "src/mapnik_composite_modes.cpp",
+                   "src/mapnik_coord.cpp",
+                   "src/mapnik_envelope.cpp",
+                   "src/mapnik_expression.cpp",
+                   "src/mapnik_datasource.cpp",
+                   "src/mapnik_datasource_cache.cpp",
+                   "src/mapnik_gamma_method.cpp",
+                   "src/mapnik_geometry.cpp",
+                   "src/mapnik_feature.cpp",
+                   "src/mapnik_featureset.cpp",
+                   "src/mapnik_font_engine.cpp",
+                   "src/mapnik_fontset.cpp",
+                   "src/mapnik_grid.cpp",
+                   "src/mapnik_grid_view.cpp",
+                   "src/mapnik_image.cpp",
+                   "src/mapnik_image_view.cpp",
+                   "src/mapnik_projection.cpp",
+                   "src/mapnik_proj_transform.cpp",
+                   "src/mapnik_rule.cpp",
+                   "src/mapnik_symbolizer.cpp",
+                   "src/mapnik_debug_symbolizer.cpp",
+                   "src/mapnik_markers_symbolizer.cpp",
+                   "src/mapnik_polygon_symbolizer.cpp",
+                   "src/mapnik_polygon_pattern_symbolizer.cpp",
+                   "src/mapnik_line_symbolizer.cpp",
+                   "src/mapnik_line_pattern_symbolizer.cpp",
+                   "src/mapnik_point_symbolizer.cpp",
+                   "src/mapnik_raster_symbolizer.cpp",
+                   "src/mapnik_scaling_method.cpp",
+                   "src/mapnik_style.cpp",
+                   "src/mapnik_logger.cpp",
+                   "src/mapnik_placement_finder.cpp",
+                   "src/mapnik_text_symbolizer.cpp",
+                   "src/mapnik_palette.cpp",
+                   "src/mapnik_parameters.cpp",
+                   "src/python_grid_utils.cpp",
+                   "src/mapnik_raster_colorizer.cpp",
+                   "src/mapnik_label_collision_detector.cpp",
+                   "src/mapnik_dot_symbolizer.cpp",
+                   "src/mapnik_building_symbolizer.cpp",
+                   "src/mapnik_shield_symbolizer.cpp",
+                   "src/mapnik_group_symbolizer.cpp"
+              ],
+              extra_compile_args=extra_comp_args,
+              extra_link_args=linkflags,
+         )
+    ]
 
 if os.environ.get("CC", False) == False:
     os.environ["CC"] = check_output([mapnik_config, '--cxx'])
