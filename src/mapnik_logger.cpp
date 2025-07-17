@@ -28,6 +28,7 @@
 //pybind11
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/native_enum.h>
 
 namespace py = pybind11;
 
@@ -38,11 +39,12 @@ void export_logger(py::module const& m)
     using mapnik::CreateStatic;
 
 
-    py::enum_<mapnik::logger::severity_type>(m, "severity_type")
+    py::native_enum<mapnik::logger::severity_type>(m, "severity_type", "enum.IntEnum")
         .value("Debug", logger::debug)
         .value("Warn", logger::warn)
         .value("Error", logger::error)
         .value("None", logger::none)
+        .finalize()
         ;
 
     py::class_<logger, std::unique_ptr<logger, py::nodelete>>(m, "logger")

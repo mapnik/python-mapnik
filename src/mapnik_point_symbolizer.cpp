@@ -30,6 +30,7 @@
 #include "mapnik_symbolizer.hpp"
 //pybind11
 #include <pybind11/pybind11.h>
+#include <pybind11/native_enum.h>
 
 namespace py = pybind11;
 
@@ -38,9 +39,10 @@ void export_point_symbolizer(py::module const& m)
     using namespace python_mapnik;
     using mapnik::point_symbolizer;
 
-    py::enum_<mapnik::point_placement_enum>(m, "point_placement")
+    py::native_enum<mapnik::point_placement_enum>(m, "point_placement", "enum.Enum")
         .value("CENTROID",mapnik::point_placement_enum::CENTROID_POINT_PLACEMENT)
         .value("INTERIOR",mapnik::point_placement_enum::INTERIOR_POINT_PLACEMENT)
+        .finalize()
         ;
 
     py::class_<point_symbolizer, symbolizer_base>(m, "PointSymbolizer")

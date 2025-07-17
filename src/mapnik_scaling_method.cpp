@@ -24,12 +24,13 @@
 #include <mapnik/image_scaling.hpp>
 //pybind11
 #include <pybind11/pybind11.h>
+#include <pybind11/native_enum.h>
 
 namespace py = pybind11;
 
 void export_scaling_method(py::module const& m)
 {
-    py::enum_<mapnik::scaling_method_e>(m, "scaling_method")
+    py::native_enum<mapnik::scaling_method_e>(m, "scaling_method", "enum.IntEnum")
         .value("NEAR", mapnik::SCALING_NEAR)
         .value("BILINEAR", mapnik::SCALING_BILINEAR)
         .value("BICUBIC", mapnik::SCALING_BICUBIC)
@@ -47,5 +48,6 @@ void export_scaling_method(py::module const& m)
         .value("SINC", mapnik::SCALING_SINC)
         .value("LANCZOS", mapnik::SCALING_LANCZOS)
         .value("BLACKMAN", mapnik::SCALING_BLACKMAN)
+        .finalize()
         ;
 }

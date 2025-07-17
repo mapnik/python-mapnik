@@ -36,6 +36,7 @@
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
+#include <pybind11/native_enum.h>
 
 namespace py = pybind11;
 
@@ -125,7 +126,7 @@ void export_map(py::module const& m)
     py::bind_vector<std::vector<mapnik::layer>>(m, "Layers", py::module_local());
     py::bind_map<std::map<std::string, mapnik::feature_type_style>>(m, "Styles", py::module_local());
     // aspect ratio fix modes
-    py::enum_<mapnik::Map::aspect_fix_mode>(m, "aspect_fix_mode")
+    py::native_enum<mapnik::Map::aspect_fix_mode>(m, "aspect_fix_mode", "enum.Enum")
         .value("GROW_BBOX", mapnik::Map::GROW_BBOX)
         .value("GROW_CANVAS",mapnik::Map::GROW_CANVAS)
         .value("SHRINK_BBOX",mapnik::Map::SHRINK_BBOX)
@@ -135,6 +136,7 @@ void export_map(py::module const& m)
         .value("ADJUST_CANVAS_WIDTH",mapnik::Map::ADJUST_CANVAS_WIDTH)
         .value("ADJUST_CANVAS_HEIGHT", mapnik::Map::ADJUST_CANVAS_HEIGHT)
         .value("RESPECT", mapnik::Map::RESPECT)
+        .finalize()
         ;
 
     py::class_<Map>(m, "Map","The map object.")

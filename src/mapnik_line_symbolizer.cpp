@@ -33,8 +33,7 @@
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
-
-
+#include <pybind11/native_enum.h>
 
 namespace py = pybind11;
 
@@ -69,28 +68,30 @@ void set_stroke_dasharray(mapnik::symbolizer_base & sym, std::string str)
 
 }
 
-
 void export_line_symbolizer(py::module const& m)
 {
     using namespace python_mapnik;
     using mapnik::line_symbolizer;
 
-    py::enum_<mapnik::line_rasterizer_enum>(m, "line_rasterizer")
+    py::native_enum<mapnik::line_rasterizer_enum>(m, "line_rasterizer", "enum.Enum")
         .value("FULL",mapnik::line_rasterizer_enum::RASTERIZER_FULL)
         .value("FAST",mapnik::line_rasterizer_enum::RASTERIZER_FAST)
+        .finalize()
         ;
 
-    py::enum_<mapnik::line_cap_enum>(m, "stroke_linecap")
+    py::native_enum<mapnik::line_cap_enum>(m, "stroke_linecap", "enum.Enum")
         .value("BUTT_CAP",mapnik::line_cap_enum::BUTT_CAP)
         .value("SQUARE_CAP",mapnik::line_cap_enum::SQUARE_CAP)
         .value("ROUND_CAP",mapnik::line_cap_enum::ROUND_CAP)
+        .finalize()
         ;
 
-    py::enum_<mapnik::line_join_enum>(m, "stroke_linejoin")
+    py::native_enum<mapnik::line_join_enum>(m, "stroke_linejoin", "enum.Enum")
         .value("MITER_JOIN",mapnik::line_join_enum::MITER_JOIN)
         .value("MITER_REVERT_JOIN",mapnik::line_join_enum::MITER_REVERT_JOIN)
         .value("ROUND_JOIN",mapnik::line_join_enum::ROUND_JOIN)
         .value("BEVEL_JOIN",mapnik::line_join_enum::BEVEL_JOIN)
+        .finalize()
         ;
 
     py::class_<line_symbolizer, symbolizer_base>(m, "LineSymbolizer")

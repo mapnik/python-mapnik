@@ -46,6 +46,7 @@
 //pybind11
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/native_enum.h>
 
 namespace py = pybind11;
 
@@ -180,7 +181,7 @@ void export_geometry(py::module const& m)
     using mapnik::geometry::geometry_collection;
 
 
-    py::enum_<mapnik::geometry::geometry_types>(m, "GeometryType")
+    py::native_enum<mapnik::geometry::geometry_types>(m, "GeometryType", "enum.Enum")
         .value("Unknown",mapnik::geometry::geometry_types::Unknown)
         .value("Point",mapnik::geometry::geometry_types::Point)
         .value("LineString",mapnik::geometry::geometry_types::LineString)
@@ -189,11 +190,13 @@ void export_geometry(py::module const& m)
         .value("MultiLineString",mapnik::geometry::geometry_types::MultiLineString)
         .value("MultiPolygon",mapnik::geometry::geometry_types::MultiPolygon)
         .value("GeometryCollection",mapnik::geometry::geometry_types::GeometryCollection)
+        .finalize()
         ;
 
-    py::enum_<mapnik::wkbByteOrder>(m, "wkbByteOrder")
-        .value("XDR",mapnik::wkbXDR)
-        .value("NDR",mapnik::wkbNDR)
+    py::native_enum<mapnik::wkbByteOrder>(m, "wkbByteOrder", "enum.Enum")
+        .value("XDR", mapnik::wkbXDR)
+        .value("NDR", mapnik::wkbNDR)
+        .finalize()
         ;
 
 

@@ -36,6 +36,7 @@
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
+#include <pybind11/native_enum.h>
 
 namespace py = pybind11;
 
@@ -59,11 +60,12 @@ void export_text_symbolizer(py::module const& m)
     using namespace python_mapnik;
     using mapnik::text_symbolizer;
 
-    py::enum_<mapnik::label_placement_enum>(m, "LabelPlacement")
+    py::native_enum<mapnik::label_placement_enum>(m, "LabelPlacement", "enum.Enum")
         .value("LINE_PLACEMENT", mapnik::label_placement_enum::LINE_PLACEMENT)
         .value("POINT_PLACEMENT", mapnik::label_placement_enum::POINT_PLACEMENT)
         .value("VERTEX_PLACEMENT", mapnik::label_placement_enum::VERTEX_PLACEMENT)
         .value("INTERIOR_PLACEMENT", mapnik::label_placement_enum::INTERIOR_PLACEMENT)
+        .finalize()
         ;
 
 //     mapnik::enumeration_<mapnik::vertical_alignment_e>("vertical_alignment")
@@ -90,9 +92,10 @@ void export_text_symbolizer(py::module const& m)
 //         .value("LOWERCASE", mapnik::text_transform_enum::LOWERCASE)
 //         .value("CAPITALIZE", mapnik::text_transform_enum::CAPITALIZE);
 
-    py::enum_<mapnik::halo_rasterizer_enum>(m, "halo_rasterizer")
+    py::native_enum<mapnik::halo_rasterizer_enum>(m, "halo_rasterizer", "enum.Enum")
         .value("FULL", mapnik::halo_rasterizer_enum::HALO_RASTERIZER_FULL)
-        .value("FAST", mapnik::halo_rasterizer_enum::HALO_RASTERIZER_FAST);
+        .value("FAST", mapnik::halo_rasterizer_enum::HALO_RASTERIZER_FAST)
+        .finalize();
 
 
     // set_symbolizer_property<symbolizer_base, composite_mode_e>(sym, keys::halo_comp_op, node);

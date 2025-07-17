@@ -29,6 +29,7 @@
 #include "mapnik_symbolizer.hpp"
 //pybind11
 #include <pybind11/pybind11.h>
+#include <pybind11/native_enum.h>
 
 namespace py = pybind11;
 
@@ -38,9 +39,10 @@ void export_debug_symbolizer(py::module const& m)
     using mapnik::debug_symbolizer;
     using mapnik::debug_symbolizer_mode_enum;
 
-    py::enum_<debug_symbolizer_mode_enum>(m, "debug_symbolizer_mode")
+    py::native_enum<debug_symbolizer_mode_enum>(m, "debug_symbolizer_mode", "enum.Enum")
         .value("COLLISION", debug_symbolizer_mode_enum::DEBUG_SYM_MODE_COLLISION)
         .value("VERTEX", debug_symbolizer_mode_enum::DEBUG_SYM_MODE_VERTEX)
+        .finalize()
         ;
 
     py::class_<debug_symbolizer, symbolizer_base>(m, "DebugSymbolizer")
