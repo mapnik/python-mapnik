@@ -30,7 +30,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
-
+#include <pybind11/native_enum.h>
 
 namespace py = pybind11;
 
@@ -72,9 +72,10 @@ void set_filter_mode(feature_type_style& style, filter_mode_enum mode)
 
 void export_style(py::module const& m)
 {
-    py::enum_<mapnik::filter_mode_enum>(m, "filter_mode")
+    py::native_enum<mapnik::filter_mode_enum>(m, "filter_mode", "enum.Enum")
         .value("ALL",mapnik::filter_mode_enum::FILTER_ALL)
         .value("FIRST",mapnik::filter_mode_enum::FILTER_FIRST)
+        .finalize()
         ;
 
     py::bind_vector<rules>(m, "Rules", py::module_local());

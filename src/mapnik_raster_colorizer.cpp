@@ -27,6 +27,7 @@
 //pybind11
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
+#include <pybind11/native_enum.h>
 
 namespace py = pybind11;
 
@@ -185,12 +186,13 @@ void export_raster_colorizer(py::module const& m)
         })
         ;
 
-    py::enum_<colorizer_mode_enum>(m, "ColorizerMode")
+    py::native_enum<colorizer_mode_enum>(m, "ColorizerMode", "enum.Enum")
         .value("COLORIZER_INHERIT", colorizer_mode_enum::COLORIZER_INHERIT)
         .value("COLORIZER_LINEAR", colorizer_mode_enum::COLORIZER_LINEAR)
         .value("COLORIZER_DISCRETE", colorizer_mode_enum::COLORIZER_DISCRETE)
         .value("COLORIZER_EXACT", colorizer_mode_enum::COLORIZER_EXACT)
         .export_values()
+        .finalize()
         ;
 
 

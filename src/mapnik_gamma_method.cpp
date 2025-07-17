@@ -25,17 +25,19 @@
 #include <mapnik/symbolizer_enumerations.hpp>
 //pybind11
 #include <pybind11/pybind11.h>
+#include <pybind11/native_enum.h>
 
 namespace py = pybind11;
 
 void export_gamma_method(py::module const& m)
 {
-    py::enum_<mapnik::gamma_method_enum>(m, "gamma_method")
+    py::native_enum<mapnik::gamma_method_enum>(m, "gamma_method", "enum.Enum")
         .value("POWER", mapnik::gamma_method_enum::GAMMA_POWER)
         .value("LINEAR",mapnik::gamma_method_enum::GAMMA_LINEAR)
         .value("NONE", mapnik::gamma_method_enum::GAMMA_NONE)
         .value("THRESHOLD", mapnik::gamma_method_enum::GAMMA_THRESHOLD)
         .value("MULTIPLY", mapnik::gamma_method_enum::GAMMA_MULTIPLY)
+        .finalize()
         ;
 
 }

@@ -35,7 +35,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>
-
+#include <pybind11/native_enum.h>
 
 using mapnik::datasource;
 using mapnik::memory_datasource;
@@ -128,16 +128,18 @@ py::dict parameters_impl(std::shared_ptr<mapnik::datasource> const& ds)
 
 void export_datasource(py::module& m)
 {
-    py::enum_<mapnik::datasource::datasource_t>(m, "DataType")
+    py::native_enum<mapnik::datasource::datasource_t>(m, "DataType", "enum.Enum")
         .value("Vector",mapnik::datasource::Vector)
         .value("Raster",mapnik::datasource::Raster)
+        .finalize()
         ;
 
-    py::enum_<mapnik::datasource_geometry_t>(m, "DataGeometryType")
+    py::native_enum<mapnik::datasource_geometry_t>(m, "DataGeometryType", "enum.Enum")
         .value("Point",mapnik::datasource_geometry_t::Point)
         .value("LineString",mapnik::datasource_geometry_t::LineString)
         .value("Polygon",mapnik::datasource_geometry_t::Polygon)
         .value("Collection",mapnik::datasource_geometry_t::Collection)
+        .finalize()
         ;
 
     py::class_<datasource,std::shared_ptr<datasource>> (m, "Datasource")

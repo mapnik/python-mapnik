@@ -34,6 +34,7 @@
 //pybind11
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
+#include <pybind11/native_enum.h>
 
 using mapnik::image_any;
 using mapnik::image_reader;
@@ -339,7 +340,7 @@ std::shared_ptr<image_any> from_cairo(py::object const& surface)
 
 void export_image(py::module const& m)
 {
-    py::enum_<mapnik::image_dtype>(m, "ImageType")
+    py::native_enum<mapnik::image_dtype>(m, "ImageType", "enum.Enum")
         .value("rgba8", mapnik::image_dtype_rgba8)
         .value("gray8", mapnik::image_dtype_gray8)
         .value("gray8s", mapnik::image_dtype_gray8s)
@@ -351,6 +352,7 @@ void export_image(py::module const& m)
         .value("gray64", mapnik::image_dtype_gray64)
         .value("gray64s", mapnik::image_dtype_gray64s)
         .value("gray64f", mapnik::image_dtype_gray64f)
+        .finalize()
         ;
 
     py::class_<image_any,std::shared_ptr<image_any>>(m, "Image","This class represents a image.")

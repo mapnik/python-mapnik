@@ -25,13 +25,14 @@
 #include <mapnik/image_compositing.hpp>
 //pybind11
 #include <pybind11/pybind11.h>
+#include <pybind11/native_enum.h>
 
 namespace py = pybind11;
 
 void export_composite_modes(py::module const& m)
 {
     // NOTE: must match list in include/mapnik/image_compositing.hpp
-    py::enum_<mapnik::composite_mode_e>(m, "CompositeOp")
+    py::native_enum<mapnik::composite_mode_e>(m, "CompositeOp", "enum.Enum")
         .value("clear", mapnik::clear)
         .value("src", mapnik::src)
         .value("dst", mapnik::dst)
@@ -68,5 +69,6 @@ void export_composite_modes(py::module const& m)
         .value("linear_dodge", mapnik::linear_dodge)
         .value("linear_burn", mapnik::linear_burn)
         .value("divide", mapnik::divide)
+        .finalize()
         ;
 }

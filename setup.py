@@ -118,7 +118,7 @@ if os.environ.get("CXX", False) == False:
 
 setup(
      name="mapnik",
-     version="4.0.0.dev",
+     version="4.1.1beta",
      packages=find_packages(where="packaging"),
      package_dir={"": "packaging"},
      package_data={
@@ -126,5 +126,5 @@ setup(
      },
      ext_modules=ext_modules,
      cmdclass={"build_ext": build_ext},
-     python_requires=">=3.7",
+     python_requires=">=3.9",
 )
