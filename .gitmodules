@@ -4,7 +4,3 @@
 [submodule "test/data"]
 	path = test/data
 	url = https://github.com/mapnik/test-data.git
-[submodule "extern/pybind11"]
-	path = extern/pybind11
-	url = ../../pybind/pybind11
-	branch = stable
