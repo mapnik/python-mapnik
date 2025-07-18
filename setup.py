@@ -13,6 +13,7 @@ def check_output(args):
      return output.rstrip('\n')
 
 linkflags = []
+bin_path = os.path.join(check_output([mapnik_config, '--prefix']),'bin')
 lib_path = os.path.join(check_output([mapnik_config, '--prefix']),'lib')
 linkflags.extend(check_output([mapnik_config, '--libs']).split(' '))
 linkflags.extend(check_output([mapnik_config, '--ldflags']).split(' '))
@@ -22,26 +23,31 @@ linkflags.extend([
     '-lmapnik-json',
 ])
 
+# Remove symlinks
+if os.path.islink('packaging/mapnik/bin') :
+     os.unlink('packaging/mapnik/bin')
+if os.path.islink('packaging/mapnik/lib') :
+     os.unlink('packaging/mapnik/lib')
 # Dynamically make the mapnik/paths.py file
 f_paths = open('packaging/mapnik/paths.py', 'w')
 f_paths.write('import os\n')
 f_paths.write('\n')
 
-input_plugin_path = check_output([mapnik_config, '--input-plugins'])
-font_path = check_output([mapnik_config, '--fonts'])
-
-if os.environ.get('LIB_DIR_NAME'):
-    mapnik_lib_path = lib_path + os.environ.get('LIB_DIR_NAME')
+if os.environ.get('SYSTEM_MAPNIK'):
+     input_plugin_path = check_output([mapnik_config, '--input-plugins'])
+     font_path = check_output([mapnik_config, '--fonts'])
+     f_paths.write("mapniklibpath = '{path}'\n".format(path=lib_path))
+     f_paths.write("inputpluginspath = '{path}'\n".format(path=input_plugin_path))
+     f_paths.write("fontscollectionpath = '{path}'\n".format(path=font_path))
 else:
-    mapnik_lib_path = lib_path + "/mapnik"
-    f_paths.write("mapniklibpath = '{path}'\n".format(path=mapnik_lib_path))
-    f_paths.write(
-        "inputpluginspath = '{path}'\n".format(path=input_plugin_path))
-    f_paths.write(
-        "fontscollectionpath = '{path}'\n".format(path=font_path))
-    f_paths.write(
-        "__all__ = [mapniklibpath,inputpluginspath,fontscollectionpath]\n")
-    f_paths.close()
+     os.symlink(bin_path, 'packaging/mapnik/bin')
+     os.symlink(lib_path, 'packaging/mapnik/lib')
+     f_paths.write("mapniklibpath = os.path.join(os.path.dirname(__file__), 'lib')\n")
+     f_paths.write("inputpluginspath = os.path.join(os.path.dirname(__file__), 'lib/mapnik/input')\n")
+     f_paths.write("fontscollectionpath = os.path.join(os.path.dirname(__file__), 'lib/mapnik/fonts')\n")
+
+f_paths.write("__all__ = [mapniklibpath,inputpluginspath,fontscollectionpath]\n")
+f_paths.close()
 
 extra_comp_args = check_output([mapnik_config, '--cflags']).split(' ')
 extra_comp_args = list(filter(lambda arg: arg != "-fvisibility=hidden", extra_comp_args))
@@ -122,8 +128,9 @@ setup(
      packages=find_packages(where="packaging"),
      package_dir={"": "packaging"},
      package_data={
-          'mapnik': ['lib/*.*', 'lib/*/*/*', 'share/*/*'],
+          'mapnik': ['lib/*.*', 'lib/*/*/*', 'bin/*', 'share/*/*'],
      },
+     include_package_data=True,
      ext_modules=ext_modules,
      cmdclass={"build_ext": build_ext},
      python_requires=">=3.9",
