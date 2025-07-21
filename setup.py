@@ -125,11 +125,13 @@ if os.environ.get("CXX", False) == False:
 setup(
      name="mapnik",
      version="4.1.1beta",
-     packages=find_packages(where="packaging"),
      package_dir={"": "packaging"},
-     package_data={
-          'mapnik': ['lib/*.*', 'lib/*/*/*', 'bin/*', 'share/*/*'],
-     },
+     packages=["mapnik",
+               "mapnik/printing",
+               "mapnik/bin",
+               "mapnik/lib",
+               "mapnik/lib.mapnik.fonts",
+               "mapnik/lib.mapnik.input"],
      include_package_data=True,
      ext_modules=ext_modules,
      cmdclass={"build_ext": build_ext},
