@@ -1,7 +1,7 @@
 import glob
 import os
+import sysconfig
 from subprocess import Popen, PIPE
-from distutils import sysconfig
 
 Import('env')
 
@@ -14,11 +14,15 @@ def call(cmd, silent=True):
 
 
 prefix = env['PREFIX']
-target_path = os.path.normpath(sysconfig.get_python_lib() + os.path.sep + env['MAPNIK_NAME'])
+if "deb_system" in sysconfig.get_scheme_names():
+    python_modules_dir = sysconfig.get_path("purelib", "deb_system")
+else:
+    python_modules_dir = sysconfig.get_path("purelib")
+target_path = os.path.normpath(python_modules_dir + os.path.sep + env['MAPNIK_NAME'])
 
 py_env = env.Clone()
 
-py_env.Append(CPPPATH = sysconfig.get_python_inc())
+py_env.Append(CPPPATH = sysconfig.get_path('include'))
 
 py_env.Append(CPPDEFINES = env['LIBMAPNIK_DEFINES'])
 
