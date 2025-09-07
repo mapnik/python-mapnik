@@ -29,6 +29,7 @@
 #include "mapnik_symbolizer.hpp"
 //pybind11
 #include <pybind11/pybind11.h>
+#include <pybind11/native_enum.h>
 
 namespace py = pybind11;
 
@@ -37,6 +38,12 @@ void export_polygon_pattern_symbolizer(py::module const& m)
     using namespace python_mapnik;
     using mapnik::polygon_pattern_symbolizer;
 
+    py::native_enum<mapnik::pattern_alignment_enum>(m, "pattern_alignment", "enum.Enum")
+        .value("LOCAL", mapnik::pattern_alignment_enum::LOCAL_ALIGNMENT)
+        .value("GLOBAL", mapnik::pattern_alignment_enum::GLOBAL_ALIGNMENT)
+        .finalize()
+        ;
+
     py::class_<polygon_pattern_symbolizer, symbolizer_base>(m, "PolygonPatternSymbolizer")
         .def(py::init<>(), "Default ctor")
         .def("__hash__", hash_impl_2<polygon_pattern_symbolizer>)
@@ -44,6 +51,10 @@ void export_polygon_pattern_symbolizer(py::module const& m)
                       &get_property<polygon_pattern_symbolizer, mapnik::keys::file>,
                       &set_path_property<polygon_pattern_symbolizer, mapnik::keys::file>,
                       "File path or mapnik.PathExpression")
+        .def_property("alignment",
+                      &get_property<polygon_pattern_symbolizer, mapnik::keys::alignment, mapnik::pattern_alignment_enum>,
+                      &set_enum_property<polygon_pattern_symbolizer, mapnik::pattern_alignment_enum, mapnik::keys::alignment>,
+                      "Pattern alignment LOCAL/GLOBAL")
         ;
 
 }
