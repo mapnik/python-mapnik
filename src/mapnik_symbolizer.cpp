@@ -324,8 +324,8 @@ void export_polygon_pattern_symbolizer()
         .value("GLOBAL",mapnik::GLOBAL_ALIGNMENT)
         ;
 
-    class_<polygon_pattern_symbolizer>("PolygonPatternSymbolizer",
-                                       init<>("Default ctor"))
+    class_<polygon_pattern_symbolizer, bases<symbolizer_base> >("PolygonPatternSymbolizer",
+                                                                init<>("Default ctor"))
         .def("__hash__",hash_impl_2<polygon_pattern_symbolizer>)
         ;
 }
