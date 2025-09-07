@@ -187,6 +187,27 @@ std::shared_ptr<image_any> open_from_file(std::string const& filename)
     throw mapnik::image_reader_exception("Unsupported image format:" + filename);
 }
 
+std::shared_ptr<image_any> open_from_file2(py::args const& args)
+{
+    auto filename = args[0].cast<std::string>();
+    std::uint32_t x0 = args[1].cast<std::uint32_t>();
+    std::uint32_t y0 = args[2].cast<std::uint32_t>();
+    std::uint32_t width = args[3].cast<std::uint32_t>();
+    std::uint32_t height = args[4].cast<std::uint32_t>();
+    auto type = type_from_filename(filename);
+
+    if (type)
+    {
+        std::unique_ptr<image_reader> reader(get_image_reader(filename,*type));
+        if (reader.get())
+        {
+            return std::make_shared<image_any>(reader->read(x0, y0, width, height));
+        }
+        throw mapnik::image_reader_exception("Failed to load: " + filename);
+    }
+    throw mapnik::image_reader_exception("Unsupported image format:" + filename);
+}
+
 std::shared_ptr<image_any> from_string(std::string const& str)
 {
     std::unique_ptr<image_reader> reader(get_image_reader(str.c_str(),str.size()));
@@ -416,6 +437,7 @@ void export_image(py::module const& m)
         .def("save", &save_to_file2)
         .def("save", &save_to_file3)
         .def_static("open",open_from_file)
+        .def_static("open",open_from_file2)
         .def_static("from_buffer",&from_buffer)
         .def_static("from_memoryview",&from_memoryview)
         .def_static("from_string",&from_string)
