@@ -124,7 +124,6 @@ if os.environ.get("CXX", False) == False:
 
 setup(
      name="mapnik",
-     version="4.1.1beta",
      package_dir={"": "packaging"},
      packages=["mapnik",
                "mapnik/printing",
