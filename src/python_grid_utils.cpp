@@ -35,8 +35,10 @@
 #include "python_grid_utils.hpp"
 // stl
 #include <stdexcept>
+#include <cstdint>
 
 namespace mapnik {
+
 
 
 template <typename T>
@@ -44,6 +46,7 @@ void grid2utf(T const& grid_type,
               py::list& l,
               std::vector<typename T::lookup_type>& key_order)
 {
+    using code_point_t = std::uint32_t;
     using keys_type = std::map< typename T::lookup_type, typename T::value_type>;
     using keys_iterator = typename keys_type::iterator;
 
@@ -59,7 +62,7 @@ void grid2utf(T const& grid_type,
     for (std::size_t y = 0; y < data.height(); ++y)
     {
         std::uint16_t idx = 0;
-        const std::unique_ptr<Py_UNICODE[]> line(new Py_UNICODE[array_size]);
+        const std::unique_ptr<code_point_t[]> line(new code_point_t[array_size]);
         typename T::value_type const* row = data.get_row(y);
         for (std::size_t x = 0; x < data.width(); ++x)
         {
@@ -85,12 +88,12 @@ void grid2utf(T const& grid_type,
                         keys[val] = codepoint;
                         key_order.push_back(val);
                     }
-                    line[idx++] = static_cast<Py_UNICODE>(codepoint);
+                    line[idx++] = static_cast<code_point_t>(codepoint);
                     ++codepoint;
                 }
                 else
                 {
-                    line[idx++] = static_cast<Py_UNICODE>(key_pos->second);
+                    line[idx++] = static_cast<code_point_t>(key_pos->second);
                 }
             }
             // else, shouldn't get here...
@@ -106,6 +109,7 @@ void grid2utf(T const& grid_type,
                      std::vector<typename T::lookup_type>& key_order,
                      unsigned int resolution)
 {
+    using code_point_t = std::uint32_t;
     using keys_type = std::map< typename T::lookup_type, typename T::value_type>;
     using keys_iterator = typename keys_type::iterator;
 
@@ -120,7 +124,7 @@ void grid2utf(T const& grid_type,
     for (unsigned y = 0; y < grid_type.height(); y=y+resolution)
     {
         std::uint16_t idx = 0;
-        const std::unique_ptr<Py_UNICODE[]> line(new Py_UNICODE[array_size]);
+        const std::unique_ptr<code_point_t[]> line(new code_point_t[array_size]);
         mapnik::grid::value_type const* row = grid_type.get_row(y);
         for (unsigned x = 0; x < grid_type.width(); x=x+resolution)
         {
@@ -146,12 +150,12 @@ void grid2utf(T const& grid_type,
                         keys[val] = codepoint;
                         key_order.push_back(val);
                     }
-                    line[idx++] = static_cast<Py_UNICODE>(codepoint);
+                    line[idx++] = static_cast<code_point_t>(codepoint);
                     ++codepoint;
                 }
                 else
                 {
-                    line[idx++] = static_cast<Py_UNICODE>(key_pos->second);
+                    line[idx++] = static_cast<code_point_t>(key_pos->second);
                 }
             }
             // else, shouldn't get here...
@@ -320,6 +324,6 @@ void render_layer_for_grid(mapnik::Map const& map,
     ren.apply(layer,attributes);
 }
 
-}
+} // namespace mapnik
 
 #endif
