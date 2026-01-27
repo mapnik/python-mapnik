@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 
 from pybind11.setup_helpers import Pybind11Extension, build_ext
-from setuptools import setup, find_packages
+from setuptools import setup, find_namespace_packages
 import sys
 import subprocess
 import os
@@ -124,14 +124,18 @@ if os.environ.get("CXX", False) == False:
 
 setup(
      name="mapnik",
+     packages=find_namespace_packages(where="packaging"),
      package_dir={"": "packaging"},
-     packages=["mapnik",
-               "mapnik/printing",
-               "mapnik/bin",
-               "mapnik/lib",
-               "mapnik/lib.mapnik.fonts",
-               "mapnik/lib.mapnik.input"],
-     include_package_data=True,
+     package_data={
+          "mapnik.bin": ["*"],
+          "mapnik.lib": ["libmapnik*"],
+          "mapnik.lib.mapnik.fonts":["*"],
+          "mapnik.lib.mapnik.input":["*.input"]
+     },
+     exclude_package_data={
+          "mapnik.bin": ["mapnik-config"],
+          "mapnik.lib": ["*.a"]
+     },
      ext_modules=ext_modules,
      cmdclass={"build_ext": build_ext},
      python_requires=">=3.9",
