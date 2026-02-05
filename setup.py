@@ -138,5 +138,4 @@ setup(
      },
      ext_modules=ext_modules,
      cmdclass={"build_ext": build_ext},
-     python_requires=">=3.9",
 )

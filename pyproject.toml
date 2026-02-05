@@ -12,6 +12,7 @@ description = "Python bindings for Mapnik"
 license = "LGPL-2.1-or-later"
 
 keywords = ["mapnik", "beautiful maps", "cartography", "python-mapnik"]
+
 classifiers = [
    "Development Status :: 4 - Beta",
 ]
@@ -22,7 +23,7 @@ maintainers = [
 {name= "Artem Pavlenko", email = "artem@mapnik.org"},
 ]
 
-requires-python = ">= 3.8"
+requires-python = ">= 3.9"
 
 [project.urls]
 Homepage = "https://mapnik.org"
