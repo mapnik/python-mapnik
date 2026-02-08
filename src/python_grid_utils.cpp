@@ -33,6 +33,7 @@
 #include <mapnik/feature.hpp>
 #include <mapnik/feature_kv_iterator.hpp>
 #include "python_grid_utils.hpp"
+#include "mapnik_value_converter.hpp"
 // stl
 #include <stdexcept>
 #include <cstdint>
