@@ -295,7 +295,7 @@ void export_map(py::module const& m)
              "<mapnik._mapnik.Featureset object at 0x23b0b0>\n"
              ">>> featureset.features\n"
              ">>> [<mapnik.Feature object at 0x3995630>]\n",
-             py::arg("layer idx"), py::arg("x"), py::arg("y")
+             py::arg("layer_idx"), py::arg("x"), py::arg("y")
             )
 
         .def("remove_all", &Map::remove_all,
