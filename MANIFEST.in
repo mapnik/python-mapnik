@@ -1,0 +1,4 @@
+include src/*.hpp
+exclude packaging/mapnik/bin/*
+exclude packaging/mapnik/lib/libmapnik*
+exclude packaging/mapnik/lib/mapnik/input/*
