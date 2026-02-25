@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mapnik"
-version = "4.2.1.beta"
+version = "4.2.1.beta2"
 description = "Python bindings for Mapnik"
 license = "LGPL-2.1-or-later"
 
