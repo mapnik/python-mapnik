@@ -2,9 +2,8 @@
 
 from pybind11.setup_helpers import Pybind11Extension, build_ext
 from setuptools import setup, find_namespace_packages
-import sys
-import subprocess
-import os
+import sys, subprocess, os, glob
+
 
 mapnik_config = 'mapnik-config'
 
@@ -15,9 +14,11 @@ def check_output(args):
 linkflags = []
 bin_path = os.path.join(check_output([mapnik_config, '--prefix']),'bin')
 lib_path = os.path.join(check_output([mapnik_config, '--prefix']),'lib')
+icu_data = check_output([mapnik_config, '--icu-data'])
+proj_lib = check_output([mapnik_config, '--proj-lib'])
+gdal_data = check_output([mapnik_config, '--gdal-data'])
+
 linkflags.extend(check_output([mapnik_config, '--libs']).split(' '))
-linkflags.extend(check_output([mapnik_config, '--ldflags']).split(' '))
-linkflags.extend(check_output([mapnik_config, '--dep-libs']).split(' '))
 linkflags.extend([
     '-lmapnik-wkt',
     '-lmapnik-json',
@@ -42,7 +43,7 @@ if os.environ.get('SYSTEM_MAPNIK'):
 else:
      if not os.path.exists('packaging/mapnik/bin'):
           os.symlink(bin_path, 'packaging/mapnik/bin')
-     if not os.path.exists('packaging/mapnik/lib') :
+     if not os.path.exists('packaging/mapnik/lib'):
           os.symlink(lib_path, 'packaging/mapnik/lib')
      else:
           names = (name for name in os.listdir(lib_path) if os.path.isfile(os.path.join(lib_path, name)))
@@ -52,6 +53,19 @@ else:
           input_plugin_path = check_output([mapnik_config, '--input-plugins'])
           if not os.path.exists('packaging/mapnik/lib/mapnik/input'):
                os.symlink(input_plugin_path, 'packaging/mapnik/lib/mapnik/input')
+     if not os.path.exists('packaging/mapnik/share'):
+          os.mkdir('packaging/mapnik/share')
+     if not os.path.exists('packaging/mapnik/share/icu'):
+          os.mkdir('packaging/mapnik/share/icu')
+     result = glob.glob(os.path.join(icu_data,'*.dat'))
+     if len(result) == 1:
+          icu_dat_file = os.path.basename(result[0])
+          if not os.path.exists(os.path.join('packaging/mapnik/share/icu',icu_dat_file)):
+               os.symlink(result[0], os.path.join('packaging/mapnik/share/icu',icu_dat_file))
+     if not os.path.exists('packaging/mapnik/share/gdal'):
+          os.symlink(gdal_data, 'packaging/mapnik/share/gdal')
+     if not os.path.exists('packaging/mapnik/share/proj'):
+          os.symlink(gdal_data, 'packaging/mapnik/share/proj')
      f_paths.write("mapniklibpath = os.path.join(os.path.dirname(__file__), 'lib')\n")
      f_paths.write("inputpluginspath = os.path.join(os.path.dirname(__file__), 'lib/mapnik/input')\n")
      f_paths.write("fontscollectionpath = os.path.join(os.path.dirname(__file__), 'lib/mapnik/fonts')\n")
@@ -142,7 +156,10 @@ setup(
           "mapnik.bin": ["*"],
           "mapnik.lib": ["libmapnik*"],
           "mapnik.lib.mapnik.fonts":["*"],
-          "mapnik.lib.mapnik.input":["*.input"]
+          "mapnik.lib.mapnik.input":["*.input"],
+          "mapnik.share.icu": ["*.dat"],
+          "mapnik.share.gdal": ["*"],
+          "mapnik.share.proj": ["*"]
      },
      exclude_package_data={
           "mapnik.bin": ["mapnik-config"],
