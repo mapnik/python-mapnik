@@ -62,6 +62,9 @@ else:
           icu_dat_file = os.path.basename(result[0])
           if not os.path.exists(os.path.join('packaging/mapnik/share/icu',icu_dat_file)):
                os.symlink(result[0], os.path.join('packaging/mapnik/share/icu',icu_dat_file))
+     else:
+          print("Error: can't locate ICU data file")
+          sys.exit(1)
      if not os.path.exists('packaging/mapnik/share/gdal'):
           os.symlink(gdal_data, 'packaging/mapnik/share/gdal')
      if not os.path.exists('packaging/mapnik/share/proj'):
