@@ -40,7 +40,7 @@ bool register_datasources(std::string const& plugins_dir, bool recursive = false
     return mapnik::datasource_cache::instance().register_datasources(plugins_dir, recursive);
 }
 
-std::string plugin_directories()
+std::vector<std::string> plugin_directories()
 {
     return mapnik::datasource_cache::instance().plugin_directories();
 }
