@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-from pybind11.setup_helpers import Pybind11Extension, build_ext
+from pybind11.setup_helpers import Pybind11Extension, build_ext, ParallelCompile, naive_recompile
 from setuptools import setup, find_namespace_packages
 import sys, subprocess, os, glob
 
@@ -149,6 +149,7 @@ if os.environ.get("CC", False) == False:
 if os.environ.get("CXX", False) == False:
     os.environ["CXX"] = check_output([mapnik_config, '--cxx'])
 
+ParallelCompile("NUM_JOBS", needs_recompile=naive_recompile).install()
 setup(
      name="mapnik",
      include_package_data=True,
