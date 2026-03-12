@@ -32,6 +32,7 @@
 #include <mapnik/path_expression.hpp>
 #include <mapnik/parse_path.hpp>
 #include <mapnik/raster_colorizer.hpp>
+#include <mapnik/value/error.hpp>
 //pybind11
 #include <pybind11/pybind11.h>
 
@@ -163,7 +164,7 @@ void set_color_property(Symbolizer & sym, py::object const& obj)
     {
         mapnik::put(sym, Key, mapnik::color(obj.cast<std::string>()));
     }
-    else throw pybind11::value_error();
+    else throw mapnik::value_error("Error assigning color property");
 }
 
 template <typename Symbolizer, auto Key>
@@ -179,7 +180,7 @@ void set_boolean_property(Symbolizer & sym, py::object const& obj)
         auto expr = obj.cast<mapnik::expression_ptr>();
         mapnik::put(sym, Key, expr);
     }
-    else throw pybind11::value_error();
+    else throw mapnik::value_error("Error assigning boolean property");
 }
 
 template <typename Symbolizer, auto Key>
@@ -195,7 +196,7 @@ void set_integer_property(Symbolizer & sym, py::object const& obj)
         auto expr = obj.cast<mapnik::expression_ptr>();
         mapnik::put(sym, Key, expr);
     }
-    else throw pybind11::value_error();
+    else throw mapnik::value_error("Error assigning int property");
 }
 
 template <typename Symbolizer, auto Key>
@@ -211,7 +212,7 @@ void set_double_property(Symbolizer & sym, py::object const& obj)
         auto expr = obj.cast<mapnik::expression_ptr>();
         mapnik::put(sym, Key, expr);
     }
-    else throw pybind11::value_error();
+    else throw mapnik::value_error("Error assigning double property");
 }
 
 template <typename Symbolizer, typename Enum, auto Key>
@@ -226,7 +227,7 @@ void set_enum_property(Symbolizer & sym, py::object const& obj)
         auto expr = obj.cast<mapnik::expression_ptr>();
         mapnik::put(sym, Key, expr);
     }
-    else throw pybind11::value_error();
+    else throw mapnik::value_error("Error assigning enum property");
 }
 
 template <typename Symbolizer, auto Key>
@@ -241,7 +242,7 @@ void set_path_property(Symbolizer & sym, py::object const& obj)
         auto expr = obj.cast<mapnik::path_expression_ptr>();
         mapnik::put(sym, Key, expr);
     }
-    else throw pybind11::value_error();
+    else throw mapnik::value_error("Error assigning path property");
 }
 
 template <typename Symbolizer, auto Key>
@@ -251,7 +252,7 @@ void set_colorizer_property(Symbolizer & sym, py::object const& obj)
     {
         mapnik::put(sym, Key, obj.cast<mapnik::raster_colorizer_ptr>());
     }
-    else throw pybind11::value_error();
+    else throw mapnik::value_error("Error assigning colorizer property");
 }
 
 inline std::size_t hash_impl(symbolizer const& sym)

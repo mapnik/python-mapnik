@@ -32,7 +32,6 @@
 #include <mapnik/image_any.hpp>
 #include <mapnik/value.hpp>
 #include <mapnik/value/error.hpp>
-#include <mapnik/scale_denominator.hpp>
 #include <mapnik/label_collision_detector.hpp>
 #include "mapnik_value_converter.hpp"
 #include "python_to_value.hpp"
@@ -436,32 +435,6 @@ void render_to_file3(mapnik::Map const& map,
     }
 }
 
-double scale_denominator(mapnik::Map const& map, bool geographic)
-{
-    return mapnik::scale_denominator(map.scale(), geographic);
-}
-
-// http://docs.python.org/c-api/exceptions.html#standard-exceptions
-void value_error_translator(mapnik::value_error const & ex)
-{
-    PyErr_SetString(PyExc_ValueError, ex.what());
-}
-
-void runtime_error_translator(std::runtime_error const & ex)
-{
-    PyErr_SetString(PyExc_RuntimeError, ex.what());
-}
-
-void out_of_range_error_translator(std::out_of_range const & ex)
-{
-    PyErr_SetString(PyExc_IndexError, ex.what());
-}
-
-void standard_error_translator(std::exception const & ex)
-{
-    PyErr_SetString(PyExc_RuntimeError, ex.what());
-}
-
 // indicator for pycairo support in the python bindings
 bool has_pycairo()
 {
@@ -675,7 +648,8 @@ PYBIND11_MODULE(_mapnik, m) {
     export_shield_symbolizer(m);
     export_group_symbolizer(m);
     export_building_symbolizer(m);
-
+    // exceptions
+    py::register_exception<mapnik::value_error>(m, "PyExc_MapnikValueError", PyExc_ValueError);
     //
     m.def("version", &mapnik_version,"Get the Mapnik version number");
     m.def("version_string", &mapnik_version_string,"Get the Mapnik version string");
@@ -704,6 +678,14 @@ PYBIND11_MODULE(_mapnik, m) {
     m.def("render", &render,
           py::arg("Map"),
           py::arg("image"),
+          py::arg("scale_factor") = 1.0,
+          py::arg("offset_x") = 0,
+          py::arg("offset_y") = 0);
+
+    m.def("render_with_vars", &render_with_vars,
+          py::arg("Map"),
+          py::arg("image"),
+          py::arg("vara"),
           py::arg("scale_factor") = 1.0,
           py::arg("offset_x") = 0,
           py::arg("offset_y") = 0);
@@ -912,302 +894,3 @@ PYBIND11_MODULE(_mapnik, m) {
 
     m.def("has_pycairo", &has_pycairo, "Get pycairo module status");
 }
-
-// // stl
-// #include <stdexcept>
-// #include <fstream>
-
-// void export_color();
-// void export_composite_modes();
-// void export_coord();
-// void export_layer();
-// void export_parameters();
-// void export_envelope();
-// void export_query();
-// void export_geometry();
-// void export_palette();
-// void export_image();
-// void export_image_view();
-// void export_gamma_method();
-// void export_scaling_method();
-// #if defined(GRID_RENDERER)
-// void export_grid();
-// void export_grid_view();
-// #endif
-// void export_map();
-// void export_python();
-// void export_expression();
-// void export_rule();
-// void export_style();
-// void export_feature();
-// void export_featureset();
-// void export_fontset();
-// void export_datasource();
-// void export_datasource_cache();
-// void export_symbolizer();
-// void export_markers_symbolizer();
-// void export_point_symbolizer();
-// void export_line_symbolizer();
-// void export_line_pattern_symbolizer();
-// void export_polygon_symbolizer();
-// void export_building_symbolizer();
-// void export_placement_finder();
-// void export_polygon_pattern_symbolizer();
-// void export_raster_symbolizer();
-// void export_text_symbolizer();
-// void export_shield_symbolizer();
-// void export_debug_symbolizer();
-// void export_group_symbolizer();
-// void export_font_engine();
-// void export_projection();
-// void export_proj_transform();
-// void export_view_transform();
-// void export_raster_colorizer();
-// void export_label_collision_detector();
-// void export_logger();
-
-// #include <mapnik/version.hpp>
-// #include <mapnik/map.hpp>
-// #include <mapnik/datasource.hpp>
-// #include <mapnik/layer.hpp>
-// #include <mapnik/agg_renderer.hpp>
-// #include <mapnik/rule.hpp>
-// #include <mapnik/image_util.hpp>
-// #include <mapnik/image_any.hpp>
-// #include <mapnik/load_map.hpp>
-// #include <mapnik/value/error.hpp>
-// #include <mapnik/value.hpp>
-// #include <mapnik/save_map.hpp>
-// #include <mapnik/scale_denominator.hpp>
-// #if defined(GRID_RENDERER)
-// #include "python_grid_utils.hpp"
-// #endif
-//#include "mapnik_value_converter.hpp"
-// #include "mapnik_enumeration_wrapper_converter.hpp"
-//#include "mapnik_threads.hpp"
-// #include "python_optional.hpp"
-// #include <mapnik/marker_cache.hpp>
-// #if defined(SHAPE_MEMORY_MAPPED_FILE)
-// #include <mapnik/mapped_memory_cache.hpp>
-// #endif
-
-// #if defined(SVG_RENDERER)
-// #include <mapnik/svg/output/svg_renderer.hpp>
-// #endif
-
-// namespace mapnik {
-//     class font_set;
-//     class layer;
-//     class color;
-//     class label_collision_detector4;
-// }
-
-// #if defined(HAVE_CAIRO)
-// #include <mapnik/cairo_io.hpp>
-// #include <mapnik/cairo/cairo_renderer.hpp>
-// #include <cairo.h>
-// #endif
-
-// #if defined(HAVE_PYCAIRO)
-// #include <boost/python/type_id.hpp>
-// #include <boost/python/converter/registry.hpp>
-// #if PY_MAJOR_VERSION >= 3
-// #include <py3cairo.h>
-// #else
-// #include <pycairo.h>
-// static Pycairo_CAPI_t *Pycairo_CAPI;
-// #endif
-
-// static void *extract_surface(PyObject* op)
-// {
-//     if (PyObject_TypeCheck(op, const_cast<PyTypeObject*>(Pycairo_CAPI->Surface_Type)))
-//     {
-//         return op;
-//     }
-//     else
-//     {
-//         return 0;
-//     }
-// }
-
-// static void *extract_context(PyObject* op)
-// {
-//     if (PyObject_TypeCheck(op, const_cast<PyTypeObject*>(Pycairo_CAPI->Context_Type)))
-//     {
-//         return op;
-//     }
-//     else
-//     {
-//         return 0;
-//     }
-// }
-
-// void register_cairo()
-// {
-// #if PY_MAJOR_VERSION >= 3
-//     Pycairo_CAPI = (Pycairo_CAPI_t*) PyCapsule_Import(const_cast<char *>("cairo.CAPI"), 0);
-// #else
-//     Pycairo_CAPI = (Pycairo_CAPI_t*) PyCObject_Import(const_cast<char *>("cairo"), const_cast<char *>("CAPI"));
-// #endif
-//     if (Pycairo_CAPI == nullptr) return;
-
-//     boost::python::converter::registry::insert(&extract_surface, boost::python::type_id<PycairoSurface>());
-//     boost::python::converter::registry::insert(&extract_context, boost::python::type_id<PycairoContext>());
-// }
-// #endif
-
-
-
-// #pragma GCC diagnostic push
-// #pragma GCC diagnostic ignored "-Wunused-local-typedef"
-// BOOST_PYTHON_FUNCTION_OVERLOADS(load_map_overloads, load_map, 2, 4)
-// BOOST_PYTHON_FUNCTION_OVERLOADS(load_map_string_overloads, load_map_string, 2, 4)
-// BOOST_PYTHON_FUNCTION_OVERLOADS(save_map_overloads, save_map, 2, 3)
-// BOOST_PYTHON_FUNCTION_OVERLOADS(save_map_to_string_overloads, save_map_to_string, 1, 2)
-// BOOST_PYTHON_FUNCTION_OVERLOADS(render_overloads, render, 2, 5)
-// BOOST_PYTHON_FUNCTION_OVERLOADS(render_with_detector_overloads, render_with_detector, 3, 6)
-// #pragma GCC diagnostic pop
-
-// BOOST_PYTHON_MODULE(_mapnik)
-// {
-
-//     using namespace boost::python;
-
-//     using mapnik::load_map;
-//     using mapnik::load_map_string;
-//     using mapnik::save_map;
-//     using mapnik::save_map_to_string;
-
-//     register_exception_translator<std::exception>(&standard_error_translator);
-//     register_exception_translator<std::out_of_range>(&out_of_range_error_translator);
-//     register_exception_translator<mapnik::value_error>(&value_error_translator);
-//     register_exception_translator<std::runtime_error>(&runtime_error_translator);
-// #if defined(HAVE_CAIRO) && defined(HAVE_PYCAIRO)
-//     register_cairo();
-// #endif
-//     export_query();
-//     export_geometry();
-//     export_feature();
-//     export_featureset();
-//     export_fontset();
-//     export_datasource();
-//     export_parameters();
-//     export_color();
-//     export_composite_modes();
-//     export_envelope();
-//     export_palette();
-//     export_image();
-//     export_image_view();
-//     export_gamma_method();
-//     export_scaling_method();
-// #if defined(GRID_RENDERER)
-//     export_grid();
-//     export_grid_view();
-// #endif
-//     export_expression();
-//     export_rule();
-//     export_style();
-//     export_layer();
-//     export_datasource_cache();
-//     export_symbolizer();
-//     export_markers_symbolizer();
-//     export_point_symbolizer();
-//     export_line_symbolizer();
-//     export_line_pattern_symbolizer();
-//     export_polygon_symbolizer();
-//     export_building_symbolizer();
-//     export_placement_finder();
-//     export_polygon_pattern_symbolizer();
-//     export_raster_symbolizer();
-//     export_text_symbolizer();
-//     export_shield_symbolizer();
-//     export_debug_symbolizer();
-//     export_group_symbolizer();
-//     export_font_engine();
-//     export_projection();
-//     export_proj_transform();
-//     export_view_transform();
-//     export_coord();
-//     export_map();
-//     export_raster_colorizer();
-//     export_label_collision_detector();
-//     export_logger();
-
-
-//     def("render_tile_to_file",&render_tile_to_file,
-//         "\n"
-//         "TODO\n"
-//         "\n"
-//         );
-
-//     def("render_with_vars",&render_with_vars,
-//         (arg("map"),
-//          arg("image"),
-//          arg("vars"),
-//          arg("scale_factor")=1.0,
-//          arg("offset_x")=0,
-//          arg("offset_y")=0
-//         )
-//         );
-
-//     def("render", &render, render_overloads(
-//             "\n"
-//             "Render Map to an AGG image_any using offsets\n"
-//             "\n"
-//             "Usage:\n"
-//             ">>> from mapnik import Map, Image, render, load_map\n"
-//             ">>> m = Map(256,256)\n"
-//             ">>> load_map(m,'mapfile.xml')\n"
-//             ">>> im = Image(m.width,m.height)\n"
-//             ">>> scale_factor=2.0\n"
-//             ">>> offset = [100,50]\n"
-//             ">>> render(m,im)\n"
-//             ">>> render(m,im,scale_factor)\n"
-//             ">>> render(m,im,scale_factor,offset[0],offset[1])\n"
-//             "\n"
-//             ));
-
-//     def("render_with_detector", &render_with_detector, render_with_detector_overloads(
-//             "\n"
-//             "Render Map to an AGG image_any using a pre-constructed detector.\n"
-//             "\n"
-//             "Usage:\n"
-//             ">>> from mapnik import Map, Image, LabelCollisionDetector, render_with_detector, load_map\n"
-//             ">>> m = Map(256,256)\n"
-//             ">>> load_map(m,'mapfile.xml')\n"
-//             ">>> im = Image(m.width,m.height)\n"
-//             ">>> detector = LabelCollisionDetector(m)\n"
-//             ">>> render_with_detector(m, im, detector)\n"
-//             ));
-//     def("save_map_to_string", &save_map_to_string, save_map_to_string_overloads());
-//     def("mapnik_version", &mapnik_version,"Get the Mapnik version number");
-//     def("mapnik_version_string", &mapnik_version_string,"Get the Mapnik version string");
-//     def("has_proj", &has_proj, "Get proj status");
-//     def("has_jpeg", &has_jpeg, "Get jpeg read/write support status");
-//     def("has_png", &has_png, "Get png read/write support status");
-//     def("has_tiff", &has_tiff, "Get tiff read/write support status");
-//     def("has_webp", &has_webp, "Get webp read/write support status");
-//     def("has_svg_renderer", &has_svg_renderer, "Get svg_renderer status");
-//     def("has_grid_renderer", &has_grid_renderer, "Get grid_renderer status");
-//     def("has_cairo", &has_cairo, "Get cairo library status");
-//     def("has_pycairo", &has_pycairo, "Get pycairo module status");
-
-//     python_optional<mapnik::font_set>();
-//     python_optional<mapnik::color>();
-//     python_optional<mapnik::box2d<double> >();
-//     python_optional<mapnik::composite_mode_e>();
-//     python_optional<mapnik::datasource_geometry_t>();
-//     python_optional<std::string>();
-//     python_optional<unsigned>();
-//     python_optional<double>();
-//     python_optional<float>();
-//     python_optional<bool>();
-//     python_optional<int>();
-//     python_optional<mapnik::text_transform_e>();
-//     register_ptr_to_python<mapnik::expression_ptr>();
-//     register_ptr_to_python<mapnik::path_expression_ptr>();
-
-//     to_python_converter<mapnik::value_holder,mapnik_param_to_python>();
-//     to_python_converter<mapnik::value, mapnik_value_to_python>();
-//     to_python_converter<mapnik::enumeration_wrapper,mapnik_enumeration_wrapper_to_python>();
-// }
