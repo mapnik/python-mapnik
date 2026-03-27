@@ -235,6 +235,52 @@ def test_render_with_detector():
     im2.save(actual_file, 'png8')
 
 
+def test_render_with_vars():
+    m = mapnik.Map(256, 256, "epsg:3857")
+    m.background = "white"
+    lyr = mapnik.Layer("My Layer")
+    lyr.srs = m.srs
+    style = mapnik.Style()
+    rule = mapnik.Rule()
+    rule.filter = mapnik.Expression("[name] = @name")
+    sym = mapnik.PolygonSymbolizer()
+    sym.fill = "dodgerblue"
+    sym.fill_opacity = 0.7
+    rule.symbolizers.append(sym)
+    style.rules.append(rule)
+
+    rule = mapnik.Rule()
+    rule.set_else(True)
+    sym = mapnik.PolygonSymbolizer()
+    sym.fill = "red"
+    sym.fill_opacity = 0.5
+    rule.symbolizers.append(sym)
+    style.rules.append(rule)
+    m.append_style("My Style", style)
+    lyr.styles.append("My Style")
+
+    lyr.datasource = mapnik.MemoryDatasource()
+    m.layers.append(lyr)
+    ctx = mapnik.Context()
+    f=mapnik.Feature(ctx, 1)
+    f.geometry = mapnik.Geometry.from_wkt("POLYGON((0 0, 100 0, 100 100, 0 100, 0 0))")
+    lyr.datasource.add_feature(f)
+    f=mapnik.Feature(ctx, 2)
+    f.geometry = mapnik.Geometry.from_wkt("POLYGON((10 10, 90 10, 90 90, 10 90, 10 10))")
+    f['name'] = "blue-square"
+    lyr.datasource.add_feature(f)
+
+    m.zoom_all()
+    im1 = mapnik.Image(256, 256)
+    mapnik.render_with_vars(m, im1, {"name": "blue-square"})
+
+    for rule in m.styles["My Style"].rules:
+        if not rule.has_else():
+            rule.filter = mapnik.Expression("[name] = 'blue-square'")
+    im2 = mapnik.Image(256, 256)
+    mapnik.render(m, im2)
+    assert im1.to_string() == im2.to_string()
+
 if 'shape' in mapnik.DatasourceCache.plugin_names():
 
     @pytest.mark.skip(reason="Font rendering differences cause minor pixel variations across platforms (0.04% difference)")

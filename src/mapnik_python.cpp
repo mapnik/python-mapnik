@@ -685,7 +685,7 @@ PYBIND11_MODULE(_mapnik, m) {
     m.def("render_with_vars", &render_with_vars,
           py::arg("Map"),
           py::arg("image"),
-          py::arg("vara"),
+          py::arg("vars"),
           py::arg("scale_factor") = 1.0,
           py::arg("offset_x") = 0,
           py::arg("offset_y") = 0);
