@@ -331,18 +331,6 @@ void render_with_detector5(
 
 #endif
 
-
-void render_tile_to_file(mapnik::Map const& map,
-                         unsigned offset_x, unsigned offset_y,
-                         unsigned width, unsigned height,
-                         std::string const& file,
-                         std::string const& format)
-{
-    mapnik::image_any image(width,height);
-    render(map,image,1.0,offset_x, offset_y);
-    mapnik::save_to_file(image,file,format);
-}
-
 void render_to_file1(mapnik::Map const& map,
                      std::string const& filename,
                      std::string const& format)
