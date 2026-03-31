@@ -1,7 +1,6 @@
 # Mapnik Python
 
-# Version 4.2.2
-
+# Version 4.2.2 (4d5112bb8)
  - pybind11 (v3)
  - mapnik core v4.2.2
  - Python >= 3.9
