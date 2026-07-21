@@ -30,7 +30,6 @@
 #include <mapnik/view_transform.hpp>
 #include <mapnik/feature_type_style.hpp>
 #include "mapnik_value_converter.hpp"
-#include "python_optional.hpp"
 //pybind11
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
@@ -68,22 +67,22 @@ void insert_fontset(mapnik::Map & m, std::string const& name, mapnik::font_set c
 
 mapnik::feature_type_style find_style(mapnik::Map const& m, std::string const& name)
 {
-    boost::optional<mapnik::feature_type_style const&> style = m.find_style(name);
+    auto style = m.find_style(name);
     if (!style)
     {
         throw std::runtime_error("Invalid style name");
     }
-    return *style;
+    return style->get();
 }
 
 mapnik::font_set find_fontset(mapnik::Map const& m, std::string const& name)
 {
-    boost::optional<mapnik::font_set const&> fontset = m.find_fontset(name);
+    auto fontset = m.find_fontset(name);
     if (!fontset)
     {
         throw std::runtime_error("Invalid font_set name");
     }
-    return *fontset;
+    return fontset->get();
 }
 
 // TODO - we likely should allow indexing by negative number from python
@@ -106,7 +105,7 @@ mapnik::featureset_ptr query_map_point(mapnik::Map const& m, int index, double x
     return m.query_map_point(idx, x, y);
 }
 
-void set_maximum_extent(mapnik::Map & m, boost::optional<mapnik::box2d<double> > const& box)
+void set_maximum_extent(mapnik::Map & m, std::optional<mapnik::box2d<double>> const& box)
 {
     if (box)
     {
