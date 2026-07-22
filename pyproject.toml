@@ -1,13 +1,13 @@
 [build-system]
 requires = [
-         "setuptools >= 80.9.0",
+         "setuptools >= 83.0.0",
          "pybind11 >= 3.0.4",
 ]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "mapnik"
-version = "4.2.3"
+version = "4.3.0"
 description = "Python bindings for Mapnik"
 license = "LGPL-2.1-or-later"
 
@@ -41,7 +41,7 @@ Issues = "https://github.com/mapnik/python-mapnik/issues"
 Changelog = "https://github.com/mapnik/python-mapnik/blob/master/CHANGELOG.md"
 
 [tool.pytest.ini_options]
-minversion = "8.0"
+minversion = "9.0"
 testpaths = [
     "test/python_tests",
 ]
