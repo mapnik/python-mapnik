@@ -1,4 +1,4 @@
-Python bindings for [Mapnik](https://mapnik.org) [v4.2.2](https://github.com/mapnik/python-mapnik/releases/tag/v4.2.2)
+Python bindings for [Mapnik](https://mapnik.org) [v4.3.0](https://github.com/mapnik/mapnik/releases/tag/v4.3.0)
 
 | Platform/(Interpreter+ABI) | cp39     | cp310 | cp311 | cp312 | cp313 | cp314 |
 |----------|----------|-------|-------|-------|-------|-------|
@@ -15,10 +15,10 @@ python3 -m pip install mapnik
 
 ### Building from Source
 
-Make sure 'mapnik-config' is present and accessible via $PATH env variable 
+Make sure 'mapnik-config' is present and accessible via $PATH env variable
 
 ```
-python3 -m pip install . -v 
+python3 -m pip install . -v
 ```
 
 ## Testing
@@ -28,7 +28,3 @@ Once you have installed you can test the package by running:
 ```
 pytest test/python_tests/
 ```
-
-
-
-
