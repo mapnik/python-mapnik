@@ -9,6 +9,9 @@ build-backend = "setuptools.build_meta"
 name = "mapnik"
 version = "4.3.0"
 description = "Python bindings for Mapnik"
+
+readme = "README.md"
+
 license = "LGPL-2.1-or-later"
 
 keywords = ["mapnik", "beautiful maps", "cartography", "python-mapnik"]
