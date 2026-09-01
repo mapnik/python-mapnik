@@ -1,13 +1,13 @@
 [build-system]
 requires = [
-         "setuptools >= 82.0.0",
+         "setuptools >= 84.0.0",
          "pybind11 >= 3.0.4",
 ]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "mapnik"
-version = "4.3.0"
+version = "4.3.1"
 description = "Python bindings for Mapnik"
 
 readme = "README.md"
