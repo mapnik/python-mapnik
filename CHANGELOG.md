@@ -1,6 +1,6 @@
 # Mapnik Python
 
-# Version 4.3.1 (xxx)
+# Version 4.3.1 (d542ff1d3)
 
  - mapnik core v4.3.1
  - setuptools >= 84.0.0
