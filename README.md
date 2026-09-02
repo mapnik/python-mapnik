@@ -1,4 +1,4 @@
-Python bindings for [Mapnik](https://mapnik.org) [v4.3.0](https://github.com/mapnik/mapnik/releases/tag/v4.3.0)
+Python bindings for [Mapnik](https://mapnik.org) [v4.3.1](https://github.com/mapnik/mapnik/releases/tag/v4.3.1)
 
 | Platform/(Interpreter+ABI) | cp39     | cp310 | cp311 | cp312 | cp313 | cp314 |
 |----------|----------|-------|-------|-------|-------|-------|
