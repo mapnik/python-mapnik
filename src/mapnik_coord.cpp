@@ -26,9 +26,16 @@
 //pybind11
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
+// boost
+#include <boost/format.hpp>
 
 namespace py = pybind11;
 using mapnik::coord;
+
+std::string to_string(mapnik::coord<double,2> const& c)
+{
+    return (boost::format("Coord(%1%, %2%)") % c.x % c.y).str();
+}
 
 void export_coord(py::module const& m)
 {
@@ -50,6 +57,7 @@ void export_coord(py::module const& m)
         .def(py::self * float())   //__mult__
         .def(float() * py::self)
         .def(py::self / float())   // __div__
+        .def("__repr__",&to_string)
         .def(py::pickle(
                  [](coord<double,2> & c) {
                      return py::make_tuple(c.x, c.y);
