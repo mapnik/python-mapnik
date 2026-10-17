@@ -1,5 +1,9 @@
 # Mapnik Python
 
+# Unreleased
+
+ - Release the Python GIL while encoding Image and ImageView objects to bytes.
+
 # Version 4.3.1 (270d02565)
 
  - mapnik core v4.3.1
