@@ -654,13 +654,15 @@ PYBIND11_MODULE(_mapnik, m) {
           py::arg("Map"),
           py::arg("filename"),
           py::arg("strict")=false,
-          py::arg("base_path") = "" );
+          py::arg("base_path") = "",
+          py::call_guard<py::gil_scoped_release>());
 
     m.def("load_map_from_string", &load_map_string,
           py::arg("Map"),
           py::arg("str"),
           py::arg("strict")=false,
-          py::arg("base_path") = "" );
+          py::arg("base_path") = "",
+          py::call_guard<py::gil_scoped_release>());
 
     // render
     m.def("render", &render,

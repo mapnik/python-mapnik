@@ -3,6 +3,7 @@
 # Unreleased
 
  - Release the Python GIL while encoding Image and ImageView objects to bytes.
+ - Release the Python GIL while loading maps from XML files and strings.
 
 # Version 4.3.1 (270d02565)
 
