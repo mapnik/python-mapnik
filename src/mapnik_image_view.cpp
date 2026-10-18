@@ -50,13 +50,21 @@ py::object view_tostring1(image_view_any const& view)
 // encode (png,jpeg)
 py::object view_tostring2(image_view_any const & view, std::string const& format)
 {
-    std::string s = save_to_string(view, format);
+    std::string s;
+    {
+        py::gil_scoped_release release;
+        s = save_to_string(view, format);
+    }
     return py::bytes(s.data(), s.length());
 }
 
 py::object view_tostring3(image_view_any const & view, std::string const& format, mapnik::rgba_palette const& pal)
 {
-    std::string s = save_to_string(view, format, pal);
+    std::string s;
+    {
+        py::gil_scoped_release release;
+        s = save_to_string(view, format, pal);
+    }
     return py::bytes(s.data(), s.length());
 }
 

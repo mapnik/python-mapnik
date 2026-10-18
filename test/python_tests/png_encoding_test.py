@@ -1,6 +1,10 @@
 import os
+import sys
+import threading
+
 import mapnik
 import pytest
+
 from .utilities import execution_path
 
 @pytest.fixture(scope="module")
@@ -14,6 +18,41 @@ if mapnik.has_png():
     tmp_dir = '/tmp/mapnik-png/'
     if not os.path.exists(tmp_dir):
         os.makedirs(tmp_dir)
+
+    @pytest.mark.parametrize('use_view', [False, True])
+    @pytest.mark.parametrize('use_palette', [False, True])
+    def test_to_string_releases_gil(use_view, use_palette):
+        im = mapnik.Image(2048, 2048)
+        im.fill(mapnik.Color('red'))
+        image = im.view(0, 0, im.width(), im.height()) if use_view else im
+        args = ('png',)
+        if use_palette:
+            args += (mapnik.Palette(b'\xff\x00\x00', 'rgb'),)
+
+        start = threading.Event()
+        progressed = threading.Event()
+
+        def other_thread():
+            start.wait()
+            progressed.set()
+
+        thread = threading.Thread(target=other_thread)
+        thread.start()
+        interval = sys.getswitchinterval()
+        try:
+            # Only the native encoder should let the other thread run here.
+            sys.setswitchinterval(60)
+            start.set()
+            encoded = image.to_string(*args)
+            ran_during_encoding = progressed.is_set()
+        finally:
+            sys.setswitchinterval(interval)
+            start.set()
+            thread.join()
+
+        assert ran_during_encoding
+        decoded = mapnik.Image.from_buffer(encoded)
+        assert decoded.to_string() == im.to_string()
 
     opts = [
         'png32',

@@ -1,10 +1,48 @@
 import glob,os
+import sys
+import threading
 import mapnik
 import pytest
 
 from .utilities import execution_path
 
 default_logging_severity = mapnik.logger.get_severity()
+
+
+@pytest.mark.parametrize('from_string', [False, True])
+def test_load_map_releases_gil(tmp_path, from_string):
+    xml = '<Map>' + ''.join(
+        '<Layer name="layer_%s"/>' % i for i in range(2000)
+    ) + '</Map>'
+    filename = tmp_path / 'map.xml'
+    filename.write_text(xml)
+    load = mapnik.load_map_from_string if from_string else mapnik.load_map
+    source = xml if from_string else str(filename)
+    m = mapnik.Map(256, 256)
+    start = threading.Event()
+    progressed = threading.Event()
+
+    def other_thread():
+        start.wait()
+        progressed.set()
+
+    thread = threading.Thread(target=other_thread)
+    thread.start()
+    interval = sys.getswitchinterval()
+    try:
+        # Only native map loading should let the other thread run here.
+        sys.setswitchinterval(60)
+        start.set()
+        load(m, source, True)
+        ran_during_loading = progressed.is_set()
+    finally:
+        sys.setswitchinterval(interval)
+        start.set()
+        thread.join()
+
+    assert ran_during_loading
+    assert len(m.layers) == 2000
+
 
 @pytest.fixture(scope="module")
 def setup_and_teardown():
