@@ -1,13 +1,13 @@
 [build-system]
 requires = [
-         "setuptools >= 82.0.1",
-         "pybind11 >= 3.0.4",
+         "setuptools >= 84.2.1",
+         "pybind11 >= 3.1.0",
 ]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "mapnik"
-version = "4.3.2"
+version = "4.4.0"
 description = "Python bindings for Mapnik"
 
 readme = "README.md"
@@ -19,12 +19,11 @@ keywords = ["mapnik", "beautiful maps", "cartography", "python-mapnik"]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.9",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3.15",
 ]
 
 authors = [
@@ -34,7 +33,7 @@ maintainers = [
 {name= "Artem Pavlenko", email = "artem@mapnik.org"},
 ]
 
-requires-python = ">= 3.9"
+requires-python = ">= 3.11"
 
 [project.urls]
 Homepage = "https://mapnik.org"
