@@ -54,13 +54,21 @@ py::object to_string1(image_any const& im)
 // encode (png,jpeg)
 py::object to_string2(image_any const & im, std::string const& format)
 {
-    std::string s = mapnik::save_to_string(im, format);
+    std::string s;
+    {
+        py::gil_scoped_release release;
+        s = mapnik::save_to_string(im, format);
+    }
     return py::bytes(s.data(), s.length());
 }
 
 py::object to_string3(image_any const & im, std::string const& format, mapnik::rgba_palette const& pal)
 {
-    std::string s = mapnik::save_to_string(im, format, pal);
+    std::string s;
+    {
+        py::gil_scoped_release release;
+        s = mapnik::save_to_string(im, format, pal);
+    }
     return py::bytes(s.data(), s.length());
 }
 
