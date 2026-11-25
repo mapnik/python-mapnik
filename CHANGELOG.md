@@ -1,5 +1,12 @@
 # Mapnik Python
 
+# Version 4.4.0 (b299ec33b)
+
+- mapnik core v4.4.0
+- setuptools >= 84.2.1
+- pybind11 >= 3.1.0
+- Python 3.11 3.12 3.13 3.14 3.15
+
 # Version 4.3.1 (270d02565)
 
  - mapnik core v4.3.1
