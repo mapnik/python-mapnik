@@ -1,11 +1,11 @@
-Python bindings for [Mapnik](https://mapnik.org) [v4.3.2](https://github.com/mapnik/mapnik/releases/tag/v4.3.2)
+Python bindings for [Mapnik](https://mapnik.org) [v4.4.0](https://github.com/mapnik/mapnik/releases/tag/v4.4.0)
 
-| Platform/(Interpreter+ABI) | cp39     | cp310 | cp311 | cp312 | cp313 | cp314 |
-|----------|----------|-------|-------|-------|-------|-------|
-| macosx_11_0_arm64 | ✅ | ✅  | ✅   | ✅   | ✅   | ✅ |  ✅ | ✅ |
-| macosx_11_0_x86_64|  ✅ | ✅  | ✅   | ✅   | ✅   | ✅ |  ✅ | ✅ |
-| manylinux_2_31_arm64 | ✅ | ✅  | ✅   | ✅   | ✅   | ✅ |  ✅ | ✅ |
-| manylinux_2_31_x86_64 |  ✅ | ✅  | ✅   | ✅   | ✅   | ✅ |  ✅ | ✅ |
+| Platform/(Interpreter+ABI)   | cp311 | cp312 | cp313 | cp314 | cp315 |
+|------------------------------|-------|-------|-------|-------|-------|
+| macosx_11_0_arm64            | ✅    | ✅    | ✅    |  ✅   | ✅    |
+| macosx_11_0_x86_64           | ✅    | ✅    | ✅    |  ✅   | ✅    |
+| manylinux_2_31_arm64         | ✅    | ✅    | ✅    |  ✅   | ✅    |
+| manylinux_2_31_x86_64        | ✅    | ✅    | ✅    |  ✅   | ✅    |
 
 ## Installation
 
